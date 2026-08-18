@@ -9,7 +9,32 @@
       "Bash(npm i *)",
       "Bash(node -e \"console.log\\('@types/jest', require\\('./node_modules/@types/jest/package.json'\\).version\\)\")",
       "Bash(npx expo *)",
-      "Bash(tasklist)"
+      "Bash(tasklist)",
+      "Bash(npx tsc *)",
+      "Bash(echo \"TSC_EXIT=$?\")",
+      "mcp__stitch__list_screens",
+      "Bash(curl -sL -o home_spec.png \"https://lh3.googleusercontent.com/aida/AP1WRLtVPJDJCPTEau9aR-eo4JPjnt-xNg-nHVXhWpPieBG5Ri_-c60t3BQT9mxgk6S6tlayUnQEg0IYYQ8JE8pSgLAjuMTgb3iqXPfiJ_jKm0daSB2-EMonsCo59pOuFL1NmQo1MXqiJJO8zG0vjr2D2SOQRZjzf1k9HcksS5xGsOiDj0fG-Xij97g11uMFG-c7wKR8600ulNSn9ApqVmYPtAbIReW2dArhnX7lb3qY38NCo6iTzRiHpUYl5is\")",
+      "Bash(curl -sL -o leaderboards.png \"https://lh3.googleusercontent.com/aida/AP1WRLstG1_R2-mzExmkDsyzYiWeZ-iKtWpA-cGeDbFNtlvt_oG49lG6eHPrIAg07zGSxKMbnZE_CY2XUqftx_wtwNxWkN2DfYY2klsnGdy-Q8zugdhAvHVvniRZyIjdTjeSNsgE87_SlaGOa4o72nwNqSyqRlVuKmRTTSE51fOwXesXuOhaxmiL45Dp4HZD621bhZ_w9ntt9YkgpgkXBHBfw-DgEzmAYXfNjq1jnmTpyzZmMsL1ZMD6d-WprpM\")",
+      "Bash(node -e \"const p=require\\('./package.json'\\);console.log\\('async-storage:',p.dependencies['@react-native-async-storage/async-storage']\\)\")",
+      "Bash(npx tsx -e ' *)",
+      "Bash(node -e \"const xpToNext=\\(l\\)=>300+350*l;function lp\\(t\\){let level=1,rem=Math.floor\\(t\\);while\\(rem>=xpToNext\\(level\\)\\){rem-=xpToNext\\(level\\);level++;}return{level,xpIntoLevel:rem,xpForLevel:xpToNext\\(level\\)};}console.log\\(JSON.stringify\\(lp\\(326100\\)\\)\\);\")",
+      "Bash(node -e \"console.log\\(require\\('./node_modules/babel-preset-expo/package.json'\\).version\\)\")",
+      "Bash(node -e \"const p=require\\('./node_modules/expo/package.json'\\); console.log\\(JSON.stringify\\(p.dependencies,null,1\\)\\)\")",
+      "Bash(node -e \"console.log\\(require\\('./node_modules/expo/node_modules/babel-preset-expo/package.json'\\).version\\)\")",
+      "Bash(curl -sL -o splash.png \"https://lh3.googleusercontent.com/aida/AP1WRLukWycCD8zS-hjzH4Xw_ZkRCNsF8-EOkkZ4gCmTsvHHYL7i-Xb8aGaJo0sXqK_wr4oePsfhGA_qcF0zqZ5znhdwtVJey7kdEAHg3YwALV4NBLmRlM5CvPRHO4HSRJHjm9fVqCMGJysq7t4CApolwr4ncn8ERewAUmepl0YVwmFcgHZg_1TGuxL0p4A_5vH15e4iNY3aPwzhD-IkI76ogTdPSj1DNM7qVlvrilPjYtuq7eH0gmJzg66JeA\")",
+      "Bash(curl -sL -o onb_discover.png \"https://lh3.googleusercontent.com/aida/AP1WRLtuBETXoRultfS3FDgrAxyhXxBHEWzgHMrTHykH-14NSDMSRPab9PpUXhxoq1UQi3vVF2EF5Hvr3m5UdhXYfL6ZeT4_bACFjcABIhs_egaZsfRFyvCyCrftMbkSpS4Ckp3QeWjALSkRdSs349QPv55Da4Qh-k4zxFS8aMo5Qq575zRNTM4qJNnVlEMbtGB-TI6j4HX8U9-f0rB6hQzq-GnfoRhPQEp04KBDnu2UMalxs-C3zDz4o3Z0Wig\")",
+      "Bash(curl -sL -o onb_customize.png \"https://lh3.googleusercontent.com/aida/AP1WRLtCmrcKaDGOi-ST7-xyZEANxTs-FM2lAUFJdbMxEMKy-yTTRsokNiT99OIL3DcG1FevRfu0Iii1fa1Pbp0vwD7mZyzSB4XN7nnYNqqM_AxIjo_yG3HbgK_FP5xM2M6PHIBYD6vmnkjWiak80UmQhjmuBhpJ5rv1MBcj2y6-6a85xwZ5nF0qihQuLx2l9viJqGs5u99dDkPh2lRpe05XSWIhpjI3_NtHfAuUxT7sYC9LZhOpf7GnL-qeGPY\")",
+      "Bash(curl -sL -o onb_compete.png \"https://lh3.googleusercontent.com/aida/AP1WRLtqDHRtoc5tFUf_BNLahRsdILD0dhArndz4elIJC4gJBKa7Zx0xiHtLO7aHDHXPlgWIs66F473WtEELv_ql9Xez5PckLBST_1MLJSjz66TVBusCPRwBnznGxIFCYZ_cq3kYsTjcB0IH_TyPT1Mp2Bn1sv6LQA5IGiOpp8OmIls4WGE6K49Svlj_G7JPnb8uEuZgnOzwLz81-vCE1SGS9N_tz3FQNwzp8lZ0yAyKKL5aULMh0J3GTkaoMOE\")",
+      "Bash(curl -sL -o login.png \"https://lh3.googleusercontent.com/aida/AP1WRLuFYfqyE4eug_6VgnJtjFx-pmhOe5T5jcZe-otzbtS6OmKX6By4362rbw9Edw707X-bB7ttqZfDs2G3OH9LP8MS62DR3VygS7l0LglmVrZHNFHz-9ifLrsYcGVV_8TxF6p9hbpaV6jARXe7Bn96BiWEo6u8ywg_gFxjxxOq0FCPFpUJOjbt4_MpeQvce_Ub64bAoIaxkBWe9tqoHhUzIfe0s3EUCBw6O8wnN1ebbeZhyKwJFUb_Fbcxgg\")",
+      "Bash(awk '{print $5, $9}')",
+      "Bash(curl -sL -o rolereveal_bodyguard.png \"https://lh3.googleusercontent.com/aida/AP1WRLtCmrcKaDGOi-ST7-xyZEANxTs-FM2lAUFJdbMxEMKy-yTTRsokNiT99OIL3DcG1FevRfu0Iii1fa1Pbp0vwD7mZyzSB4XN7nnYNqqM_AxIjo_yG3HbgK_FP5xM2M6PHIBYD6vmnkjWiak80UmQhjmuBhpJ5rv1MBcj2y6-6a85xwZ5nF0qihQuLx2l9viJqGs5u99dDkPh2lRpe05XSWIhpjI3_NtHfAuUxT7sYC9LZhOpf7GnL-qeGPY\")",
+      "Bash(curl -sL -o rr_bg_real.png \"https://lh3.googleusercontent.com/aida/AP1WRLtCmrcKaDGOi-ST7-xyZEANxTs-FM2lAUFJdbMxEMKy-yTTRsokNiT99OIL3DcG1FevRfu0Iii1fa1Pbp0vwD7mZyzSB4XN7nnYNqqM_AxIjo_yG3HbgK_FP5xM2M6PHIBYD6vmnkjWiak80UmQhjmuBhpJ5rv1MBcj2y6-6a85xwZ5nF0qihQuLx2l9viJqGs5u99dDkPh2lRpe05XSWIhpjI3_NtHfAuUxT7sYC9LZhOpf7GnL-qeGPY\")",
+      "Bash(rm -f rr_bg_real.png rolereveal_bodyguard.png)",
+      "Bash(mv onb_customize.png rolereveal_bodyguard.png)",
+      "Bash(curl -sL -o onb_customize.png \"https://lh3.googleusercontent.com/aida/AP1WRLv-7fiz0305Qs6vlSWGIA8ffnInU2v4mrL5KvKHTosvswPOU_Actys2LVV3_rXt0BU9MtrldoB4ZnR7qcOWcf7ak-o_eapS9F6V255dng96d-VktRTIwpM5vKB4Gdv13R1wLTYVV993LyyAIyFR9Y5NdOQ1jje5Fu7MzqAVX_wkzNrpxiV9oX5Jwu7t7z3LS_CAwf58P5IPGhqqrjo02NVlz9Onsy-jBRsarAtq-uRTHBXlP0TqI8NvLw\")",
+      "Bash(awk '{print $5}')",
+      "Bash(echo \"---exit:$?---\")",
+      "Bash(npx jest *)"
     ]
   }
 }

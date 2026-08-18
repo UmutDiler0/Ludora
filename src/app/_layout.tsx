@@ -10,15 +10,22 @@ import {
 import { SpaceGrotesk_500Medium, SpaceGrotesk_700Bold } from '@expo-google-fonts/space-grotesk';
 import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
-import { StatusBar } from 'expo-status-bar';
 import * as SplashScreen from 'expo-splash-screen';
+import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
 import { View } from 'react-native';
 
+import { useSession } from '@/stores/session';
 import { palette } from '@/theme/tokens';
 
 SplashScreen.preventAutoHideAsync();
 
+/**
+ * Root layout. Holds the native splash until fonts are loaded and the session
+ * has been restored, so the app never flashes a signed-out frame at a
+ * signed-in user (spec §4: "perform required initialization in the
+ * background").
+ */
 export default function RootLayout() {
   const [fontsLoaded] = useFonts({
     BricolageGrotesque_700Bold,
@@ -30,11 +37,20 @@ export default function RootLayout() {
     SpaceGrotesk_700Bold,
   });
 
-  useEffect(() => {
-    if (fontsLoaded) SplashScreen.hideAsync();
-  }, [fontsLoaded]);
+  const status = useSession((s) => s.status);
+  const restore = useSession((s) => s.restore);
 
-  if (!fontsLoaded) {
+  useEffect(() => {
+    void restore();
+  }, [restore]);
+
+  const ready = fontsLoaded && status !== 'booting';
+
+  useEffect(() => {
+    if (ready) SplashScreen.hideAsync();
+  }, [ready]);
+
+  if (!ready) {
     return <View style={{ flex: 1, backgroundColor: palette.background }} />;
   }
 
