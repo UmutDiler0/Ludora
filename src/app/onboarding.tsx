@@ -1,12 +1,14 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { useRef, useState, type ComponentProps } from 'react';
+import { useRef, useState } from 'react';
 import {
+  Image,
   Pressable,
   ScrollView,
   StyleSheet,
   useWindowDimensions,
   View,
+  type ImageSourcePropType,
   type NativeScrollEvent,
   type NativeSyntheticEvent,
 } from 'react-native';
@@ -26,14 +28,15 @@ import { palette, radius, spacing } from '@/theme/tokens';
  * creation is the one point with no slide — noted rather than invented, so the
  * design and the build stay comparable.
  *
- * Illustrations are placeholders per decision D19: the designed art is
- * unusable as an asset, so each slide renders a framed icon panel keyed to its
- * theme until real art lands.
+ * Illustrations come from assets/images/onboarding/{key}.png (Stitch export,
+ * transparent PNG). Each file is checked in as a placeholder today — drop the
+ * real export in over the same filename and this screen picks it up with no
+ * code change.
  */
 
 interface SlideSpec {
   key: string;
-  icon: ComponentProps<typeof Ionicons>['name'];
+  art: ImageSourcePropType;
   accent: string;
   title: string;
   body: string;
@@ -44,7 +47,7 @@ interface SlideSpec {
 const SLIDES: SlideSpec[] = [
   {
     key: 'discover',
-    icon: 'sparkles',
+    art: require('../../assets/images/onboarding/discover.png'),
     accent: palette.secondaryContainer,
     title: 'Discover & Play',
     body: 'Join thousands of players in unique party games like Vampire Village and Taboo.',
@@ -52,7 +55,7 @@ const SLIDES: SlideSpec[] = [
   },
   {
     key: 'customize',
-    icon: 'shirt',
+    art: require('../../assets/images/onboarding/customize.png'),
     accent: palette.primaryContainer,
     title: 'Customize & Earn',
     body: 'Build your unique identity and earn XP and Gold with every match.',
@@ -60,7 +63,7 @@ const SLIDES: SlideSpec[] = [
   },
   {
     key: 'compete',
-    icon: 'trophy',
+    art: require('../../assets/images/onboarding/compete.png'),
     accent: palette.tertiaryContainer,
     title: 'Compete & Win',
     body: 'Climb the daily and weekly leaderboards to earn exclusive rewards.',
@@ -131,7 +134,7 @@ function Slide({ slide, width }: { slide: SlideSpec; width: number }) {
       <Animated.View
         entering={FadeIn.duration(400)}
         style={[s.art, { borderColor: slide.accent }]}>
-        <Ionicons name={slide.icon} size={72} color={slide.accent} />
+        <Image source={slide.art} style={s.artImage} resizeMode="contain" />
         {slide.garnish === 'live' && (
           <View style={s.liveTag}>
             <Chip color={palette.secondary} filled>
@@ -197,7 +200,9 @@ const s = StyleSheet.create({
     backgroundColor: palette.surfaceContainer,
     alignItems: 'center',
     justifyContent: 'center',
+    overflow: 'hidden',
   },
+  artImage: { width: '100%', height: '100%' },
   liveTag: { position: 'absolute', top: spacing.md, right: spacing.md },
   copy: { gap: spacing.md },
   garnish: {

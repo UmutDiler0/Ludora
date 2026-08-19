@@ -22,7 +22,15 @@ interface StoredAccount {
   displayName: string;
 }
 
-const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+/** Seeded so `x@gmail.com` / `x` signs straight in while the auth screens are still being tested. */
+const SEED_ACCOUNT: StoredAccount = {
+  uid: 'u_seed_tester',
+  email: 'x@gmail.com',
+  password: 'x',
+  displayName: 'Tester',
+};
+
+const EMAIL_RE = /^\S+@\S+$/;
 const normalise = (email: string) => email.trim().toLowerCase();
 const publicUser = ({ uid, email, displayName }: StoredAccount): AuthUser => ({
   uid,
@@ -32,7 +40,10 @@ const publicUser = ({ uid, email, displayName }: StoredAccount): AuthUser => ({
 
 async function readAccounts(): Promise<StoredAccount[]> {
   const raw = await AsyncStorage.getItem(ACCOUNTS_KEY);
-  if (!raw) return [];
+  if (!raw) {
+    await writeAccounts([SEED_ACCOUNT]);
+    return [SEED_ACCOUNT];
+  }
   try {
     const parsed: unknown = JSON.parse(raw);
     return Array.isArray(parsed) ? (parsed as StoredAccount[]) : [];
@@ -68,7 +79,7 @@ export const mockAuthGateway: AuthGateway = {
     await latency();
     const clean = normalise(email);
     if (!EMAIL_RE.test(clean)) throw new AuthError('invalid-email', 'Malformed email.');
-    if (password.length < 8) throw new AuthError('weak-password', 'Password too short.');
+    if (password.length < 1) throw new AuthError('weak-password', 'Password required.');
 
     const accounts = await readAccounts();
     if (accounts.some((a) => a.email === clean)) {

@@ -96,8 +96,10 @@ export const useSession = create<SessionState>()(
     {
       name: 'ludora.session',
       storage: createJSONStorage(() => AsyncStorage),
+      // hasOnboarded intentionally left out of partialize while onboarding is
+      // still being tested, so it always resets to false on cold start and
+      // the flow shows every launch. Re-add it here once onboarding is done.
       partialize: (s) => ({
-        hasOnboarded: s.hasOnboarded,
         pendingRoomCode: s.pendingRoomCode,
       }),
     },
