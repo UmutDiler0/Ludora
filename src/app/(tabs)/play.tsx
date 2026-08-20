@@ -1,11 +1,15 @@
 import { useRouter } from 'expo-router';
-import { View } from 'react-native';
+import { Pressable, useWindowDimensions, View } from 'react-native';
 
 import { Button, Card, Chip, Label, ListRow, Row, Screen, ScreenHeader, Text } from '@/components/ui';
-import { GAME_CATALOGUE } from '@/features/games/core/registry';
+import { GAME_CATALOGUE, type GameCatalogueEntry } from '@/features/games/core/registry';
+import { GameArt } from '@/features/home/GameArt';
 import { useLocalGame } from '@/stores/localGame';
-import { spacing } from '@/theme/tokens';
+import { radius, spacing, stroke } from '@/theme/tokens';
 import { useTheme } from '@/theme/ThemeProvider';
+
+/** Cards flex down to fit small phones and up to fit tablets/web, never fewer than 2 per row. */
+const MIN_CARD_WIDTH = 156;
 
 /**
  * Play hub (spec §9) — Create Game, Join Game, Quick Match.
@@ -20,6 +24,7 @@ import { useTheme } from '@/theme/ThemeProvider';
  */
 export default function Play() {
   const { palette } = useTheme();
+  const { width } = useWindowDimensions();
 
   const router = useRouter();
   const newGame = useLocalGame((s) => s.newGame);
@@ -29,8 +34,14 @@ export default function Play() {
     router.push('/game');
   };
 
-  const playable = GAME_CATALOGUE.filter((g) => g.enabled);
-  const upcoming = GAME_CATALOGUE.filter((g) => !g.enabled);
+  // Available width is the screen minus Screen's own horizontal padding (spacing.xl each side).
+  const gridWidth = width - spacing.xl * 2;
+  const columns = Math.max(2, Math.floor((gridWidth + spacing.sm) / (MIN_CARD_WIDTH + spacing.sm)));
+  const cardWidth = (gridWidth - spacing.sm * (columns - 1)) / columns;
+
+  // Playable sorts first — a playable game should never rank below one the
+  // player cannot open, matching the Home trending strip's rule.
+  const catalogue = [...GAME_CATALOGUE].sort((a, b) => Number(b.enabled) - Number(a.enabled));
 
   return (
     <Screen>
@@ -84,30 +95,89 @@ export default function Play() {
       </View>
 
       <Label>Catalogue</Label>
-      <View style={{ gap: spacing.sm }}>
-        {playable.map((game) => (
-          <ListRow
+      <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm }}>
+        {catalogue.map((game) => (
+          <GameCard
             key={game.id}
-            title={game.name}
-            subtitle={`${game.category} · ${game.minPlayers}–${game.maxPlayers} players`}
-            accent={palette.secondaryContainer}
-            trailing={<Chip color={palette.secondary}>Playable</Chip>}
-          />
-        ))}
-        {upcoming.map((game) => (
-          <ListRow
-            key={game.id}
-            title={game.name}
-            subtitle={`${game.category} · ${game.minPlayers}–${game.maxPlayers} players`}
-            trailing={
-              <Row gap={spacing.sm}>
-                {game.isPremium && <Chip color={palette.tertiary}>Premium</Chip>}
-                <Chip>Soon</Chip>
-              </Row>
-            }
+            game={game}
+            width={cardWidth}
+            onPress={game.enabled ? () => startLocal(6) : undefined}
           />
         ))}
       </View>
     </Screen>
+  );
+}
+
+/**
+ * Grid tile for the catalogue — art from `GameArt` (real key art, not a
+ * placeholder), category/player-count line, and a status chip. Enabled games
+ * are pressable and drop straight into a 6-player local game, same shortcut
+ * the Home trending strip uses; disabled ones are shown but honestly inert.
+ */
+function GameCard({
+  game,
+  width,
+  onPress,
+}: {
+  game: GameCatalogueEntry;
+  width: number;
+  onPress?: () => void;
+}) {
+  const { palette } = useTheme();
+
+  const body = (
+    <>
+      <GameArt id={game.id} height={96} />
+      <View style={{ padding: spacing.md, gap: spacing.xs }}>
+        <Text variant="bodyStrong" numberOfLines={1}>
+          {game.name}
+        </Text>
+        <Text variant="caption" color={palette.onSurfaceVariant} numberOfLines={1}>
+          {game.category} · {game.minPlayers}–{game.maxPlayers}
+        </Text>
+        <Row gap={spacing.xs}>
+          {game.enabled ? (
+            <Chip color={palette.secondary} filled>
+              Playable
+            </Chip>
+          ) : (
+            <>
+              {game.isPremium && <Chip color={palette.tertiary}>Premium</Chip>}
+              <Chip>Soon</Chip>
+            </>
+          )}
+        </Row>
+      </View>
+    </>
+  );
+
+  const shell = {
+    width,
+    borderRadius: radius.lg,
+    borderWidth: stroke.base,
+    borderColor: palette.ink,
+    borderBottomWidth: stroke.depth,
+    backgroundColor: palette.surface,
+    overflow: 'hidden' as const,
+    opacity: game.enabled ? 1 : 0.72,
+  };
+
+  if (!onPress) return <View style={shell}>{body}</View>;
+
+  return (
+    <Pressable
+      accessibilityRole="button"
+      accessibilityLabel={`Play ${game.name}`}
+      onPress={onPress}
+      style={({ pressed }) => [
+        shell,
+        pressed && {
+          borderBottomWidth: stroke.depthPressed,
+          transform: [{ translateY: stroke.depth - stroke.depthPressed }],
+        },
+      ]}>
+      {body}
+    </Pressable>
   );
 }
