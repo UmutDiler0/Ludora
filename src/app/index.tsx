@@ -1,4 +1,3 @@
-import { Ionicons } from '@expo/vector-icons';
 import { Redirect } from 'expo-router';
 import { useMemo, useEffect, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
@@ -16,6 +15,7 @@ import Animated, {
 
 import { Label, Text } from '@/components/ui';
 import { APP_NAME } from '@/constants/app';
+import { SplashMark } from '@/features/splash/illustration';
 import { useSession } from '@/stores/session';
 import { radius, spacing } from '@/theme/tokens';
 import { useTheme } from '@/theme/ThemeProvider';
@@ -91,7 +91,7 @@ function Splash() {
       <View style={s.center}>
         <Animated.View style={[s.orb, orbStyle]} />
         <Animated.View entering={FadeIn.delay(250).duration(600)} style={s.mark}>
-          <Ionicons name="game-controller" size={44} color={palette.onSurface} />
+          <SplashMark />
           <Text variant="title" center>
             {APP_NAME}
           </Text>

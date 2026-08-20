@@ -1,14 +1,12 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { useMemo, useRef, useState } from 'react';
+import { useMemo, useRef, useState, type ComponentType } from 'react';
 import {
-  Image,
   Pressable,
   ScrollView,
   StyleSheet,
   useWindowDimensions,
   View,
-  type ImageSourcePropType,
   type NativeScrollEvent,
   type NativeSyntheticEvent,
 } from 'react-native';
@@ -16,6 +14,7 @@ import Animated, { FadeIn, FadeInDown } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Button, Chip, Label, ProgressBar, Row, Text } from '@/components/ui';
+import { CompeteArt, CustomizeArt, DiscoverArt } from '@/features/onboarding/illustrations';
 import { useSession } from '@/stores/session';
 import { useTheme } from '@/theme/ThemeProvider';
 import type { Palette } from '@/theme/palettes';
@@ -30,15 +29,15 @@ import { radius, spacing } from '@/theme/tokens';
  * creation is the one point with no slide — noted rather than invented, so the
  * design and the build stay comparable.
  *
- * Illustrations come from assets/images/onboarding/{key}.png (Stitch export,
- * transparent PNG). Each file is checked in as a placeholder today — drop the
- * real export in over the same filename and this screen picks it up with no
- * code change.
+ * Illustrations are hand-drawn SVG (features/onboarding/illustrations.tsx),
+ * not photographic art — there is no image generation tool available, so
+ * these stand in for the Stitch designs using the same ink-outline cartoon
+ * language as the rest of the UI kit.
  */
 
 interface SlideSpec {
   key: string;
-  art: ImageSourcePropType;
+  art: ComponentType;
   /** Palette token rather than a literal, so slides follow Light / Dark. */
   accent: keyof Palette;
   title: string;
@@ -50,7 +49,7 @@ interface SlideSpec {
 const SLIDES: SlideSpec[] = [
   {
     key: 'discover',
-    art: require('../../assets/images/onboarding/discover.png'),
+    art: DiscoverArt,
     accent: 'secondaryContainer',
     title: 'Discover & Play',
     body: 'Join thousands of players in unique party games like Vampire Village and Taboo.',
@@ -58,7 +57,7 @@ const SLIDES: SlideSpec[] = [
   },
   {
     key: 'customize',
-    art: require('../../assets/images/onboarding/customize.png'),
+    art: CustomizeArt,
     accent: 'primaryContainer',
     title: 'Customize & Earn',
     body: 'Build your unique identity and earn XP and Gold with every match.',
@@ -66,7 +65,7 @@ const SLIDES: SlideSpec[] = [
   },
   {
     key: 'compete',
-    art: require('../../assets/images/onboarding/compete.png'),
+    art: CompeteArt,
     accent: 'tertiaryContainer',
     title: 'Compete & Win',
     body: 'Climb the daily and weekly leaderboards to earn exclusive rewards.',
@@ -137,11 +136,12 @@ function Slide({ slide, width }: { slide: SlideSpec; width: number }) {
   const { palette } = useTheme();
   const s = useMemo(() => makeStyles(palette), [palette]);
   const accent = palette[slide.accent];
+  const Art = slide.art;
 
   return (
     <View style={[s.slide, { width }]}>
       <Animated.View entering={FadeIn.duration(400)} style={[s.art, { borderColor: accent }]}>
-        <Image source={slide.art} style={s.artImage} resizeMode="contain" />
+        <Art />
         {slide.garnish === 'live' && (
           <View style={s.liveTag}>
             <Chip color={palette.secondary} filled>
@@ -210,7 +210,6 @@ const makeStyles = (p: Palette) =>
       justifyContent: 'center',
       overflow: 'hidden',
     },
-    artImage: { width: '100%', height: '100%' },
     liveTag: { position: 'absolute', top: spacing.md, right: spacing.md },
     copy: { gap: spacing.md },
     garnish: {
