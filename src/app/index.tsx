@@ -1,70 +1,134 @@
-import { useRouter } from 'expo-router';
-import { View } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import { Redirect } from 'expo-router';
+import { useEffect, useState } from 'react';
+import { StyleSheet, View } from 'react-native';
+import Animated, {
+  Easing,
+  FadeIn,
+  useAnimatedStyle,
+  useSharedValue,
+  withDelay,
+  withRepeat,
+  withSequence,
+  withSpring,
+  withTiming,
+} from 'react-native-reanimated';
 
-import { Button, Card, Chip, Label, Row, Screen, Text } from '@/components/ui';
-import { GAME_CATALOGUE } from '@/features/games/core/registry';
-import { useLocalGame } from '@/stores/localGame';
-import { palette, spacing } from '@/theme/tokens';
+import { Label, Text } from '@/components/ui';
+import { APP_NAME } from '@/constants/app';
+import { useSession } from '@/stores/session';
+import { palette, radius, spacing } from '@/theme/tokens';
 
 /**
- * Temporary entry point. The real Home Dashboard (spec §7) arrives in Phase 1;
- * this exists so the Phase 3 session screens can be run and played today,
- * before any backend exists.
+ * Splash + boot router (spec §4, docs/ARCHITECTURE.md §5).
+ *
+ * Initialization already happened in the root layout — fonts and session are
+ * resolved before this renders. The delay here is purely the entrance
+ * animation, held to a floor so the brand does not flash past in 80 ms, and it
+ * runs *while* nothing is blocking. Spec §4: "avoid unnecessary loading
+ * delays."
  */
-export default function Home() {
-  const router = useRouter();
-  const newGame = useLocalGame((s) => s.newGame);
 
-  const startLocal = (players: number) => {
-    newGame(players);
-    router.push('/game');
-  };
+const SPLASH_FLOOR_MS = 1400;
+
+export default function Boot() {
+  const [held, setHeld] = useState(true);
+  const { hasOnboarded, status, pendingRoomCode } = useSession();
+
+  useEffect(() => {
+    const timer = setTimeout(() => setHeld(false), SPLASH_FLOOR_MS);
+    return () => clearTimeout(timer);
+  }, []);
+
+  if (!held) {
+    if (!hasOnboarded) return <Redirect href="/onboarding" />;
+    if (status !== 'signed-in') return <Redirect href="/(auth)/login" />;
+    // Deep link captured before auth is consumed once the user is through.
+    if (pendingRoomCode) return <Redirect href="/(tabs)/play" />;
+    return <Redirect href="/(tabs)" />;
+  }
+
+  return <Splash />;
+}
+
+function Splash() {
+  const scale = useSharedValue(0.8);
+  const glow = useSharedValue(0.55);
+  const sweep = useSharedValue(-1);
+
+  useEffect(() => {
+    scale.value = withSpring(1, { damping: 12, stiffness: 90 });
+    glow.value = withRepeat(
+      withSequence(
+        withTiming(0.9, { duration: 900, easing: Easing.inOut(Easing.quad) }),
+        withTiming(0.55, { duration: 900, easing: Easing.inOut(Easing.quad) }),
+      ),
+      -1,
+      false,
+    );
+    sweep.value = withDelay(
+      200,
+      withRepeat(withTiming(1, { duration: 1200, easing: Easing.inOut(Easing.cubic) }), -1, false),
+    );
+  }, [glow, scale, sweep]);
+
+  const orbStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: scale.value }],
+    opacity: glow.value,
+  }));
+
+  const sweepStyle = useAnimatedStyle(() => ({
+    transform: [{ translateX: `${sweep.value * 100}%` }],
+  }));
 
   return (
-    <Screen>
-      <View style={{ gap: spacing.xs, marginTop: spacing.xl }}>
-        <Label color={palette.primary}>Party game hub</Label>
-        <Text variant="hero">Ludora</Text>
-        <Text variant="body" color={palette.onSurfaceVariant}>
-          Phase 3 preview — the Vampire Village engine running locally with bots. No account, no
-          network.
-        </Text>
+    <View style={s.root}>
+      <View style={s.center}>
+        <Animated.View style={[s.orb, orbStyle]} />
+        <Animated.View entering={FadeIn.delay(250).duration(600)} style={s.mark}>
+          <Ionicons name="game-controller" size={44} color={palette.onSurface} />
+          <Text variant="title" center>
+            {APP_NAME}
+          </Text>
+        </Animated.View>
       </View>
 
-      <Card accent={palette.primaryContainer} style={{ gap: spacing.md }}>
-        <Row style={{ justifyContent: 'space-between' }}>
-          <Text variant="heading">Vampire Village</Text>
-          <Chip color={palette.secondary}>Free</Chip>
-        </Row>
-        <Text variant="body" color={palette.onSurfaceVariant}>
-          Social deduction for 4–12 players. Vampires hunt by night; the village votes by day.
-        </Text>
-        <Row gap={spacing.sm}>
-          <Button label="4 players" tone="ghost" onPress={() => startLocal(4)} style={{ flex: 1 }} />
-          <Button label="6 players" onPress={() => startLocal(6)} style={{ flex: 1 }} />
-          <Button label="9 players" tone="ghost" onPress={() => startLocal(9)} style={{ flex: 1 }} />
-        </Row>
-      </Card>
-
-      <Label>Catalogue</Label>
-      <View style={{ gap: spacing.sm }}>
-        {GAME_CATALOGUE.filter((g) => g.id !== 'vampireVillage').map((game) => (
-          <Card key={game.id} style={{ opacity: 0.55, paddingVertical: spacing.md }}>
-            <Row style={{ justifyContent: 'space-between' }}>
-              <View>
-                <Text variant="bodyStrong">{game.name}</Text>
-                <Text variant="caption" color={palette.onSurfaceVariant}>
-                  {game.category} · {game.minPlayers}–{game.maxPlayers} players
-                </Text>
-              </View>
-              <Row gap={spacing.sm}>
-                {game.isPremium && <Chip color={palette.tertiary}>Premium</Chip>}
-                <Chip>Soon</Chip>
-              </Row>
-            </Row>
-          </Card>
-        ))}
-      </View>
-    </Screen>
+      <Animated.View entering={FadeIn.delay(600).duration(500)} style={s.footer}>
+        <Label center color={palette.secondary}>
+          Connecting to hub…
+        </Label>
+        <View style={s.track}>
+          <Animated.View style={[s.trackFill, sweepStyle]} />
+        </View>
+      </Animated.View>
+    </View>
   );
 }
+
+const ORB = 240;
+
+const s = StyleSheet.create({
+  root: { flex: 1, backgroundColor: palette.background, justifyContent: 'space-between' },
+  center: { flex: 1, alignItems: 'center', justifyContent: 'center' },
+  orb: {
+    position: 'absolute',
+    width: ORB,
+    height: ORB,
+    borderRadius: ORB / 2,
+    backgroundColor: palette.primaryContainer,
+  },
+  mark: { alignItems: 'center', gap: spacing.md },
+  footer: { padding: spacing.xxl, gap: spacing.lg },
+  track: {
+    height: 6,
+    borderRadius: radius.pill,
+    backgroundColor: palette.surfaceHigh,
+    overflow: 'hidden',
+  },
+  trackFill: {
+    width: '55%',
+    height: '100%',
+    borderRadius: radius.pill,
+    backgroundColor: palette.secondary,
+  },
+});

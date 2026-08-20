@@ -33,6 +33,10 @@ yarn-error.*
 # local env files
 .env*.local
 
+# Firebase native config (per-developer / per-environment)
+google-services.json
+GoogleService-Info.plist
+
 # typescript
 *.tsbuildinfo
 
@@ -41,3 +45,9 @@ example
 # generated native folders
 /ios
 /android
+
+# Claude Code local permissions — machine-specific, never share
+.claude/settings.local.json
+
+# local backups
+*.bak
