@@ -26,6 +26,8 @@ export interface ProfileState {
   stats: { gamesPlayed: number; gamesWon: number };
   /** ISO date (UTC) of the last claimed daily reward, or null. */
   lastDailyClaim: string | null;
+  /** Consecutive days claimed. Resets to 1 when a day is missed. */
+  dailyStreak: number;
 
   setDisplayName: (name: string) => void;
   setAvatar: (avatar: AvatarConfig) => void;
@@ -52,6 +54,8 @@ const SEED = {
 
 const todayUtc = () => new Date().toISOString().slice(0, 10);
 
+const yesterdayUtc = () => new Date(Date.now() - 86_400_000).toISOString().slice(0, 10);
+
 const initial = {
   displayName: 'Player_One',
   handle: '@player_one',
@@ -62,6 +66,7 @@ const initial = {
   ownedItemIds: [] as string[],
   stats: SEED.stats,
   lastDailyClaim: null as string | null,
+  dailyStreak: 0,
 };
 
 export const useProfile = create<ProfileState>()(
@@ -97,8 +102,16 @@ export const useProfile = create<ProfileState>()(
 
       claimDaily: (gold) => {
         const today = todayUtc();
-        if (get().lastDailyClaim === today) return false;
-        set((s) => ({ gold: s.gold + gold, lastDailyClaim: today }));
+        const { lastDailyClaim, dailyStreak } = get();
+        if (lastDailyClaim === today) return false;
+        // Consecutive only if the previous claim was literally yesterday;
+        // any longer gap starts the streak over at one.
+        const continues = lastDailyClaim === yesterdayUtc();
+        set((s) => ({
+          gold: s.gold + gold,
+          lastDailyClaim: today,
+          dailyStreak: continues ? dailyStreak + 1 : 1,
+        }));
         return true;
       },
 
@@ -114,6 +127,12 @@ export const useProfile = create<ProfileState>()(
 
 /** Derived level view for the Home header, Profile card and leaderboard rows. */
 export const useLevel = () => levelProgress(useProfile((s) => s.xp));
+
+/**
+ * Whether today's reward is still unclaimed. Local clock only — the real
+ * check belongs server-side (§10.1), or the device date can be rolled back.
+ */
+export const useDailyClaimable = () => useProfile((s) => s.lastDailyClaim !== todayUtc());
 
 export const useWinRate = () => {
   const { gamesPlayed, gamesWon } = useProfile((s) => s.stats);

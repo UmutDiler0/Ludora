@@ -302,6 +302,8 @@ export function Button({
   tone = 'primary',
   disabled,
   loading,
+  icon,
+  size = 'md',
   style,
 }: {
   label: string;
@@ -309,11 +311,16 @@ export function Button({
   tone?: ButtonTone;
   disabled?: boolean;
   loading?: boolean;
+  /** Optional leading glyph. Decorative — `label` already carries the meaning. */
+  icon?: ComponentProps<typeof Ionicons>['name'];
+  /** `lg` is the hero call to action, e.g. Quick Play on the dashboard. */
+  size?: 'md' | 'lg';
   style?: StyleProp<ViewStyle>;
 }) {
   const { s, palette } = useStyles();
   const t = toneColors(palette, tone);
   const isOff = disabled || loading;
+  const big = size === 'lg';
 
   return (
     <Pressable
@@ -326,6 +333,7 @@ export function Button({
         return [
           s.button,
           { backgroundColor: t.bg },
+          big && { minHeight: 78, borderRadius: radius.lg },
           // Sink into the depth edge rather than fading: the face drops by
           // exactly the amount the bottom border loses, so the outer box
           // never changes height and nothing below it shifts.
@@ -340,9 +348,15 @@ export function Button({
       {loading ? (
         <ActivityIndicator color={t.fg} />
       ) : (
-        <Text variant="label" color={t.fg} style={{ textTransform: 'uppercase', fontSize: 14 }}>
-          {label}
-        </Text>
+        <Row gap={spacing.sm}>
+          {!!icon && <Ionicons name={icon} size={big ? 26 : 18} color={t.fg} />}
+          <Text
+            variant="label"
+            color={t.fg}
+            style={{ textTransform: 'uppercase', fontSize: big ? 20 : 14 }}>
+            {label}
+          </Text>
+        </Row>
       )}
     </Pressable>
   );

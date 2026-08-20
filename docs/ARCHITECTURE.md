@@ -987,6 +987,27 @@ The shipped item and role art is unusable — it contains fake UI chrome. Rather
 
 This keeps Phase 5 buildable while art is reproduced.
 
+**Game key art (amendment).** The same contract now has a working producer. Game
+banner art is generated through the Stitch MCP with an explicit
+no-UI/no-text/flat-fill/thick-outline prompt, which returns assets that satisfy
+the §22.4 contract — unlike the original set that prompted D19. Files live in
+`assets/images/games/{game-id}.png` and are registered one line at a time in the
+`ART` map in `features/home/GameArt.tsx`.
+
+All six games in `GameId` are covered, so the map is complete as of this change.
+`GameArt` still falls back to a tinted panel with a generic glyph when a game
+has no entry, which is what keeps adding a seventh game a one-line registry
+change rather than an art dependency. The fallback is deliberately trivial: it
+is unreachable today, and a branch nobody exercises should be too simple to rot.
+
+Generation notes for whoever runs this next: the endpoint rejects concurrent
+calls (three parallel requests returned timeout, unavailable and invalid-argument
+respectively) and intermittently times out on a single call while still
+completing server-side. Generated IMAGE screens do **not** appear in
+`list_screens`, so a timed-out call cannot be recovered by polling — wait ~90s
+and re-issue. Prompts must forbid text explicitly; without it, word-game subjects
+come back with baked-in lettering.
+
 ### 22.5 Schema additions (D14, D15)
 
 ```

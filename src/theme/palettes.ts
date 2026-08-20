@@ -51,6 +51,12 @@ export const lightPalette = {
   night: '#2A2150',
   onNight: '#FFF1D6',
 
+  // Podium metals. Separate from the semantic ramp because a rank badge must
+  // read as a medal, not as "economy" or "danger" (§20).
+  medalGold: '#F0A81E',
+  medalSilver: '#A9A6C0',
+  medalBronze: '#C57B45',
+
   ink: LIGHT_INK,
 } as const;
 
@@ -92,6 +98,10 @@ export const darkPalette: Palette = {
 
   night: '#120D26',
   onNight: DARK_INK,
+
+  medalGold: '#FFCE5A',
+  medalSilver: '#C9C5E0',
+  medalBronze: '#E0925A',
 
   ink: DARK_INK,
 };
