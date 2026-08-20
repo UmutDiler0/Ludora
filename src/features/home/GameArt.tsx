@@ -3,7 +3,7 @@ import { Image, View, type ImageSourcePropType } from 'react-native';
 
 import type { GameId } from '@/features/games/core/types';
 import { useTheme } from '@/theme/ThemeProvider';
-import { stroke } from '@/theme/tokens';
+import { radius, stroke } from '@/theme/tokens';
 
 /**
  * Cartoon key art for the game cards.
@@ -41,6 +41,12 @@ export function GameArt({ id, height = 132 }: { id: GameId; height?: number }) {
       style={{
         height,
         overflow: 'hidden',
+        // Belt-and-braces with the card shell's own overflow:hidden — Android
+        // doesn't always clip a nested Image to a parent's rounded corners,
+        // so the art carries the same top radius itself rather than relying
+        // on the shell alone.
+        borderTopLeftRadius: radius.lg,
+        borderTopRightRadius: radius.lg,
         backgroundColor: palette.surfaceLow,
         borderBottomWidth: stroke.thin,
         borderBottomColor: palette.ink,
@@ -48,7 +54,16 @@ export function GameArt({ id, height = 132 }: { id: GameId; height?: number }) {
       {illustration ? (
         // `cover` on a banner-shaped source crops the margins the asset
         // contract asks for, never the subject.
-        <Image source={illustration} resizeMode="cover" style={{ width: '100%', height: '100%' }} />
+        <Image
+          source={illustration}
+          resizeMode="cover"
+          style={{
+            width: '100%',
+            height: '100%',
+            borderTopLeftRadius: radius.lg,
+            borderTopRightRadius: radius.lg,
+          }}
+        />
       ) : (
         <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
           <Ionicons name="game-controller" size={40} color={palette.onSurfaceVariant} />

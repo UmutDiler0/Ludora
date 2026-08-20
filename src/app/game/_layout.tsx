@@ -1,7 +1,10 @@
 import { Ionicons } from '@expo/vector-icons';
-import { Tabs } from 'expo-router';
+import { Tabs, useRouter } from 'expo-router';
+import { View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { fonts, stroke } from '@/theme/tokens';
+import { IconButton, Text } from '@/components/ui';
+import { fonts, spacing, stroke } from '@/theme/tokens';
 import { useTheme } from '@/theme/ThemeProvider';
 
 /**
@@ -9,6 +12,11 @@ import { useTheme } from '@/theme/ThemeProvider';
  *
  * Chat is omitted here rather than shipped as a dead route — it needs the
  * realtime backend (D10), which is deliberately not wired yet.
+ *
+ * `header` is shared across all three tabs so there is exactly one back
+ * control for the whole session rather than one per screen — this nested
+ * Tabs navigator replaces the main tab bar entirely, so without it there was
+ * no way out of a game short of finishing it.
  */
 export default function GameLayout() {
   const { palette } = useTheme();
@@ -16,7 +24,7 @@ export default function GameLayout() {
   return (
     <Tabs
       screenOptions={{
-        headerShown: false,
+        header: () => <GameHeader />,
         tabBarActiveTintColor: palette.primary,
         tabBarInactiveTintColor: palette.onSurfaceVariant,
         tabBarStyle: {
@@ -58,5 +66,37 @@ export default function GameLayout() {
         }}
       />
     </Tabs>
+  );
+}
+
+function GameHeader() {
+  const { palette } = useTheme();
+  const router = useRouter();
+
+  const leave = () => {
+    if (router.canGoBack()) router.back();
+    else router.replace('/(tabs)');
+  };
+
+  return (
+    <SafeAreaView
+      edges={['top']}
+      style={{
+        backgroundColor: palette.surface,
+        borderBottomWidth: stroke.base,
+        borderBottomColor: palette.ink,
+      }}>
+      <View
+        style={{
+          flexDirection: 'row',
+          alignItems: 'center',
+          gap: spacing.md,
+          paddingHorizontal: spacing.lg,
+          paddingVertical: spacing.sm,
+        }}>
+        <IconButton name="chevron-back" label="Leave game" onPress={leave} />
+        <Text variant="bodyStrong">Vampire Village</Text>
+      </View>
+    </SafeAreaView>
   );
 }

@@ -1,7 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useMemo } from 'react';
-import { Pressable, View } from 'react-native';
+import { Pressable, useWindowDimensions, View } from 'react-native';
 
 import {
   Avatar,
@@ -49,9 +49,14 @@ import { radius, spacing, stroke } from '@/theme/tokens';
  * each one stands in for. Level, XP, gold and the daily streak are already
  * real, read straight from the profile store.
  */
+
+/** Trending cards flex down to fit small phones and up to fit tablets/web. */
+const MIN_TRENDING_WIDTH = 168;
+
 export default function Home() {
   const router = useRouter();
   const { palette } = useTheme();
+  const { width } = useWindowDimensions();
 
   const { displayName, handle, gold, dailyStreak } = useProfile();
   const level = useLevel();
@@ -61,6 +66,11 @@ export default function Home() {
   const newGame = useLocalGame((s) => s.newGame);
 
   const trending = useMemo(() => trendingGames(), []);
+
+  // Available width is the screen minus Screen's own horizontal padding (spacing.xl each side).
+  const gridWidth = width - spacing.xl * 2;
+  const trendingColumns = Math.max(2, Math.floor((gridWidth + spacing.sm) / (MIN_TRENDING_WIDTH + spacing.sm)));
+  const trendingCardWidth = (gridWidth - spacing.sm * (trendingColumns - 1)) / trendingColumns;
 
   /**
    * Quick Play runs the local hot-seat game. Matchmaking is Phase 2 and needs
@@ -180,11 +190,12 @@ export default function Home() {
         <Text variant="heading">Trending now</Text>
       </Row>
 
-      <View style={{ gap: spacing.md }}>
+      <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm }}>
         {trending.map((game) => (
           <TrendingCard
             key={game.id}
             game={game}
+            width={trendingCardWidth}
             onPress={
               game.enabled
                 ? () => {
@@ -333,21 +344,29 @@ function ChampionRow({ champion }: { champion: Champion }) {
  * are shown but not pressable, and say so — a card that looks tappable and
  * does nothing is worse than one that is honestly greyed.
  */
-function TrendingCard({ game, onPress }: { game: TrendingGame; onPress?: () => void }) {
+function TrendingCard({
+  game,
+  width,
+  onPress,
+}: {
+  game: TrendingGame;
+  width: number;
+  onPress?: () => void;
+}) {
   const { palette } = useTheme();
 
   const body = (
     <>
-      <GameArt id={game.id} />
-      <View style={{ padding: spacing.lg, gap: spacing.sm }}>
+      <GameArt id={game.id} height={100} />
+      <View style={{ padding: spacing.md, gap: spacing.xs }}>
         <Row style={{ justifyContent: 'space-between' }}>
-          <Text variant="heading" numberOfLines={1} style={{ flex: 1 }}>
+          <Text variant="bodyStrong" numberOfLines={1} style={{ flex: 1 }}>
             {game.name}
           </Text>
-          <Row gap={spacing.sm}>
-            {game.isPremium && <Chip color={palette.tertiary}>Premium</Chip>}
-            {!game.enabled && <Chip>Soon</Chip>}
-          </Row>
+        </Row>
+        <Row gap={spacing.xs}>
+          {game.isPremium && <Chip color={palette.tertiary}>Premium</Chip>}
+          {!game.enabled && <Chip>Soon</Chip>}
         </Row>
 
         <Text variant="caption" color={palette.onSurfaceVariant} numberOfLines={2}>
@@ -356,7 +375,7 @@ function TrendingCard({ game, onPress }: { game: TrendingGame; onPress?: () => v
 
         <Row gap={spacing.xs}>
           <Ionicons name="people" size={14} color={palette.secondary} />
-          <Text variant="caption" color={palette.secondary}>
+          <Text variant="caption" color={palette.secondary} numberOfLines={1}>
             {game.playersNow.toLocaleString()} playing now
           </Text>
         </Row>
@@ -365,6 +384,7 @@ function TrendingCard({ game, onPress }: { game: TrendingGame; onPress?: () => v
   );
 
   const shell = {
+    width,
     borderRadius: radius.lg,
     borderWidth: stroke.base,
     borderColor: palette.ink,
