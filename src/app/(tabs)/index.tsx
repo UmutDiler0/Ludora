@@ -364,7 +364,7 @@ function TrendingCard({
             {game.name}
           </Text>
         </Row>
-        <Row gap={spacing.xs}>
+        <Row gap={spacing.xs} style={{ flexWrap: 'wrap' }}>
           {game.isPremium && <Chip color={palette.tertiary}>Premium</Chip>}
           {!game.enabled && <Chip>Soon</Chip>}
         </Row>

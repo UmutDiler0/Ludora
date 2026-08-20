@@ -136,7 +136,7 @@ function GameCard({
         <Text variant="caption" color={palette.onSurfaceVariant} numberOfLines={1}>
           {game.category} · {game.minPlayers}–{game.maxPlayers}
         </Text>
-        <Row gap={spacing.xs}>
+        <Row gap={spacing.xs} style={{ flexWrap: 'wrap' }}>
           {game.enabled ? (
             <Chip color={palette.secondary} filled>
               Playable
