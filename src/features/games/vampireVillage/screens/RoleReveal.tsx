@@ -1,7 +1,8 @@
 import { View } from 'react-native';
 
 import { Avatar, Button, Card, Label, Row, Screen, Text } from '@/components/ui';
-import { palette, radius, roleColors, spacing } from '@/theme/tokens';
+import { radius, spacing } from '@/theme/tokens';
+import { useTheme } from '@/theme/ThemeProvider';
 import type { VVPlayerView } from '../state';
 
 /**
@@ -12,6 +13,8 @@ import type { VVPlayerView } from '../state';
  * The Villager variant has no design (D6) and reuses this same template.
  */
 export function RoleRevealScreen({ view, onAck }: { view: VVPlayerView; onAck: () => void }) {
+  const { palette, roleColors } = useTheme();
+
   const accent = roleColors[view.you.role];
   const acked = view.phase !== 'role_reveal';
   const coven = view.coven?.filter((u) => u !== view.you.uid) ?? [];

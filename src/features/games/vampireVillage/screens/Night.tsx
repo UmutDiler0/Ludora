@@ -1,7 +1,8 @@
 import { Pressable, View } from 'react-native';
 
 import { Avatar, Button, Card, Chip, Label, Row, Screen, Text } from '@/components/ui';
-import { palette, radius, roleColors, spacing, stroke } from '@/theme/tokens';
+import { radius, spacing, stroke } from '@/theme/tokens';
+import { useTheme } from '@/theme/ThemeProvider';
 import { ROLES } from '../roles';
 import type { VVPlayerView } from '../state';
 
@@ -28,6 +29,8 @@ export function NightScreen({
   view: VVPlayerView;
   onSelect: (uid: string) => void;
 }) {
+  const { palette, roleColors } = useTheme();
+
   const accent = roleColors[view.you.role];
   const ability = ROLES[view.you.role].night;
   const prompt = ability ? PROMPT[view.you.role] : null;

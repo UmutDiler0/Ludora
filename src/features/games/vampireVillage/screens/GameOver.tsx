@@ -2,7 +2,8 @@ import { View } from 'react-native';
 
 import { Avatar, Button, Card, Chip, Label, Row, Screen, StatTile, Text } from '@/components/ui';
 import { awardForGame } from '@/features/economy/levels';
-import { palette, roleColors, spacing } from '@/theme/tokens';
+import { spacing } from '@/theme/tokens';
+import { useTheme } from '@/theme/ThemeProvider';
 import { ROLES } from '../roles';
 import type { VVPlayerView } from '../state';
 
@@ -14,6 +15,8 @@ import type { VVPlayerView } from '../state';
  * still only a preview: the client never writes XP or gold (§10.1).
  */
 export function GameOverScreen({ view, onPlayAgain }: { view: VVPlayerView; onPlayAgain: () => void }) {
+  const { palette, roleColors } = useTheme();
+
   const youWon = view.winner === view.you.alignment;
   const accent = youWon ? palette.secondary : palette.error;
   const award = awardForGame({ won: youWon, isFirstGameOfDay: false });

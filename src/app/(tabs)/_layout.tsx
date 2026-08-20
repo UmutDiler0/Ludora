@@ -3,7 +3,8 @@ import { Tabs } from 'expo-router';
 import type { ComponentProps } from 'react';
 
 import { TABS } from '@/constants/app';
-import { fonts, palette } from '@/theme/tokens';
+import { fonts, stroke } from '@/theme/tokens';
+import { useTheme } from '@/theme/ThemeProvider';
 
 /**
  * Main tab shell.
@@ -25,17 +26,21 @@ function icon(name: IconName, active: IconName) {
 }
 
 export default function TabsLayout() {
+  const { palette } = useTheme();
+
   return (
     <Tabs
       screenOptions={{
         headerShown: false,
         tabBarActiveTintColor: palette.primary,
-        tabBarInactiveTintColor: palette.outline,
+        tabBarInactiveTintColor: palette.onSurfaceVariant,
         sceneStyle: { backgroundColor: palette.background },
         tabBarStyle: {
-          backgroundColor: palette.surfaceLow,
-          borderTopColor: palette.surfaceHigh,
-          height: 64,
+          backgroundColor: palette.surface,
+          // Thick ink rule, matching every other surface in the cartoon kit.
+          borderTopColor: palette.ink,
+          borderTopWidth: stroke.base,
+          height: 72,
           paddingTop: 6,
         },
         tabBarLabelStyle: { fontFamily: fonts.label, fontSize: 10, letterSpacing: 0.6 },

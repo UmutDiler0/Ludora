@@ -1,9 +1,11 @@
 import { Stack } from 'expo-router';
 
-import { palette } from '@/theme/tokens';
+import { useTheme } from '@/theme/ThemeProvider';
 
 /** Unauthenticated stack. The boot router in `index.tsx` decides who lands here. */
 export default function AuthLayout() {
+  const { palette } = useTheme();
+
   return (
     <Stack
       screenOptions={{

@@ -2,7 +2,9 @@ import { View } from 'react-native';
 
 import { Card, Label, Screen, Text } from '@/components/ui';
 import type { LogEntry } from '@/features/games/core/types';
-import { palette, spacing } from '@/theme/tokens';
+import { useTheme } from '@/theme/ThemeProvider';
+import type { Palette } from '@/theme/palettes';
+import { spacing } from '@/theme/tokens';
 import type { VVPlayerView } from '../state';
 
 /**
@@ -13,16 +15,20 @@ import type { VVPlayerView } from '../state';
  * the §22.2 disclosure policy — so the Seer's target can never appear.
  */
 
-const KIND_COLOR: Record<string, string> = {
-  kill: palette.error,
-  kill_blocked: palette.secondary,
-  exile: palette.tertiary,
-  seer_acted: palette.primary,
-  guard_acted: palette.tertiary,
-  game_over: palette.secondary,
-};
+/** Built per palette rather than as a module constant, so it follows the theme. */
+const kindColors = (p: Palette): Record<string, string> => ({
+  kill: p.error,
+  kill_blocked: p.secondary,
+  exile: p.tertiary,
+  seer_acted: p.primary,
+  guard_acted: p.tertiary,
+  game_over: p.secondary,
+});
 
 export function EventLogScreen({ view }: { view: VVPlayerView }) {
+  const { palette } = useTheme();
+  const colors = kindColors(palette);
+
   // Newest round first, matching the design's Day 2 → Night 1 → Day 1 order.
   const rounds = [...new Set(view.log.map((l) => l.round))].sort((a, b) => b - a);
 
@@ -44,8 +50,8 @@ export function EventLogScreen({ view }: { view: VVPlayerView }) {
             .slice()
             .reverse()
             .map((entry: LogEntry) => (
-              <Card key={entry.id} accent={KIND_COLOR[entry.kind]} style={{ paddingVertical: spacing.md }}>
-                <Text variant="body" color={KIND_COLOR[entry.kind] ?? palette.onSurface}>
+              <Card key={entry.id} accent={colors[entry.kind]} style={{ paddingVertical: spacing.md }}>
+                <Text variant="body" color={colors[entry.kind] ?? palette.onSurface}>
                   {entry.text}
                 </Text>
               </Card>

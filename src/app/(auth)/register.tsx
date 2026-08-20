@@ -1,5 +1,5 @@
 import { Link, useRouter } from 'expo-router';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, View } from 'react-native';
 import Animated, { FadeInDown } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -9,7 +9,9 @@ import { APP_NAME } from '@/constants/app';
 import { SocialAuthRow } from '@/features/auth/components/SocialAuthRow';
 import { useProfile } from '@/stores/profile';
 import { useSession } from '@/stores/session';
-import { palette, spacing, type } from '@/theme/tokens';
+import { spacing, type } from '@/theme/tokens';
+import { useTheme } from '@/theme/ThemeProvider';
+import type { Palette } from '@/theme/palettes';
 
 /**
  * Register (spec §6).
@@ -19,6 +21,9 @@ import { palette, spacing, type } from '@/theme/tokens';
  * place and cannot drift between client and server.
  */
 export default function Register() {
+  const { palette } = useTheme();
+  const s = useMemo(() => makeStyles(palette), [palette]);
+
   const router = useRouter();
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
@@ -144,9 +149,10 @@ export default function Register() {
   );
 }
 
-const s = StyleSheet.create({
-  root: { flex: 1, backgroundColor: palette.background },
+const makeStyles = (p: Palette) =>
+  StyleSheet.create({
+  root: { flex: 1, backgroundColor: p.background },
   content: { padding: spacing.xl, gap: spacing.xl, flexGrow: 1 },
   brand: { gap: spacing.sm, paddingTop: spacing.xl },
-  linkPrimary: { color: palette.primary },
-});
+  linkPrimary: { color: p.primary },
+});;

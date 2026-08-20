@@ -1,6 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { useRef, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import {
   Image,
   Pressable,
@@ -17,7 +17,9 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Button, Chip, Label, ProgressBar, Row, Text } from '@/components/ui';
 import { useSession } from '@/stores/session';
-import { palette, radius, spacing } from '@/theme/tokens';
+import { useTheme } from '@/theme/ThemeProvider';
+import type { Palette } from '@/theme/palettes';
+import { radius, spacing } from '@/theme/tokens';
 
 /**
  * Onboarding (spec §5) — shown once per install, gated by the persisted
@@ -37,7 +39,8 @@ import { palette, radius, spacing } from '@/theme/tokens';
 interface SlideSpec {
   key: string;
   art: ImageSourcePropType;
-  accent: string;
+  /** Palette token rather than a literal, so slides follow Light / Dark. */
+  accent: keyof Palette;
   title: string;
   body: string;
   /** Extra proof-of-value strip beneath the art, per slide. */
@@ -48,7 +51,7 @@ const SLIDES: SlideSpec[] = [
   {
     key: 'discover',
     art: require('../../assets/images/onboarding/discover.png'),
-    accent: palette.secondaryContainer,
+    accent: 'secondaryContainer',
     title: 'Discover & Play',
     body: 'Join thousands of players in unique party games like Vampire Village and Taboo.',
     garnish: 'live',
@@ -56,7 +59,7 @@ const SLIDES: SlideSpec[] = [
   {
     key: 'customize',
     art: require('../../assets/images/onboarding/customize.png'),
-    accent: palette.primaryContainer,
+    accent: 'primaryContainer',
     title: 'Customize & Earn',
     body: 'Build your unique identity and earn XP and Gold with every match.',
     garnish: 'xp',
@@ -64,7 +67,7 @@ const SLIDES: SlideSpec[] = [
   {
     key: 'compete',
     art: require('../../assets/images/onboarding/compete.png'),
-    accent: palette.tertiaryContainer,
+    accent: 'tertiaryContainer',
     title: 'Compete & Win',
     body: 'Climb the daily and weekly leaderboards to earn exclusive rewards.',
     garnish: 'podium',
@@ -73,11 +76,13 @@ const SLIDES: SlideSpec[] = [
 
 export default function Onboarding() {
   const router = useRouter();
+  const { palette } = useTheme();
+  const s = useMemo(() => makeStyles(palette), [palette]);
   const { width } = useWindowDimensions();
   const scroller = useRef<ScrollView>(null);
   const [index, setIndex] = useState(0);
 
-  const completeOnboarding = useSession((s) => s.completeOnboarding);
+  const completeOnboarding = useSession((state) => state.completeOnboarding);
   const isLast = index === SLIDES.length - 1;
 
   const finish = () => {
@@ -129,11 +134,13 @@ export default function Onboarding() {
 }
 
 function Slide({ slide, width }: { slide: SlideSpec; width: number }) {
+  const { palette } = useTheme();
+  const s = useMemo(() => makeStyles(palette), [palette]);
+  const accent = palette[slide.accent];
+
   return (
     <View style={[s.slide, { width }]}>
-      <Animated.View
-        entering={FadeIn.duration(400)}
-        style={[s.art, { borderColor: slide.accent }]}>
+      <Animated.View entering={FadeIn.duration(400)} style={[s.art, { borderColor: accent }]}>
         <Image source={slide.art} style={s.artImage} resizeMode="contain" />
         {slide.garnish === 'live' && (
           <View style={s.liveTag}>
@@ -170,7 +177,7 @@ function Slide({ slide, width }: { slide: SlideSpec; width: number }) {
       {slide.garnish === 'podium' && (
         <Animated.View entering={FadeInDown.delay(220).duration(420)} style={s.podium}>
           {[
-            { place: '2', height: 44, color: palette.outline },
+            { place: '2', height: 44, color: palette.onSurfaceVariant },
             { place: '1', height: 68, color: palette.tertiary },
             { place: '3', height: 32, color: palette.tertiaryContainer },
           ].map((step) => (
@@ -189,45 +196,49 @@ function Slide({ slide, width }: { slide: SlideSpec; width: number }) {
   );
 }
 
-const s = StyleSheet.create({
-  root: { flex: 1, backgroundColor: palette.background },
-  topBar: { paddingHorizontal: spacing.xl, paddingVertical: spacing.md },
-  slide: { paddingHorizontal: spacing.xl, gap: spacing.xl },
-  art: {
-    height: 260,
-    borderRadius: radius.xl,
-    borderWidth: 1,
-    backgroundColor: palette.surfaceContainer,
-    alignItems: 'center',
-    justifyContent: 'center',
-    overflow: 'hidden',
-  },
-  artImage: { width: '100%', height: '100%' },
-  liveTag: { position: 'absolute', top: spacing.md, right: spacing.md },
-  copy: { gap: spacing.md },
-  garnish: {
-    gap: spacing.md,
-    padding: spacing.lg,
-    borderRadius: radius.lg,
-    backgroundColor: palette.surfaceContainer,
-    borderWidth: 1,
-    borderColor: palette.surfaceHigh,
-  },
-  podium: { flexDirection: 'row', alignItems: 'flex-end', gap: spacing.md },
-  podiumStep: {
-    width: '100%',
-    borderRadius: radius.sm,
-    borderWidth: 1,
-    backgroundColor: palette.surfaceContainer,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  footer: { padding: spacing.xl, gap: spacing.xl, marginTop: 'auto' },
-  dot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: palette.surfaceHighest,
-  },
-  dotActive: { width: 24, backgroundColor: palette.primaryContainer },
-});
+const makeStyles = (p: Palette) =>
+  StyleSheet.create({
+    root: { flex: 1, backgroundColor: p.background },
+    topBar: { paddingHorizontal: spacing.xl, paddingVertical: spacing.md },
+    slide: { paddingHorizontal: spacing.xl, gap: spacing.xl },
+    art: {
+      height: 260,
+      borderRadius: radius.xl,
+      borderWidth: 3,
+      backgroundColor: p.surface,
+      alignItems: 'center',
+      justifyContent: 'center',
+      overflow: 'hidden',
+    },
+    artImage: { width: '100%', height: '100%' },
+    liveTag: { position: 'absolute', top: spacing.md, right: spacing.md },
+    copy: { gap: spacing.md },
+    garnish: {
+      gap: spacing.md,
+      padding: spacing.lg,
+      borderRadius: radius.lg,
+      backgroundColor: p.surface,
+      borderWidth: 3,
+      borderColor: p.ink,
+      borderBottomWidth: 6,
+    },
+    podium: { flexDirection: 'row', alignItems: 'flex-end', gap: spacing.md },
+    podiumStep: {
+      width: '100%',
+      borderRadius: radius.sm,
+      borderWidth: 3,
+      backgroundColor: p.surface,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    footer: { padding: spacing.xl, gap: spacing.xl, marginTop: 'auto' },
+    dot: {
+      width: 10,
+      height: 10,
+      borderRadius: 5,
+      borderWidth: 2,
+      borderColor: p.ink,
+      backgroundColor: p.surface,
+    },
+    dotActive: { width: 26, backgroundColor: p.primary },
+  });

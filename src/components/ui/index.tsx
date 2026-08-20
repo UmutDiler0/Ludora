@@ -1,5 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
-import { useState, type ComponentProps, type ReactNode } from 'react';
+import { useMemo, useState, type ComponentProps, type ReactNode } from 'react';
 import {
   ActivityIndicator,
   Pressable,
@@ -15,7 +15,9 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { palette, radius, spacing, stroke, type } from '@/theme/tokens';
+import { useTheme } from '@/theme/ThemeProvider';
+import type { Palette } from '@/theme/palettes';
+import { radius, spacing, stroke, type } from '@/theme/tokens';
 
 /**
  * The shared primitive kit (docs/ARCHITECTURE.md decision D20), cartoon theme.
@@ -24,7 +26,119 @@ import { palette, radius, spacing, stroke, type } from '@/theme/tokens';
  *   1. every surface gets a thick `ink` outline
  *   2. an over-thick bottom border gives objects physical depth
  *   3. pressing a control sinks it into that depth instead of just fading
+ *
+ * Every colour comes from `useTheme()` rather than a module constant, because
+ * the palette changes at runtime when the user switches Light / Dark / System.
+ * Styles are built by a factory memoised on the palette, so switching mode
+ * costs one rebuild per scheme rather than one per render.
  */
+
+/* --------------------------------------------------------------- styles */
+
+const makeStyles = (p: Palette) =>
+  StyleSheet.create({
+    screen: { flex: 1, backgroundColor: p.background },
+    card: {
+      backgroundColor: p.surface,
+      borderRadius: radius.lg,
+      borderWidth: stroke.base,
+      borderColor: p.ink,
+      borderBottomWidth: stroke.depth,
+    },
+    chip: {
+      paddingHorizontal: spacing.md,
+      paddingVertical: 5,
+      borderRadius: radius.pill,
+      borderWidth: stroke.thin,
+      borderColor: p.ink,
+      alignSelf: 'flex-start',
+    },
+    button: {
+      minHeight: 56,
+      borderRadius: radius.md,
+      borderWidth: stroke.base,
+      borderColor: p.ink,
+      borderBottomWidth: stroke.depth,
+      alignItems: 'center',
+      justifyContent: 'center',
+      paddingHorizontal: spacing.xl,
+    },
+    input: {
+      minHeight: 52,
+      borderRadius: radius.md,
+      borderWidth: stroke.thin,
+      borderColor: p.ink,
+      backgroundColor: p.surface,
+      paddingHorizontal: spacing.lg,
+      color: p.onSurface,
+      ...type.body,
+    },
+    segment: {
+      flexDirection: 'row',
+      backgroundColor: p.surfaceLow,
+      borderRadius: radius.pill,
+      borderWidth: stroke.thin,
+      borderColor: p.ink,
+      padding: 4,
+      gap: 4,
+    },
+    segmentItem: {
+      flex: 1,
+      alignItems: 'center',
+      justifyContent: 'center',
+      paddingVertical: 10,
+      borderRadius: radius.pill,
+    },
+    listRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: spacing.md,
+      padding: spacing.md,
+      borderRadius: radius.md,
+      borderWidth: stroke.base,
+      borderColor: p.ink,
+      borderBottomWidth: stroke.depth,
+      backgroundColor: p.surface,
+    },
+    goldPill: {
+      paddingHorizontal: spacing.md,
+      paddingVertical: 6,
+      borderRadius: radius.pill,
+      borderWidth: stroke.thin,
+      borderColor: p.ink,
+      backgroundColor: p.surface,
+      alignSelf: 'flex-start',
+    },
+    iconButton: {
+      width: 42,
+      height: 42,
+      borderRadius: radius.md,
+      alignItems: 'center',
+      justifyContent: 'center',
+      backgroundColor: p.surface,
+      borderWidth: stroke.thin,
+      borderColor: p.ink,
+    },
+    badge: {
+      minWidth: 22,
+      height: 22,
+      paddingHorizontal: 6,
+      borderRadius: radius.pill,
+      borderWidth: stroke.thin,
+      borderColor: p.ink,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+  });
+
+type Styles = ReturnType<typeof makeStyles>;
+
+/** Styles for the active palette. Memoised so a mode switch rebuilds once. */
+export function useStyles(): { s: Styles; palette: Palette } {
+  const { palette } = useTheme();
+  const s = useMemo(() => makeStyles(palette), [palette]);
+  return { s, palette };
+}
 
 /* ---------------------------------------------------------------- Text */
 
@@ -32,7 +146,7 @@ type TextVariant = keyof typeof type;
 
 export function Text({
   variant = 'body',
-  color = palette.onSurface,
+  color,
   center,
   numberOfLines,
   style,
@@ -45,10 +159,16 @@ export function Text({
   style?: StyleProp<TextStyle>;
   children: ReactNode;
 }) {
+  const { palette } = useTheme();
   return (
     <RNText
       numberOfLines={numberOfLines}
-      style={[type[variant], { color }, center && { textAlign: 'center' }, style]}>
+      style={[
+        type[variant],
+        { color: color ?? palette.onSurface },
+        center && { textAlign: 'center' },
+        style,
+      ]}>
       {children}
     </RNText>
   );
@@ -57,15 +177,20 @@ export function Text({
 /** Uppercase eyebrow label — "YOUR ROLE", "ROOM CODE", "CURRENT PHASE". */
 export function Label({
   children,
-  color = palette.onSurfaceVariant,
+  color,
   center,
 }: {
   children: ReactNode;
   color?: string;
   center?: boolean;
 }) {
+  const { palette } = useTheme();
   return (
-    <Text variant="label" color={color} center={center} style={{ textTransform: 'uppercase' }}>
+    <Text
+      variant="label"
+      color={color ?? palette.onSurfaceVariant}
+      center={center}
+      style={{ textTransform: 'uppercase' }}>
       {children}
     </Text>
   );
@@ -82,6 +207,7 @@ export function Screen({
   scroll?: boolean;
   style?: StyleProp<ViewStyle>;
 }) {
+  const { s } = useStyles();
   const inner = (
     <View style={[{ padding: spacing.xl, gap: spacing.lg, flexGrow: 1 }, style]}>{children}</View>
   );
@@ -115,6 +241,7 @@ export function Card({
   padded?: boolean;
   style?: StyleProp<ViewStyle>;
 }) {
+  const { s } = useStyles();
   return (
     <View
       style={[
@@ -132,18 +259,20 @@ export function Card({
 
 export function Chip({
   children,
-  color = palette.onSurfaceVariant,
+  color,
   filled,
 }: {
   children: ReactNode;
   color?: string;
   filled?: boolean;
 }) {
+  const { s, palette } = useStyles();
+  const tint = color ?? palette.onSurfaceVariant;
   return (
-    <View style={[s.chip, filled ? { backgroundColor: color } : { backgroundColor: palette.surface }]}>
+    <View style={[s.chip, { backgroundColor: filled ? tint : palette.surface }]}>
       <Text
         variant="label"
-        color={filled ? palette.surface : color}
+        color={filled ? palette.surface : tint}
         style={{ textTransform: 'uppercase' }}>
         {children}
       </Text>
@@ -153,12 +282,19 @@ export function Chip({
 
 /* -------------------------------------------------------------- Button */
 
-const TONES = {
-  primary: { bg: palette.primary, fg: '#FFFFFF' },
-  secondary: { bg: palette.secondaryContainer, fg: palette.ink },
-  ghost: { bg: palette.surface, fg: palette.ink },
-  danger: { bg: palette.error, fg: '#FFFFFF' },
-} as const;
+export type ButtonTone = 'primary' | 'secondary' | 'ghost' | 'danger';
+
+/**
+ * Tones read their foreground from the matching `onX` token, so each mode
+ * supplies its own readable pairing rather than assuming white-on-colour.
+ */
+const toneColors = (p: Palette, tone: ButtonTone) =>
+  ({
+    primary: { bg: p.primary, fg: p.onPrimary },
+    secondary: { bg: p.secondaryContainer, fg: p.onSecondary },
+    ghost: { bg: p.surface, fg: p.onSurface },
+    danger: { bg: p.error, fg: p.onError },
+  })[tone];
 
 export function Button({
   label,
@@ -170,12 +306,13 @@ export function Button({
 }: {
   label: string;
   onPress?: () => void;
-  tone?: keyof typeof TONES;
+  tone?: ButtonTone;
   disabled?: boolean;
   loading?: boolean;
   style?: StyleProp<ViewStyle>;
 }) {
-  const t = TONES[tone];
+  const { s, palette } = useStyles();
+  const t = toneColors(palette, tone);
   const isOff = disabled || loading;
 
   return (
@@ -216,7 +353,7 @@ export function Button({
 /**
  * Placeholder avatar (decision D19). The shipped art is unusable — it contains
  * baked-in fake UI — so avatars are deterministic from the uid until real
- * assets land. Same uid always produces the same colour.
+ * assets land. Same uid always produces the same colour within a mode.
  */
 export function Avatar({
   uid,
@@ -231,10 +368,10 @@ export function Avatar({
   dimmed?: boolean;
   ring?: string;
 }) {
+  const { palette, avatarHues } = useTheme();
   let hash = 0;
   for (let i = 0; i < uid.length; i++) hash = (hash * 31 + uid.charCodeAt(i)) >>> 0;
-  const hues = ['#7C4DFF', '#16C4E8', '#FFC93C', '#FF5B4A', '#2FCB74', '#FF9F1C'];
-  const bg = hues[hash % hues.length];
+  const bg = avatarHues[hash % avatarHues.length];
   const initials = name.replace(/[^A-Za-z0-9]/g, '').slice(0, 2).toUpperCase();
 
   return (
@@ -250,7 +387,7 @@ export function Avatar({
         borderWidth: stroke.base,
         borderColor: ring ?? palette.ink,
       }}>
-      <Text variant="label" color="#FFFFFF" style={{ fontSize: size * 0.34 }}>
+      <Text variant="label" color={palette.onPrimary} style={{ fontSize: size * 0.34 }}>
         {initials}
       </Text>
     </View>
@@ -261,7 +398,7 @@ export function Avatar({
 
 export function ProgressBar({
   value,
-  color = palette.primary,
+  color,
   height = 16,
 }: {
   /** 0–1. */
@@ -269,6 +406,7 @@ export function ProgressBar({
   color?: string;
   height?: number;
 }) {
+  const { palette } = useTheme();
   const pct = Math.max(0, Math.min(1, value));
   return (
     <View
@@ -280,7 +418,9 @@ export function ProgressBar({
         borderColor: palette.ink,
         overflow: 'hidden',
       }}>
-      <View style={{ width: `${pct * 100}%`, height: '100%', backgroundColor: color }} />
+      <View
+        style={{ width: `${pct * 100}%`, height: '100%', backgroundColor: color ?? palette.primary }}
+      />
     </View>
   );
 }
@@ -290,15 +430,17 @@ export function ProgressBar({
 export function StatTile({
   value,
   caption,
-  color = palette.onSurface,
+  color,
 }: {
   value: string;
   caption: string;
   color?: string;
 }) {
+  const { palette } = useTheme();
+  const tint = color ?? palette.onSurface;
   return (
-    <Card accent={color} style={{ flex: 1, alignItems: 'center', gap: spacing.xs }}>
-      <Text variant="heading" color={color}>
+    <Card accent={tint} style={{ flex: 1, alignItems: 'center', gap: spacing.xs }}>
+      <Text variant="heading" color={tint}>
         {value}
       </Text>
       <Label>{caption}</Label>
@@ -350,6 +492,7 @@ export function Input({
   onSubmitEditing?: () => void;
   returnKeyType?: TextInputProps['returnKeyType'];
 }) {
+  const { s, palette } = useStyles();
   const [focused, setFocused] = useState(false);
   return (
     <View style={{ gap: spacing.sm }}>
@@ -358,7 +501,7 @@ export function Input({
         value={value}
         onChangeText={onChangeText}
         placeholder={placeholder}
-        placeholderTextColor={palette.outline}
+        placeholderTextColor={palette.onSurfaceVariant}
         secureTextEntry={secureTextEntry}
         autoComplete={autoComplete}
         autoCapitalize="none"
@@ -371,8 +514,8 @@ export function Input({
         onBlur={() => setFocused(false)}
         style={[
           s.input,
-          focused && { borderColor: palette.primaryContainer },
-          !!error && { borderColor: palette.error },
+          focused && { borderColor: palette.primary, borderWidth: stroke.base },
+          !!error && { borderColor: palette.error, borderWidth: stroke.base },
         ]}
       />
       <Text variant="caption" color={palette.error} style={{ minHeight: 19 }}>
@@ -397,6 +540,7 @@ export function SegmentedTabs<T extends string>({
   value: T;
   onChange: (value: T) => void;
 }) {
+  const { s, palette } = useStyles();
   return (
     <View style={s.segment}>
       {options.map((option) => {
@@ -407,7 +551,7 @@ export function SegmentedTabs<T extends string>({
             accessibilityRole="tab"
             accessibilityState={{ selected: active }}
             onPress={() => onChange(option.value)}
-            style={[s.segmentItem, active && { backgroundColor: palette.primaryContainer }]}>
+            style={[s.segmentItem, active && { backgroundColor: palette.primary }]}>
             <Text
               variant="label"
               color={active ? palette.onPrimary : palette.onSurfaceVariant}
@@ -442,6 +586,8 @@ export function ListRow({
   /** Marks the viewer's own row — "YOUR RANK" in the leaderboard design. */
   highlighted?: boolean;
 }) {
+  const { s, palette } = useStyles();
+
   const body = (
     <>
       {leading}
@@ -461,8 +607,8 @@ export function ListRow({
 
   const style = [
     s.listRow,
-    highlighted && { borderColor: palette.primaryContainer, backgroundColor: palette.surfaceHigh },
-    accent ? { borderLeftColor: accent, borderLeftWidth: 3 } : null,
+    highlighted && { backgroundColor: palette.surfaceHigh },
+    accent ? { borderBottomColor: accent } : null,
   ];
 
   if (!onPress) return <View style={style}>{body}</View>;
@@ -470,7 +616,13 @@ export function ListRow({
     <Pressable
       accessibilityRole="button"
       onPress={onPress}
-      style={({ pressed }) => [...style, pressed && { opacity: 0.75 }]}>
+      style={({ pressed }) => [
+        ...style,
+        pressed && {
+          borderBottomWidth: stroke.depthPressed,
+          transform: [{ translateY: stroke.depth - stroke.depthPressed }],
+        },
+      ]}>
       {body}
     </Pressable>
   );
@@ -480,6 +632,7 @@ export function ListRow({
 
 /** Gold balance chip. Amber is the economy colour throughout (§20). */
 export function GoldPill({ amount, onPress }: { amount: number; onPress?: () => void }) {
+  const { s, palette } = useStyles();
   const content = (
     <Row gap={spacing.sm} style={s.goldPill}>
       <Ionicons name="diamond" size={13} color={palette.tertiary} />
@@ -502,16 +655,20 @@ export function ScreenHeader({
   title,
   subtitle,
   onBack,
+  backLabel = 'Go back',
   trailing,
 }: {
   title: string;
   subtitle?: string;
   onBack?: () => void;
+  /** Accessibility label for the back control; localised by callers. */
+  backLabel?: string;
   trailing?: ReactNode;
 }) {
+  const { palette } = useTheme();
   return (
     <Row gap={spacing.md} style={{ alignItems: 'flex-start' }}>
-      {!!onBack && <IconButton name="chevron-back" onPress={onBack} label="Go back" />}
+      {!!onBack && <IconButton name="chevron-back" onPress={onBack} label={backLabel} />}
       <View style={{ flex: 1, gap: spacing.xs }}>
         <Text variant="title">{title}</Text>
         {!!subtitle && (
@@ -531,7 +688,7 @@ export function IconButton({
   name,
   onPress,
   label,
-  color = palette.onSurface,
+  color,
   size = 20,
 }: {
   name: ComponentProps<typeof Ionicons>['name'];
@@ -541,6 +698,7 @@ export function IconButton({
   color?: string;
   size?: number;
 }) {
+  const { s, palette } = useStyles();
   return (
     <Pressable
       accessibilityRole="button"
@@ -548,7 +706,7 @@ export function IconButton({
       onPress={onPress}
       hitSlop={10}
       style={({ pressed }) => [s.iconButton, pressed && { opacity: 0.6 }]}>
-      <Ionicons name={name} size={size} color={color} />
+      <Ionicons name={name} size={size} color={color ?? palette.onSurface} />
     </Pressable>
   );
 }
@@ -556,13 +714,11 @@ export function IconButton({
 /* ---------------------------------------------------------------- Badge */
 
 /** Small count badge — unread notifications, player counts. */
-export function Badge({ children, color = palette.primaryContainer }: {
-  children: ReactNode;
-  color?: string;
-}) {
+export function Badge({ children, color }: { children: ReactNode; color?: string }) {
+  const { s, palette } = useStyles();
   return (
-    <View style={[s.badge, { backgroundColor: color }]}>
-      <Text variant="label" color={palette.background} style={{ fontSize: 10 }}>
+    <View style={[s.badge, { backgroundColor: color ?? palette.primary }]}>
+      <Text variant="label" color={palette.onPrimary} style={{ fontSize: 10 }}>
         {children}
       </Text>
     </View>
@@ -582,9 +738,10 @@ export function EmptyState({
   body: string;
   action?: ReactNode;
 }) {
+  const { palette } = useTheme();
   return (
     <View style={{ alignItems: 'center', gap: spacing.md, paddingVertical: spacing.xxxl }}>
-      <Ionicons name={icon} size={40} color={palette.outline} />
+      <Ionicons name={icon} size={40} color={palette.onSurfaceVariant} />
       <Text variant="heading" center>
         {title}
       </Text>
@@ -597,95 +754,6 @@ export function EmptyState({
 }
 
 export function Divider() {
-  return <View style={{ height: 1, backgroundColor: palette.surfaceHigh }} />;
+  const { palette } = useTheme();
+  return <View style={{ height: stroke.thin, backgroundColor: palette.outlineVariant }} />;
 }
-
-const s = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: palette.background },
-  card: {
-    backgroundColor: palette.surface,
-    borderRadius: radius.lg,
-    borderWidth: stroke.base,
-    borderColor: palette.ink,
-    borderBottomWidth: stroke.depth,
-  },
-  chip: {
-    paddingHorizontal: spacing.md,
-    paddingVertical: 5,
-    borderRadius: radius.pill,
-    borderWidth: stroke.thin,
-    borderColor: palette.ink,
-    alignSelf: 'flex-start',
-  },
-  button: {
-    minHeight: 56,
-    borderRadius: radius.md,
-    borderWidth: stroke.base,
-    borderColor: palette.ink,
-    borderBottomWidth: stroke.depth,
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: spacing.xl,
-  },
-  input: {
-    minHeight: 52,
-    borderRadius: radius.md,
-    borderWidth: 1,
-    borderColor: palette.surfaceHigh,
-    backgroundColor: palette.surfaceLow,
-    paddingHorizontal: spacing.lg,
-    color: palette.onSurface,
-    ...type.body,
-  },
-  segment: {
-    flexDirection: 'row',
-    backgroundColor: palette.surfaceLow,
-    borderRadius: radius.pill,
-    padding: 4,
-    gap: 4,
-  },
-  segmentItem: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 10,
-    borderRadius: radius.pill,
-  },
-  listRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.md,
-    padding: spacing.md,
-    borderRadius: radius.md,
-    borderWidth: 1,
-    borderColor: palette.surfaceHigh,
-    backgroundColor: palette.surfaceContainer,
-  },
-  goldPill: {
-    paddingHorizontal: spacing.md,
-    paddingVertical: 6,
-    borderRadius: radius.pill,
-    borderWidth: 1,
-    borderColor: palette.tertiaryContainer,
-    backgroundColor: palette.surfaceLow,
-    alignSelf: 'flex-start',
-  },
-  iconButton: {
-    width: 40,
-    height: 40,
-    borderRadius: radius.md,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: palette.surfaceContainer,
-    borderWidth: 1,
-    borderColor: palette.surfaceHigh,
-  },
-  badge: {
-    minWidth: 20,
-    height: 20,
-    paddingHorizontal: 6,
-    borderRadius: radius.pill,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-});

@@ -1,6 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import { Redirect } from 'expo-router';
-import { useEffect, useState } from 'react';
+import { useMemo, useEffect, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 import Animated, {
   Easing,
@@ -17,7 +17,9 @@ import Animated, {
 import { Label, Text } from '@/components/ui';
 import { APP_NAME } from '@/constants/app';
 import { useSession } from '@/stores/session';
-import { palette, radius, spacing } from '@/theme/tokens';
+import { radius, spacing } from '@/theme/tokens';
+import { useTheme } from '@/theme/ThemeProvider';
+import type { Palette } from '@/theme/palettes';
 
 /**
  * Splash + boot router (spec §4, docs/ARCHITECTURE.md §5).
@@ -52,6 +54,9 @@ export default function Boot() {
 }
 
 function Splash() {
+  const { palette } = useTheme();
+  const s = useMemo(() => makeStyles(palette), [palette]);
+
   const scale = useSharedValue(0.8);
   const glow = useSharedValue(0.55);
   const sweep = useSharedValue(-1);
@@ -107,28 +112,29 @@ function Splash() {
 
 const ORB = 240;
 
-const s = StyleSheet.create({
-  root: { flex: 1, backgroundColor: palette.background, justifyContent: 'space-between' },
+const makeStyles = (p: Palette) =>
+  StyleSheet.create({
+  root: { flex: 1, backgroundColor: p.background, justifyContent: 'space-between' },
   center: { flex: 1, alignItems: 'center', justifyContent: 'center' },
   orb: {
     position: 'absolute',
     width: ORB,
     height: ORB,
     borderRadius: ORB / 2,
-    backgroundColor: palette.primaryContainer,
+    backgroundColor: p.primaryContainer,
   },
   mark: { alignItems: 'center', gap: spacing.md },
   footer: { padding: spacing.xxl, gap: spacing.lg },
   track: {
     height: 6,
     borderRadius: radius.pill,
-    backgroundColor: palette.surfaceHigh,
+    backgroundColor: p.surfaceHigh,
     overflow: 'hidden',
   },
   trackFill: {
     width: '55%',
     height: '100%',
     borderRadius: radius.pill,
-    backgroundColor: palette.secondary,
+    backgroundColor: p.secondary,
   },
-});
+});;

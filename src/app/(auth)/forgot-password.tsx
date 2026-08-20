@@ -1,5 +1,5 @@
 import { useRouter } from 'expo-router';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, View } from 'react-native';
 import Animated, { FadeInDown } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -7,7 +7,9 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Button, Card, IconButton, Input, Row, Text } from '@/components/ui';
 import { APP_NAME } from '@/constants/app';
 import { useSession } from '@/stores/session';
-import { palette, spacing } from '@/theme/tokens';
+import { spacing } from '@/theme/tokens';
+import { useTheme } from '@/theme/ThemeProvider';
+import type { Palette } from '@/theme/palettes';
 
 /**
  * Password reset (spec §6).
@@ -17,6 +19,9 @@ import { palette, spacing } from '@/theme/tokens';
  * leak, and the gateway is silent about it for the same reason.
  */
 export default function ForgotPassword() {
+  const { palette } = useTheme();
+  const s = useMemo(() => makeStyles(palette), [palette]);
+
   const router = useRouter();
   const [email, setEmail] = useState('');
   const [sent, setSent] = useState(false);
@@ -97,7 +102,8 @@ export default function ForgotPassword() {
   );
 }
 
-const s = StyleSheet.create({
-  root: { flex: 1, backgroundColor: palette.background },
+const makeStyles = (p: Palette) =>
+  StyleSheet.create({
+  root: { flex: 1, backgroundColor: p.background },
   content: { padding: spacing.xl, gap: spacing.xxl, flexGrow: 1, justifyContent: 'center' },
-});
+});;

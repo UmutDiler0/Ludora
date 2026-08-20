@@ -1,7 +1,8 @@
 import { View } from 'react-native';
 
 import { Card, Chip, Label, Row, Screen, Text } from '@/components/ui';
-import { palette, roleColors, spacing } from '@/theme/tokens';
+import { spacing } from '@/theme/tokens';
+import { useTheme } from '@/theme/ThemeProvider';
 import { ROLES, type RoleId } from '../roles';
 import type { VVPlayerView } from '../state';
 
@@ -14,6 +15,8 @@ import type { VVPlayerView } from '../state';
  * by accident.
  */
 export function RoleSheetScreen({ view }: { view: VVPlayerView }) {
+  const { palette, roleColors } = useTheme();
+
   const order: RoleId[] = ['vampire', 'investigator', 'protector', 'villager'];
 
   return (

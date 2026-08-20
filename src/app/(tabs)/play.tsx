@@ -4,7 +4,8 @@ import { View } from 'react-native';
 import { Button, Card, Chip, Label, ListRow, Row, Screen, ScreenHeader, Text } from '@/components/ui';
 import { GAME_CATALOGUE } from '@/features/games/core/registry';
 import { useLocalGame } from '@/stores/localGame';
-import { palette, spacing } from '@/theme/tokens';
+import { spacing } from '@/theme/tokens';
+import { useTheme } from '@/theme/ThemeProvider';
 
 /**
  * Play hub (spec §9) — Create Game, Join Game, Quick Match.
@@ -18,6 +19,8 @@ import { palette, spacing } from '@/theme/tokens';
  * it sits above them.
  */
 export default function Play() {
+  const { palette } = useTheme();
+
   const router = useRouter();
   const newGame = useLocalGame((s) => s.newGame);
 

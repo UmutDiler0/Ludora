@@ -1,5 +1,5 @@
 import { Link, useRouter } from 'expo-router';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, View } from 'react-native';
 import Animated, { FadeInDown } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -9,10 +9,15 @@ import { APP_NAME } from '@/constants/app';
 import { SocialAuthRow } from '@/features/auth/components/SocialAuthRow';
 import { useProfile } from '@/stores/profile';
 import { useSession } from '@/stores/session';
-import { palette, spacing, type } from '@/theme/tokens';
+import { spacing, type } from '@/theme/tokens';
+import { useTheme } from '@/theme/ThemeProvider';
+import type { Palette } from '@/theme/palettes';
 
 /** Login (spec §6). Email/password against the auth gateway. */
 export default function Login() {
+  const { palette } = useTheme();
+  const s = useMemo(() => makeStyles(palette), [palette]);
+
   const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -115,10 +120,11 @@ export default function Login() {
   );
 }
 
-const s = StyleSheet.create({
-  root: { flex: 1, backgroundColor: palette.background },
+const makeStyles = (p: Palette) =>
+  StyleSheet.create({
+  root: { flex: 1, backgroundColor: p.background },
   content: { padding: spacing.xl, gap: spacing.xl, flexGrow: 1 },
   brand: { gap: spacing.sm, paddingTop: spacing.xxxl, paddingBottom: spacing.md },
-  link: { color: palette.secondary },
-  linkPrimary: { color: palette.primary },
-});
+  link: { color: p.secondary },
+  linkPrimary: { color: p.primary },
+});;

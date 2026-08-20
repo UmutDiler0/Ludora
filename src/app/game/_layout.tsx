@@ -1,7 +1,8 @@
 import { Ionicons } from '@expo/vector-icons';
 import { Tabs } from 'expo-router';
 
-import { fonts, palette, stroke } from '@/theme/tokens';
+import { fonts, stroke } from '@/theme/tokens';
+import { useTheme } from '@/theme/ThemeProvider';
 
 /**
  * In-session tab bar (decision D1): Game · Roles · Chat · Log.
@@ -10,6 +11,8 @@ import { fonts, palette, stroke } from '@/theme/tokens';
  * realtime backend (D10), which is deliberately not wired yet.
  */
 export default function GameLayout() {
+  const { palette } = useTheme();
+
   return (
     <Tabs
       screenOptions={{

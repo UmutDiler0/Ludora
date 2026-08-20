@@ -6,7 +6,7 @@ import { GameOverScreen } from '@/features/games/vampireVillage/screens/GameOver
 import { NightScreen } from '@/features/games/vampireVillage/screens/Night';
 import { RoleRevealScreen } from '@/features/games/vampireVillage/screens/RoleReveal';
 import { useLocalGame, useMyView } from '@/stores/localGame';
-import { palette } from '@/theme/tokens';
+import { useTheme } from '@/theme/ThemeProvider';
 
 /**
  * Session surface. Renders whichever phase screen the engine is currently in —
@@ -14,6 +14,8 @@ import { palette } from '@/theme/tokens';
  * `app/` compose rather than implement.
  */
 export default function GameScreen() {
+  const { palette } = useTheme();
+
   const router = useRouter();
   const view = useMyView();
   const { ackRole, nightAction, vote, openVoting, newGame } = useLocalGame();

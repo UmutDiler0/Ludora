@@ -1,7 +1,9 @@
 import { Pressable, View } from 'react-native';
 
 import { Avatar, Button, Card, Chip, Label, Row, Screen, Text } from '@/components/ui';
-import { palette, radius, spacing, stroke } from '@/theme/tokens';
+import { useTheme } from '@/theme/ThemeProvider';
+import type { Palette } from '@/theme/palettes';
+import { radius, spacing, stroke } from '@/theme/tokens';
 import { ROLES } from '../roles';
 import type { VVPlayerView } from '../state';
 
@@ -23,6 +25,9 @@ export function DayScreen({
   onVote: (uid: string) => void;
   onOpenVoting: () => void;
 }) {
+  const { palette } = useTheme();
+  const s = makeStyles(palette);
+
   const voting = view.phase === 'day_vote';
   const canVote = voting && view.you.alive;
 
@@ -124,7 +129,7 @@ export function DayScreen({
   );
 }
 
-const s = {
+const makeStyles = (p: Palette) => ({
   row: {
     flexDirection: 'row' as const,
     alignItems: 'center' as const,
@@ -132,7 +137,7 @@ const s = {
     padding: spacing.md,
     borderRadius: radius.md,
     borderWidth: stroke.base,
-    borderColor: palette.ink,
+    borderColor: p.ink,
   },
   rowDead: {
     flexDirection: 'row' as const,
@@ -142,7 +147,7 @@ const s = {
     borderRadius: radius.md,
     borderWidth: stroke.thin,
     borderStyle: 'dashed' as const,
-    borderColor: palette.outlineVariant,
-    backgroundColor: palette.surfaceHigh,
+    borderColor: p.outlineVariant,
+    backgroundColor: p.surfaceHigh,
   },
-};
+});

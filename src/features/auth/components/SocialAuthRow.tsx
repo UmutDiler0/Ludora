@@ -2,7 +2,8 @@ import { Ionicons } from '@expo/vector-icons';
 import { View } from 'react-native';
 
 import { Divider, Label, Row, Text } from '@/components/ui';
-import { palette, radius, spacing } from '@/theme/tokens';
+import { radius, spacing } from '@/theme/tokens';
+import { useTheme } from '@/theme/ThemeProvider';
 
 /**
  * The "OR CONTINUE WITH" strip from the Login and Register designs.
@@ -14,6 +15,8 @@ import { palette, radius, spacing } from '@/theme/tokens';
  * backed by Firebase. The layout is final; only the handler is missing.
  */
 export function SocialAuthRow() {
+  const { palette } = useTheme();
+
   return (
     <View style={{ gap: spacing.lg }}>
       <Row gap={spacing.md}>
@@ -45,6 +48,8 @@ function ProviderButton({
   icon: 'logo-google' | 'logo-apple';
   name: string;
 }) {
+  const { palette } = useTheme();
+
   return (
     <View
       accessibilityRole="button"

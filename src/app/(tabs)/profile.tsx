@@ -6,6 +6,7 @@ import {
   Button,
   Card,
   GoldPill,
+  IconButton,
   Label,
   ProgressBar,
   Row,
@@ -17,7 +18,8 @@ import {
 import { TABS } from '@/constants/app';
 import { useLevel, useProfile, useWinRate } from '@/stores/profile';
 import { useSession } from '@/stores/session';
-import { palette, spacing } from '@/theme/tokens';
+import { spacing } from '@/theme/tokens';
+import { useTheme } from '@/theme/ThemeProvider';
 
 /**
  * Profile dashboard (spec §34). The avatar, shop, inventory, achievements and
@@ -25,6 +27,8 @@ import { palette, spacing } from '@/theme/tokens';
  * already reads real values out of the profile store.
  */
 export default function Profile() {
+  const { palette } = useTheme();
+
   const router = useRouter();
   const { displayName, handle, gold, stats } = useProfile();
   const level = useLevel();
@@ -38,7 +42,19 @@ export default function Profile() {
 
   return (
     <Screen>
-      <ScreenHeader title={TABS.profile} trailing={<GoldPill amount={gold} />} />
+      <ScreenHeader
+        title={TABS.profile}
+        trailing={
+          <Row gap={spacing.sm}>
+            <GoldPill amount={gold} />
+            <IconButton
+              name="settings-outline"
+              label="Settings"
+              onPress={() => router.push('/settings')}
+            />
+          </Row>
+        }
+      />
 
       <Card style={{ gap: spacing.lg }}>
         <Row gap={spacing.lg}>
