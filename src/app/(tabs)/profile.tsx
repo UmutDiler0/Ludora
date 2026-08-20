@@ -5,7 +5,6 @@ import {
   Avatar,
   Button,
   Card,
-  EmptyState,
   GoldPill,
   IconButton,
   Label,
@@ -41,20 +40,6 @@ export default function Profile() {
     router.replace('/(auth)/login');
   };
 
-  if (isGuest) {
-    return (
-      <Screen>
-        <ScreenHeader title={TABS.profile} />
-        <EmptyState
-          icon="person-circle-outline"
-          title="You're browsing as a guest"
-          body="Sign in to save your progress, earn Gold and XP, and climb the leaderboards."
-          action={<Button label="Sign In" onPress={() => router.push('/(auth)/register')} />}
-        />
-      </Screen>
-    );
-  }
-
   return (
     <Screen>
       <ScreenHeader
@@ -70,6 +55,16 @@ export default function Profile() {
           </Row>
         }
       />
+
+      {isGuest && (
+        <Card accent={palette.primary} style={{ gap: spacing.sm }}>
+          <Text variant="bodyStrong">You&apos;re browsing as a guest</Text>
+          <Text variant="caption" color={palette.onSurfaceVariant}>
+            Sign up to save your progress, earn Gold and XP, and climb the leaderboards.
+          </Text>
+          <Button label="Sign Up" onPress={() => router.push('/(auth)/register')} />
+        </Card>
+      )}
 
       <Card style={{ gap: spacing.lg }}>
         <Row gap={spacing.lg}>

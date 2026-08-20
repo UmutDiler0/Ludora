@@ -53,7 +53,12 @@ async function attempt(
   set({ busy: true, error: null });
   try {
     const user = await run();
-    set(user ? { user, status: 'signed-in', busy: false } : { busy: false });
+    // A real sign-in/register always wins over a leftover guest session.
+    set(
+      user
+        ? { user, status: 'signed-in', busy: false, isGuest: false, guestId: null }
+        : { busy: false },
+    );
     return true;
   } catch (e) {
     const code = e instanceof AuthError ? e.code : 'unknown';
