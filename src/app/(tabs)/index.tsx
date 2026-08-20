@@ -76,19 +76,23 @@ export default function Home() {
   return (
     <Screen>
       <Row style={{ justifyContent: 'space-between', alignItems: 'center' }}>
-        <View style={{ flex: 1, gap: 4, marginRight: spacing.md }}>
-          <Text variant="bodyStrong" numberOfLines={1}>
-            {displayName}
-          </Text>
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel="Open profile"
+          onPress={() => router.push('/(tabs)/profile')}
+          style={{ flex: 1, marginRight: spacing.md }}>
           <Row gap={spacing.sm}>
+            <Avatar uid={handle} name={displayName} size={40} ring={palette.primaryContainer} />
             <View style={{ flex: 1 }}>
-              <ProgressBar value={level.fraction} height={8} />
+              <Text variant="bodyStrong" numberOfLines={1}>
+                {displayName}
+              </Text>
+              <Text variant="caption" color={palette.onSurfaceVariant}>
+                Lv {level.level}
+              </Text>
             </View>
-            <Text variant="caption" color={palette.onSurfaceVariant}>
-              Lv {level.level}
-            </Text>
           </Row>
-        </View>
+        </Pressable>
         <GoldPill amount={gold} />
       </Row>
 
