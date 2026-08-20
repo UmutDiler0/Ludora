@@ -5,6 +5,7 @@ import {
   Avatar,
   Button,
   Card,
+  EmptyState,
   GoldPill,
   IconButton,
   Label,
@@ -33,12 +34,26 @@ export default function Profile() {
   const { displayName, handle, gold, stats } = useProfile();
   const level = useLevel();
   const winRate = useWinRate();
-  const signOut = useSession((s) => s.signOut);
+  const { signOut, isGuest } = useSession();
 
   const leave = async () => {
     await signOut();
     router.replace('/(auth)/login');
   };
+
+  if (isGuest) {
+    return (
+      <Screen>
+        <ScreenHeader title={TABS.profile} />
+        <EmptyState
+          icon="person-circle-outline"
+          title="You're browsing as a guest"
+          body="Sign in to save your progress, earn Gold and XP, and climb the leaderboards."
+          action={<Button label="Sign In" onPress={() => router.push('/(auth)/register')} />}
+        />
+      </Screen>
+    );
+  }
 
   return (
     <Screen>

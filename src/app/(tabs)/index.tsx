@@ -9,18 +9,17 @@ import {
   Card,
   Chip,
   GoldPill,
-  IconButton,
   ProgressBar,
   Row,
   Screen,
   Text,
 } from '@/components/ui';
-import { APP_NAME } from '@/constants/app';
 import { AWARDS } from '@/features/economy/levels';
 import { GameArt } from '@/features/home/GameArt';
 import { DUMMY_CHAMPIONS, trendingGames, type Champion, type TrendingGame } from '@/features/home/dummy';
 import { useDailyClaimable, useLevel, useProfile } from '@/stores/profile';
 import { useLocalGame } from '@/stores/localGame';
+import { useSession } from '@/stores/session';
 import { useTheme } from '@/theme/ThemeProvider';
 import type { Palette } from '@/theme/palettes';
 import { radius, spacing, stroke } from '@/theme/tokens';
@@ -56,7 +55,8 @@ export default function Home() {
 
   const { displayName, handle, gold, dailyStreak } = useProfile();
   const level = useLevel();
-  const claimable = useDailyClaimable();
+  const isGuest = useSession((s) => s.isGuest);
+  const claimable = useDailyClaimable() && !isGuest;
   const claimDaily = useProfile((s) => s.claimDaily);
   const newGame = useLocalGame((s) => s.newGame);
 
@@ -75,19 +75,21 @@ export default function Home() {
 
   return (
     <Screen>
-      <Row style={{ justifyContent: 'space-between' }}>
-        <Row gap={spacing.sm}>
-          <BrandMark />
-          <Text variant="heading">{APP_NAME}</Text>
-        </Row>
-        <Row gap={spacing.sm}>
-          <GoldPill amount={gold} />
-          <IconButton
-            name="settings-outline"
-            label="Settings"
-            onPress={() => router.push('/settings')}
-          />
-        </Row>
+      <Row style={{ justifyContent: 'space-between', alignItems: 'center' }}>
+        <View style={{ flex: 1, gap: 4, marginRight: spacing.md }}>
+          <Text variant="bodyStrong" numberOfLines={1}>
+            {displayName}
+          </Text>
+          <Row gap={spacing.sm}>
+            <View style={{ flex: 1 }}>
+              <ProgressBar value={level.fraction} height={8} />
+            </View>
+            <Text variant="caption" color={palette.onSurfaceVariant}>
+              Lv {level.level}
+            </Text>
+          </Row>
+        </View>
+        <GoldPill amount={gold} />
       </Row>
 
       {/* ------------------------------------------------------ player card */}
@@ -195,27 +197,6 @@ export default function Home() {
 }
 
 /* ------------------------------------------------------------------ pieces */
-
-/** Small app mark for the top bar, drawn rather than shipped as an asset. */
-function BrandMark() {
-  const { palette } = useTheme();
-  return (
-    <View
-      style={{
-        width: 34,
-        height: 34,
-        borderRadius: radius.sm,
-        backgroundColor: palette.primary,
-        borderWidth: stroke.thin,
-        borderColor: palette.ink,
-        alignItems: 'center',
-        justifyContent: 'center',
-        transform: [{ rotate: '-8deg' }],
-      }}>
-      <Ionicons name="dice" size={19} color={palette.onPrimary} />
-    </View>
-  );
-}
 
 /**
  * Square-ish secondary action. Sinks on press like every other control, so the

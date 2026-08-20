@@ -16,10 +16,17 @@ import { AUTH_ERROR_COPY, AuthError, type AuthUser } from '@/services/auth/types
 
 type Status = 'booting' | 'signed-out' | 'signed-in';
 
+/** `Guest12345678` — random 8-digit suffix, unique enough for a throwaway local id. */
+const makeGuestId = () => `Guest${Math.floor(10_000_000 + Math.random() * 90_000_000)}`;
+
 interface SessionState {
   status: Status;
   user: AuthUser | null;
   hasOnboarded: boolean;
+  /** True once the current session came from "Play as guest" rather than a real account. */
+  isGuest: boolean;
+  /** Persisted so a guest session survives an app restart without a real account. */
+  guestId: string | null;
   /** Room code captured from a deep link before auth; consumed after sign-in. */
   pendingRoomCode: string | null;
 
@@ -31,6 +38,7 @@ interface SessionState {
   completeOnboarding: () => void;
   signIn: (email: string, password: string) => Promise<boolean>;
   register: (email: string, password: string, displayName: string) => Promise<boolean>;
+  playAsGuest: () => void;
   sendPasswordReset: (email: string) => Promise<boolean>;
   signOut: () => Promise<void>;
   setPendingRoomCode: (code: string | null) => void;
@@ -60,11 +68,18 @@ export const useSession = create<SessionState>()(
       status: 'booting',
       user: null,
       hasOnboarded: false,
+      isGuest: false,
+      guestId: null,
       pendingRoomCode: null,
       busy: false,
       error: null,
 
       async restore() {
+        const { isGuest, guestId } = get();
+        if (isGuest && guestId) {
+          set({ user: { uid: guestId, email: '', displayName: guestId }, status: 'signed-in' });
+          return;
+        }
         const user = await mockAuthGateway.restore();
         set({ user, status: user ? 'signed-in' : 'signed-out' });
       },
@@ -77,6 +92,17 @@ export const useSession = create<SessionState>()(
       register: (email, password, displayName) =>
         attempt(set, () => mockAuthGateway.register(email, password, displayName)),
 
+      playAsGuest: () => {
+        const guestId = makeGuestId();
+        set({
+          user: { uid: guestId, email: '', displayName: guestId },
+          status: 'signed-in',
+          isGuest: true,
+          guestId,
+          error: null,
+        });
+      },
+
       sendPasswordReset: (email) =>
         attempt(set, async () => {
           await mockAuthGateway.sendPasswordReset(email);
@@ -85,7 +111,7 @@ export const useSession = create<SessionState>()(
 
       async signOut() {
         await mockAuthGateway.signOut();
-        set({ user: null, status: 'signed-out', error: null });
+        set({ user: null, status: 'signed-out', error: null, isGuest: false, guestId: null });
       },
 
       setPendingRoomCode: (code) => set({ pendingRoomCode: code }),
@@ -101,6 +127,8 @@ export const useSession = create<SessionState>()(
       // the flow shows every launch. Re-add it here once onboarding is done.
       partialize: (s) => ({
         pendingRoomCode: s.pendingRoomCode,
+        isGuest: s.isGuest,
+        guestId: s.guestId,
       }),
     },
   ),

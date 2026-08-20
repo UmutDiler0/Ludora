@@ -508,30 +508,50 @@ export function Input({
 }) {
   const { s, palette } = useStyles();
   const [focused, setFocused] = useState(false);
+  const [revealed, setRevealed] = useState(false);
+  const isPassword = !!secureTextEntry;
+
   return (
     <View style={{ gap: spacing.sm }}>
       <Label color={error ? palette.error : palette.onSurfaceVariant}>{label}</Label>
-      <TextInput
-        value={value}
-        onChangeText={onChangeText}
-        placeholder={placeholder}
-        placeholderTextColor={palette.onSurfaceVariant}
-        secureTextEntry={secureTextEntry}
-        autoComplete={autoComplete}
-        autoCapitalize="none"
-        autoCorrect={false}
-        keyboardType={keyboardType}
-        autoFocus={autoFocus}
-        onSubmitEditing={onSubmitEditing}
-        returnKeyType={returnKeyType}
-        onFocus={() => setFocused(true)}
-        onBlur={() => setFocused(false)}
-        style={[
-          s.input,
-          focused && { borderColor: palette.primary, borderWidth: stroke.base },
-          !!error && { borderColor: palette.error, borderWidth: stroke.base },
-        ]}
-      />
+      <View style={{ justifyContent: 'center' }}>
+        <TextInput
+          value={value}
+          onChangeText={onChangeText}
+          placeholder={placeholder}
+          placeholderTextColor={palette.onSurfaceVariant}
+          secureTextEntry={isPassword && !revealed}
+          autoComplete={autoComplete}
+          autoCapitalize="none"
+          autoCorrect={false}
+          keyboardType={keyboardType}
+          autoFocus={autoFocus}
+          onSubmitEditing={onSubmitEditing}
+          returnKeyType={returnKeyType}
+          onFocus={() => setFocused(true)}
+          onBlur={() => setFocused(false)}
+          style={[
+            s.input,
+            isPassword && { paddingRight: 44 },
+            focused && { borderColor: palette.primary, borderWidth: stroke.base },
+            !!error && { borderColor: palette.error, borderWidth: stroke.base },
+          ]}
+        />
+        {isPassword && (
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={revealed ? 'Hide password' : 'Show password'}
+            onPress={() => setRevealed((v) => !v)}
+            hitSlop={10}
+            style={{ position: 'absolute', right: spacing.md, top: 0, bottom: 0, justifyContent: 'center' }}>
+            <Ionicons
+              name={revealed ? 'eye-off-outline' : 'eye-outline'}
+              size={20}
+              color={palette.onSurfaceVariant}
+            />
+          </Pressable>
+        )}
+      </View>
       <Text variant="caption" color={palette.error} style={{ minHeight: 19 }}>
         {error ?? ' '}
       </Text>

@@ -22,7 +22,7 @@ export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
-  const { signIn, busy, error, clearError } = useSession();
+  const { signIn, playAsGuest, busy, error, clearError } = useSession();
   const setDisplayName = useProfile((s) => s.setDisplayName);
 
   const canSubmit = email.trim().length > 0 && password.length > 0 && !busy;
@@ -31,6 +31,13 @@ export default function Login() {
     if (!canSubmit) return;
     const ok = await signIn(email, password);
     if (!ok) return;
+    const user = useSession.getState().user;
+    if (user) setDisplayName(user.displayName);
+    router.replace('/(tabs)');
+  };
+
+  const continueAsGuest = () => {
+    playAsGuest();
     const user = useSession.getState().user;
     if (user) setDisplayName(user.displayName);
     router.replace('/(tabs)');
@@ -102,6 +109,10 @@ export default function Login() {
 
           <Animated.View entering={FadeInDown.delay(220).duration(420)}>
             <SocialAuthRow />
+          </Animated.View>
+
+          <Animated.View entering={FadeInDown.delay(260).duration(420)}>
+            <Button label="Play as Guest" tone="ghost" icon="person-outline" onPress={continueAsGuest} />
           </Animated.View>
 
           <View style={{ marginTop: 'auto', paddingTop: spacing.xl }}>

@@ -4,6 +4,7 @@ import { createJSONStorage, persist } from 'zustand/middleware';
 
 import { DEFAULT_AVATAR, type AvatarConfig } from '@/features/avatar/types';
 import { levelProgress, type Award } from '@/features/economy/levels';
+import { useSession } from '@/stores/session';
 
 /**
  * The player's own profile.
@@ -77,7 +78,11 @@ export const useProfile = create<ProfileState>()(
       setDisplayName: (displayName) => set({ displayName, handle: `@${displayName.toLowerCase()}` }),
       setAvatar: (avatar) => set({ avatar }),
 
-      applyAward: ({ xp, gold }) => set((s) => ({ xp: s.xp + xp, gold: s.gold + gold })),
+      applyAward: ({ xp, gold }) => {
+        // Guests play for free but earn nothing — there is no account to save it to.
+        if (useSession.getState().isGuest) return;
+        set((s) => ({ xp: s.xp + xp, gold: s.gold + gold }));
+      },
 
       recordGame: (won) =>
         set((s) => ({
@@ -101,6 +106,7 @@ export const useProfile = create<ProfileState>()(
         ),
 
       claimDaily: (gold) => {
+        if (useSession.getState().isGuest) return false;
         const today = todayUtc();
         const { lastDailyClaim, dailyStreak } = get();
         if (lastDailyClaim === today) return false;
