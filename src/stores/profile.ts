@@ -57,6 +57,10 @@ const todayUtc = () => new Date().toISOString().slice(0, 10);
 
 const yesterdayUtc = () => new Date(Date.now() - 86_400_000).toISOString().slice(0, 10);
 
+// Everyone starts dressed: the six items DEFAULT_AVATAR equips are free and
+// owned from account creation, never something the shop has to sell back.
+const STARTER_ITEM_IDS = Object.values(DEFAULT_AVATAR).filter((id): id is string => id !== null);
+
 const initial = {
   displayName: 'Player_One',
   handle: '@player_one',
@@ -64,7 +68,7 @@ const initial = {
   xp: SEED.xp,
   gold: SEED.gold,
   isPremium: false,
-  ownedItemIds: [] as string[],
+  ownedItemIds: STARTER_ITEM_IDS,
   stats: SEED.stats,
   lastDailyClaim: null as string | null,
   dailyStreak: 0,

@@ -14,6 +14,7 @@ import {
   Screen,
   Text,
 } from '@/components/ui';
+import { AvatarRenderer } from '@/features/avatar/AvatarRenderer';
 import { AWARDS } from '@/features/economy/levels';
 import { GameArt } from '@/features/home/GameArt';
 import { DUMMY_CHAMPIONS, trendingGames, type Champion, type TrendingGame } from '@/features/home/dummy';
@@ -58,7 +59,7 @@ export default function Home() {
   const { palette } = useTheme();
   const { width } = useWindowDimensions();
 
-  const { displayName, handle, gold, dailyStreak } = useProfile();
+  const { displayName, gold, dailyStreak, avatar } = useProfile();
   const level = useLevel();
   const isGuest = useSession((s) => s.isGuest);
   const claimable = useDailyClaimable() && !isGuest;
@@ -92,7 +93,7 @@ export default function Home() {
           onPress={() => router.push('/(tabs)/profile')}
           style={{ flex: 1, marginRight: spacing.md }}>
           <Row gap={spacing.sm}>
-            <Avatar uid={handle} name={displayName} size={40} ring={palette.primaryContainer} />
+            <AvatarRenderer config={avatar} size={40} ring={palette.primaryContainer} />
             <View style={{ flex: 1 }}>
               <Text variant="bodyStrong" numberOfLines={1}>
                 {displayName}
@@ -109,7 +110,7 @@ export default function Home() {
       {/* ------------------------------------------------------ player card */}
       <Card style={{ gap: spacing.lg }}>
         <Row gap={spacing.lg}>
-          <Avatar uid={handle} name={displayName} size={60} ring={palette.primaryContainer} />
+          <AvatarRenderer config={avatar} size={60} ring={palette.primaryContainer} />
           <View style={{ flex: 1, gap: spacing.xs }}>
             <Text variant="caption" color={palette.onSurfaceVariant}>
               Welcome back

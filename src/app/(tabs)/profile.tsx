@@ -1,8 +1,8 @@
+import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { View } from 'react-native';
+import { Pressable, View } from 'react-native';
 
 import {
-  Avatar,
   Button,
   Card,
   GoldPill,
@@ -16,9 +16,10 @@ import {
   Text,
 } from '@/components/ui';
 import { TABS } from '@/constants/app';
+import { AvatarRenderer } from '@/features/avatar/AvatarRenderer';
 import { useLevel, useProfile, useWinRate } from '@/stores/profile';
 import { useSession } from '@/stores/session';
-import { spacing } from '@/theme/tokens';
+import { radius, spacing, stroke } from '@/theme/tokens';
 import { useTheme } from '@/theme/ThemeProvider';
 
 /**
@@ -30,7 +31,7 @@ export default function Profile() {
   const { palette } = useTheme();
 
   const router = useRouter();
-  const { displayName, handle, gold, stats } = useProfile();
+  const { displayName, handle, gold, stats, avatar } = useProfile();
   const level = useLevel();
   const winRate = useWinRate();
   const { signOut, isGuest } = useSession();
@@ -68,7 +69,29 @@ export default function Profile() {
 
       <Card style={{ gap: spacing.lg }}>
         <Row gap={spacing.lg}>
-          <Avatar uid={handle} name={displayName} size={64} ring={palette.primaryContainer} />
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Customize avatar"
+            onPress={() => router.push('/avatar-customize')}
+            style={{ width: 64, height: 64 }}>
+            <AvatarRenderer config={avatar} size={64} ring={palette.primaryContainer} />
+            <View
+              style={{
+                position: 'absolute',
+                right: -4,
+                bottom: -4,
+                width: 24,
+                height: 24,
+                borderRadius: radius.pill,
+                alignItems: 'center',
+                justifyContent: 'center',
+                backgroundColor: palette.primary,
+                borderWidth: stroke.thin,
+                borderColor: palette.ink,
+              }}>
+              <Ionicons name="pencil" size={12} color={palette.onPrimary} />
+            </View>
+          </Pressable>
           <View style={{ flex: 1, gap: spacing.xs }}>
             <Text variant="heading" numberOfLines={1}>
               {displayName}
