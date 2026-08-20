@@ -9,7 +9,9 @@
       "Bash(npm i *)",
       "Bash(node -e \"console.log\\('@types/jest', require\\('./node_modules/@types/jest/package.json'\\).version\\)\")",
       "Bash(npx expo *)",
-      "Bash(tasklist)"
+      "Bash(tasklist)",
+      "Bash(npm uninstall *)",
+      "Bash(npm install *)"
     ]
   }
 }

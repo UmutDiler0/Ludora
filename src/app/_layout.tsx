@@ -1,17 +1,14 @@
+import { Fredoka_600SemiBold, Fredoka_700Bold } from '@expo-google-fonts/fredoka';
 import {
-  BricolageGrotesque_700Bold,
-  BricolageGrotesque_800ExtraBold,
-} from '@expo-google-fonts/bricolage-grotesque';
-import {
-  PlusJakartaSans_400Regular,
-  PlusJakartaSans_500Medium,
-  PlusJakartaSans_700Bold,
-} from '@expo-google-fonts/plus-jakarta-sans';
-import { SpaceGrotesk_500Medium, SpaceGrotesk_700Bold } from '@expo-google-fonts/space-grotesk';
+  Nunito_600SemiBold,
+  Nunito_700Bold,
+  Nunito_800ExtraBold,
+  Nunito_900Black,
+} from '@expo-google-fonts/nunito';
 import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
-import { StatusBar } from 'expo-status-bar';
 import * as SplashScreen from 'expo-splash-screen';
+import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
 import { View } from 'react-native';
 
@@ -21,13 +18,12 @@ SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
   const [fontsLoaded] = useFonts({
-    BricolageGrotesque_700Bold,
-    BricolageGrotesque_800ExtraBold,
-    PlusJakartaSans_400Regular,
-    PlusJakartaSans_500Medium,
-    PlusJakartaSans_700Bold,
-    SpaceGrotesk_500Medium,
-    SpaceGrotesk_700Bold,
+    Fredoka_600SemiBold,
+    Fredoka_700Bold,
+    Nunito_600SemiBold,
+    Nunito_700Bold,
+    Nunito_800ExtraBold,
+    Nunito_900Black,
   });
 
   useEffect(() => {
@@ -40,7 +36,8 @@ export default function RootLayout() {
 
   return (
     <>
-      <StatusBar style="light" />
+      {/* Dark status bar content — the cartoon theme is a light theme. */}
+      <StatusBar style="dark" />
       <Stack
         screenOptions={{
           headerShown: false,

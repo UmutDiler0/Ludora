@@ -1,7 +1,7 @@
 import { Pressable, View } from 'react-native';
 
 import { Avatar, Button, Card, Chip, Label, Row, Screen, Text } from '@/components/ui';
-import { palette, radius, spacing } from '@/theme/tokens';
+import { palette, radius, spacing, stroke } from '@/theme/tokens';
 import { ROLES } from '../roles';
 import type { VVPlayerView } from '../state';
 
@@ -82,9 +82,11 @@ export function DayScreen({
               style={({ pressed }) => [
                 s.row,
                 {
-                  borderColor: chosen ? palette.secondary : palette.surfaceHigh,
-                  backgroundColor: chosen ? palette.surfaceHigh : palette.surfaceContainer,
-                  opacity: pressed ? 0.85 : 1,
+                  borderBottomColor: chosen ? palette.secondary : palette.ink,
+                  borderBottomWidth: chosen ? stroke.depthPressed : stroke.depth,
+                  backgroundColor: chosen ? palette.surfaceHigh : palette.surface,
+                  transform: [{ translateY: chosen ? stroke.depth - stroke.depthPressed : 0 }],
+                  opacity: pressed ? 0.9 : 1,
                 },
               ]}>
               <Avatar
@@ -129,13 +131,18 @@ const s = {
     gap: spacing.md,
     padding: spacing.md,
     borderRadius: radius.md,
-    borderWidth: 1,
+    borderWidth: stroke.base,
+    borderColor: palette.ink,
   },
   rowDead: {
+    flexDirection: 'row' as const,
+    alignItems: 'center' as const,
+    gap: spacing.md,
     padding: spacing.md,
     borderRadius: radius.md,
-    borderWidth: 1,
-    borderColor: palette.surfaceLow,
-    backgroundColor: palette.surfaceLowest,
+    borderWidth: stroke.thin,
+    borderStyle: 'dashed' as const,
+    borderColor: palette.outlineVariant,
+    backgroundColor: palette.surfaceHigh,
   },
 };

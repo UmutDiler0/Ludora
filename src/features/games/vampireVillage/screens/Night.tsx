@@ -1,7 +1,7 @@
 import { Pressable, View } from 'react-native';
 
 import { Avatar, Button, Card, Chip, Label, Row, Screen, Text } from '@/components/ui';
-import { palette, radius, roleColors, spacing } from '@/theme/tokens';
+import { palette, radius, roleColors, spacing, stroke } from '@/theme/tokens';
 import { ROLES } from '../roles';
 import type { VVPlayerView } from '../state';
 
@@ -88,10 +88,14 @@ export function NightScreen({
                       gap: spacing.md,
                       padding: spacing.md,
                       borderRadius: radius.md,
-                      borderWidth: 1,
-                      borderColor: chosen ? accent : palette.surfaceHigh,
-                      backgroundColor: chosen ? palette.surfaceHigh : palette.surfaceContainer,
-                      opacity: submitted && !chosen ? 0.4 : pressed ? 0.85 : 1,
+                      borderWidth: stroke.base,
+                      borderColor: palette.ink,
+                      // The chosen target sinks and takes the role's colour.
+                      borderBottomWidth: chosen ? stroke.depthPressed : stroke.depth,
+                      borderBottomColor: chosen ? accent : palette.ink,
+                      backgroundColor: chosen ? palette.surfaceHigh : palette.surface,
+                      transform: [{ translateY: chosen ? stroke.depth - stroke.depthPressed : 0 }],
+                      opacity: submitted && !chosen ? 0.45 : pressed ? 0.9 : 1,
                     },
                   ]}>
                   <Avatar uid={p.uid} name={p.displayName} ring={chosen ? accent : undefined} />

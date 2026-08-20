@@ -3,9 +3,8 @@
   "main": "expo-router/entry",
   "version": "1.0.0",
   "dependencies": {
-    "@expo-google-fonts/bricolage-grotesque": "^0.4.1",
-    "@expo-google-fonts/plus-jakarta-sans": "^0.4.2",
-    "@expo-google-fonts/space-grotesk": "^0.4.1",
+    "@expo-google-fonts/fredoka": "^0.4.1",
+    "@expo-google-fonts/nunito": "^0.4.2",
     "@expo/vector-icons": "^15.0.2",
     "expo": "~54.0.37",
     "expo-constants": "~18.0.14",

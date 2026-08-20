@@ -1,7 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { Tabs } from 'expo-router';
 
-import { fonts, palette } from '@/theme/tokens';
+import { fonts, palette, stroke } from '@/theme/tokens';
 
 /**
  * In-session tab bar (decision D1): Game · Roles · Chat · Log.
@@ -15,18 +15,20 @@ export default function GameLayout() {
       screenOptions={{
         headerShown: false,
         tabBarActiveTintColor: palette.primary,
-        tabBarInactiveTintColor: palette.outline,
+        tabBarInactiveTintColor: palette.onSurfaceVariant,
         tabBarStyle: {
-          backgroundColor: palette.surfaceLow,
-          borderTopColor: palette.surfaceHigh,
-          borderTopWidth: 1,
-          height: 78,
+          backgroundColor: palette.surface,
+          // Thick ink rule, matching every other surface in the cartoon kit.
+          borderTopColor: palette.ink,
+          borderTopWidth: stroke.base,
+          height: 80,
           paddingTop: 8,
         },
         tabBarLabelStyle: {
           fontFamily: fonts.label,
-          fontSize: 11,
-          letterSpacing: 0.8,
+          fontSize: 11.5,
+          letterSpacing: 0.6,
+          textTransform: 'uppercase',
         },
       }}>
       <Tabs.Screen
@@ -34,7 +36,7 @@ export default function GameLayout() {
         options={{
           title: 'Game',
           tabBarIcon: ({ color, size }) => (
-            <Ionicons name="game-controller-outline" size={size} color={color} />
+            <Ionicons name="game-controller" size={size} color={color} />
           ),
         }}
       />
@@ -42,16 +44,14 @@ export default function GameLayout() {
         name="roles"
         options={{
           title: 'Roles',
-          tabBarIcon: ({ color, size }) => <Ionicons name="people-outline" size={size} color={color} />,
+          tabBarIcon: ({ color, size }) => <Ionicons name="people" size={size} color={color} />,
         }}
       />
       <Tabs.Screen
         name="log"
         options={{
           title: 'Log',
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="receipt-outline" size={size} color={color} />
-          ),
+          tabBarIcon: ({ color, size }) => <Ionicons name="receipt" size={size} color={color} />,
         }}
       />
     </Tabs>

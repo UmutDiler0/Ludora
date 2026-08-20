@@ -12,14 +12,15 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { palette, radius, spacing, type } from '@/theme/tokens';
+import { palette, radius, spacing, stroke, type } from '@/theme/tokens';
 
 /**
- * The shared primitive kit (docs/ARCHITECTURE.md decision D20).
+ * The shared primitive kit (docs/ARCHITECTURE.md decision D20), cartoon theme.
  *
- * Extracted from the 24 designed screens: card, list row, chip, primary CTA,
- * stat tile, count badge. The eleven routes that have no design are built from
- * these, so restyling them later is a props change rather than a rewrite.
+ * Three devices carry the look, and they live here rather than in any screen:
+ *   1. every surface gets a thick `ink` outline
+ *   2. an over-thick bottom border gives objects physical depth
+ *   3. pressing a control sinks it into that depth instead of just fading
  */
 
 /* ---------------------------------------------------------------- Text */
@@ -47,7 +48,11 @@ export function Text({
 }
 
 /** Uppercase eyebrow label — "YOUR ROLE", "ROOM CODE", "CURRENT PHASE". */
-export function Label({ children, color = palette.onSurfaceVariant, center }: {
+export function Label({
+  children,
+  color = palette.onSurfaceVariant,
+  center,
+}: {
   children: ReactNode;
   color?: string;
   center?: boolean;
@@ -98,7 +103,7 @@ export function Card({
   style,
 }: {
   children: ReactNode;
-  /** Left rail colour — used to mark state, never for decoration. */
+  /** Colours the card's depth edge — used to mark state, never decoration. */
   accent?: string;
   padded?: boolean;
   style?: StyleProp<ViewStyle>;
@@ -108,7 +113,7 @@ export function Card({
       style={[
         s.card,
         padded && { padding: spacing.lg },
-        accent ? { borderColor: accent, borderWidth: 1 } : null,
+        accent ? { borderBottomColor: accent, borderBottomWidth: stroke.depth } : null,
         style,
       ]}>
       {children}
@@ -128,15 +133,10 @@ export function Chip({
   filled?: boolean;
 }) {
   return (
-    <View
-      style={[
-        s.chip,
-        { borderColor: color },
-        filled && { backgroundColor: color },
-      ]}>
+    <View style={[s.chip, filled ? { backgroundColor: color } : { backgroundColor: palette.surface }]}>
       <Text
         variant="label"
-        color={filled ? palette.background : color}
+        color={filled ? palette.surface : color}
         style={{ textTransform: 'uppercase' }}>
         {children}
       </Text>
@@ -145,6 +145,13 @@ export function Chip({
 }
 
 /* -------------------------------------------------------------- Button */
+
+const TONES = {
+  primary: { bg: palette.primary, fg: '#FFFFFF' },
+  secondary: { bg: palette.secondaryContainer, fg: palette.ink },
+  ghost: { bg: palette.surface, fg: palette.ink },
+  danger: { bg: palette.error, fg: '#FFFFFF' },
+} as const;
 
 export function Button({
   label,
@@ -156,18 +163,12 @@ export function Button({
 }: {
   label: string;
   onPress?: () => void;
-  tone?: 'primary' | 'secondary' | 'ghost' | 'danger';
+  tone?: keyof typeof TONES;
   disabled?: boolean;
   loading?: boolean;
   style?: StyleProp<ViewStyle>;
 }) {
-  const tones = {
-    primary: { bg: palette.primaryContainer, fg: palette.onPrimary, border: 'transparent' },
-    secondary: { bg: palette.secondaryContainer, fg: palette.background, border: 'transparent' },
-    ghost: { bg: 'transparent', fg: palette.onSurface, border: palette.outlineVariant },
-    danger: { bg: 'transparent', fg: palette.error, border: palette.error },
-  }[tone];
-
+  const t = TONES[tone];
   const isOff = disabled || loading;
 
   return (
@@ -176,17 +177,26 @@ export function Button({
       accessibilityState={{ disabled: !!isOff }}
       disabled={isOff}
       onPress={onPress}
-      style={({ pressed }) => [
-        s.button,
-        { backgroundColor: tones.bg, borderColor: tones.border },
-        pressed && !isOff && { opacity: 0.82, transform: [{ scale: 0.99 }] },
-        isOff && { opacity: 0.4 },
-        style,
-      ]}>
+      style={({ pressed }) => {
+        const sunk = pressed && !isOff;
+        return [
+          s.button,
+          { backgroundColor: t.bg },
+          // Sink into the depth edge rather than fading: the face drops by
+          // exactly the amount the bottom border loses, so the outer box
+          // never changes height and nothing below it shifts.
+          sunk && {
+            borderBottomWidth: stroke.depthPressed,
+            transform: [{ translateY: stroke.depth - stroke.depthPressed }],
+          },
+          isOff && { opacity: 0.45 },
+          style,
+        ];
+      }}>
       {loading ? (
-        <ActivityIndicator color={tones.fg} />
+        <ActivityIndicator color={t.fg} />
       ) : (
-        <Text variant="label" color={tones.fg} style={{ textTransform: 'uppercase', fontSize: 13 }}>
+        <Text variant="label" color={t.fg} style={{ textTransform: 'uppercase', fontSize: 14 }}>
           {label}
         </Text>
       )}
@@ -216,13 +226,7 @@ export function Avatar({
 }) {
   let hash = 0;
   for (let i = 0; i < uid.length; i++) hash = (hash * 31 + uid.charCodeAt(i)) >>> 0;
-  const hues = [
-    palette.primaryContainer,
-    palette.secondaryContainer,
-    palette.tertiaryContainer,
-    palette.errorContainer,
-    palette.surfaceHighest,
-  ];
+  const hues = ['#7C4DFF', '#16C4E8', '#FFC93C', '#FF5B4A', '#2FCB74', '#FF9F1C'];
   const bg = hues[hash % hues.length];
   const initials = name.replace(/[^A-Za-z0-9]/g, '').slice(0, 2).toUpperCase();
 
@@ -235,11 +239,11 @@ export function Avatar({
         backgroundColor: bg,
         alignItems: 'center',
         justifyContent: 'center',
-        opacity: dimmed ? 0.35 : 1,
-        borderWidth: ring ? 2 : 0,
-        borderColor: ring ?? 'transparent',
+        opacity: dimmed ? 0.4 : 1,
+        borderWidth: stroke.base,
+        borderColor: ring ?? palette.ink,
       }}>
-      <Text variant="label" color={palette.onSurface} style={{ fontSize: size * 0.32 }}>
+      <Text variant="label" color="#FFFFFF" style={{ fontSize: size * 0.34 }}>
         {initials}
       </Text>
     </View>
@@ -250,8 +254,8 @@ export function Avatar({
 
 export function ProgressBar({
   value,
-  color = palette.primaryContainer,
-  height = 8,
+  color = palette.primary,
+  height = 16,
 }: {
   /** 0–1. */
   value: number;
@@ -260,7 +264,15 @@ export function ProgressBar({
 }) {
   const pct = Math.max(0, Math.min(1, value));
   return (
-    <View style={{ height, borderRadius: height / 2, backgroundColor: palette.surfaceHigh, overflow: 'hidden' }}>
+    <View
+      style={{
+        height,
+        borderRadius: radius.pill,
+        backgroundColor: palette.surfaceHigh,
+        borderWidth: stroke.thin,
+        borderColor: palette.ink,
+        overflow: 'hidden',
+      }}>
       <View style={{ width: `${pct * 100}%`, height: '100%', backgroundColor: color }} />
     </View>
   );
@@ -268,20 +280,30 @@ export function ProgressBar({
 
 /* ------------------------------------------------------------ StatTile */
 
-export function StatTile({ value, caption, color = palette.onSurface }: {
+export function StatTile({
+  value,
+  caption,
+  color = palette.onSurface,
+}: {
   value: string;
   caption: string;
   color?: string;
 }) {
   return (
-    <Card style={{ flex: 1, alignItems: 'center', gap: spacing.xs }}>
-      <Text variant="heading" color={color}>{value}</Text>
+    <Card accent={color} style={{ flex: 1, alignItems: 'center', gap: spacing.xs }}>
+      <Text variant="heading" color={color}>
+        {value}
+      </Text>
       <Label>{caption}</Label>
     </Card>
   );
 }
 
-export function Row({ children, gap = spacing.md, style }: {
+export function Row({
+  children,
+  gap = spacing.md,
+  style,
+}: {
   children: ReactNode;
   gap?: number;
   style?: StyleProp<ViewStyle>;
@@ -292,22 +314,26 @@ export function Row({ children, gap = spacing.md, style }: {
 const s = StyleSheet.create({
   screen: { flex: 1, backgroundColor: palette.background },
   card: {
-    backgroundColor: palette.surfaceContainer,
+    backgroundColor: palette.surface,
     borderRadius: radius.lg,
-    borderWidth: 1,
-    borderColor: palette.surfaceHigh,
+    borderWidth: stroke.base,
+    borderColor: palette.ink,
+    borderBottomWidth: stroke.depth,
   },
   chip: {
     paddingHorizontal: spacing.md,
     paddingVertical: 5,
     borderRadius: radius.pill,
-    borderWidth: 1,
+    borderWidth: stroke.thin,
+    borderColor: palette.ink,
     alignSelf: 'flex-start',
   },
   button: {
-    minHeight: 52,
+    minHeight: 56,
     borderRadius: radius.md,
-    borderWidth: 1,
+    borderWidth: stroke.base,
+    borderColor: palette.ink,
+    borderBottomWidth: stroke.depth,
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: spacing.xl,
