@@ -1,3 +1,6 @@
+import { avatarFromSeed } from '@/features/avatar/seeded';
+import { normalizeAvatar, type AvatarConfig } from '@/features/avatar/types';
+
 /**
  * Placeholder data for the Leaderboard screen (Mücadele — spec §8).
  *
@@ -14,10 +17,23 @@ export interface LeaderboardEntry {
   uid: string;
   displayName: string;
   score: number;
+  /**
+   * How this player looks. Real entries will carry the config denormalised onto
+   * the leaderboard document — a board of 50 rows must not fan out into 50
+   * profile reads. The fake ones are dealt from their uid; see `avatarFromSeed`.
+   */
+  avatar: AvatarConfig;
   isYou?: boolean;
 }
 
-const WEEKLY_POOL: Omit<LeaderboardEntry, 'rank'>[] = [
+/** A pool row before it has a rank or a face. */
+type PoolRow = Pick<LeaderboardEntry, 'uid' | 'displayName' | 'score'>;
+
+/** Dealt once at module load, so a rival never changes clothes between renders. */
+const dress = (rows: PoolRow[]): Omit<LeaderboardEntry, 'rank'>[] =>
+  rows.map((row) => ({ ...row, avatar: avatarFromSeed(row.uid) }));
+
+const WEEKLY_POOL = dress([
   { uid: 'u_blazequeen', displayName: 'BlazeQueen', score: 9240 },
   { uid: 'u_shadowninja', displayName: 'ShadowNinja', score: 8760 },
   { uid: 'u_trashpanda', displayName: 'TrashPanda', score: 8330 },
@@ -32,9 +48,9 @@ const WEEKLY_POOL: Omit<LeaderboardEntry, 'rank'>[] = [
   { uid: 'u_quietstorm', displayName: 'QuietStorm', score: 2710 },
   { uid: 'u_papertiger', displayName: 'PaperTiger', score: 2085 },
   { uid: 'u_glowmoth', displayName: 'GlowMoth', score: 1420 },
-];
+]);
 
-const MONTHLY_POOL: Omit<LeaderboardEntry, 'rank'>[] = [
+const MONTHLY_POOL = dress([
   { uid: 'u_shadowninja', displayName: 'ShadowNinja', score: 28_140 },
   { uid: 'u_blazequeen', displayName: 'BlazeQueen', score: 26_980 },
   { uid: 'u_ironclover', displayName: 'IronClover', score: 24_310 },
@@ -49,7 +65,7 @@ const MONTHLY_POOL: Omit<LeaderboardEntry, 'rank'>[] = [
   { uid: 'u_mintgoblin', displayName: 'MintGoblin', score: 6_710 },
   { uid: 'u_papertiger', displayName: 'PaperTiger', score: 5_180 },
   { uid: 'u_glowmoth', displayName: 'GlowMoth', score: 3_960 },
-];
+]);
 
 /**
  * Merges the viewer's own score into the fake pool and re-ranks, so "you"
@@ -57,9 +73,14 @@ const MONTHLY_POOL: Omit<LeaderboardEntry, 'rank'>[] = [
  * slot. Ties fall behind the fake entry (`isYou` never wins a tie), so the
  * board reads as stable rather than jittery from run to run.
  */
-export function leaderboard(period: LeaderboardPeriod, you: { uid: string; displayName: string; score: number }): LeaderboardEntry[] {
+export function leaderboard(
+  period: LeaderboardPeriod,
+  you: PoolRow & { avatar: Partial<AvatarConfig> },
+): LeaderboardEntry[] {
   const pool = period === 'weekly' ? WEEKLY_POOL : MONTHLY_POOL;
-  return [...pool, { ...you, isYou: true }]
+  // Normalised here rather than trusted: a profile saved before a slot existed
+  // would otherwise put a barefoot figure on the podium.
+  return [...pool, { ...you, avatar: normalizeAvatar(you.avatar), isYou: true }]
     .sort((a, b) => b.score - a.score)
     .map((entry, i) => ({ ...entry, rank: i + 1 }));
 }

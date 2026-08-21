@@ -21,6 +21,22 @@ export function createRng(seed: number): Rng {
   };
 }
 
+/**
+ * Stable 32-bit hash (FNV-1a), for turning a string key into a seed.
+ *
+ * Stable across runs and platforms by construction — no `Math.random`, no
+ * `Object.keys` ordering, no locale. That is what lets a period key, a uid or a
+ * match id always produce the same draw.
+ */
+export function hashSeed(key: string): number {
+  let hash = 2166136261;
+  for (let i = 0; i < key.length; i++) {
+    hash ^= key.charCodeAt(i);
+    hash = Math.imul(hash, 16777619);
+  }
+  return hash >>> 0;
+}
+
 /** Integer in [0, maxExclusive). */
 export function randomInt(rng: Rng, maxExclusive: number): number {
   return Math.floor(rng.next() * maxExclusive);

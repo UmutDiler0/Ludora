@@ -3,7 +3,6 @@ import { useMemo, useState } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
 
 import {
-  Avatar,
   Button,
   Card,
   Chip,
@@ -16,6 +15,7 @@ import {
   Text,
 } from '@/components/ui';
 import { TABS } from '@/constants/app';
+import { AvatarRenderer } from '@/features/avatar/AvatarRenderer';
 import { leaderboard, type LeaderboardEntry, type LeaderboardPeriod } from '@/features/leaderboard/dummy';
 import { useProfile } from '@/stores/profile';
 import { useSession } from '@/stores/session';
@@ -70,7 +70,7 @@ export default function Leaderboard() {
   const router = useRouter();
   const [period, setPeriod] = useState<LeaderboardPeriod>('weekly');
 
-  const { handle, gold, stats } = useProfile();
+  const { handle, gold, stats, avatar } = useProfile();
   const isGuest = useSession((state) => state.isGuest);
 
   const entries = useMemo(() => {
@@ -78,8 +78,8 @@ export default function Leaderboard() {
     // week's pace, matched loosely against the pool ranges in dummy.ts.
     const base = stats.gamesWon * 60 + gold * 0.4;
     const score = isGuest ? -1 : Math.round(period === 'monthly' ? base * 3.1 : base);
-    return leaderboard(period, { uid: handle, displayName: 'You', score });
-  }, [period, handle, gold, stats.gamesWon, isGuest]);
+    return leaderboard(period, { uid: handle, displayName: 'You', score, avatar });
+  }, [period, handle, gold, stats.gamesWon, isGuest, avatar]);
 
   const you = entries.find((e) => e.isYou);
   const podium = entries.slice(0, 3);
@@ -112,7 +112,10 @@ export default function Leaderboard() {
                   <Text variant="bodyStrong" style={s.rankNumber}>
                     {entry.rank}
                   </Text>
-                  <Avatar uid={entry.uid} name={entry.displayName} size={38} />
+                  {/* Bust crop, same config as the podium — one avatar, two
+                      framings, so a hat cannot look right in one and wrong in
+                      the other. */}
+                  <AvatarRenderer config={entry.avatar} size={38} />
                 </Row>
               }
               title={entry.isYou ? 'You' : entry.displayName}
@@ -162,12 +165,17 @@ export default function Leaderboard() {
 
 const MEDALS = (p: Palette) => [p.medalGold, p.medalSilver, p.medalBronze];
 /**
- * Both arrays are indexed by rank (0 = 1st), not by render position — 1st
- * place always gets the tallest block and biggest avatar. `ORDER` only
+ * All three arrays are indexed by rank (0 = 1st), not by render position — 1st
+ * place always gets the tallest block and biggest figure. `ORDER` only
  * controls left-to-right placement: 2nd · 1st · 3rd, tallest centered.
+ *
+ * The blocks are shorter than they were because the figures now stand on them:
+ * a full body plus the old 116pt step pushed the rest of the board off screen,
+ * and a podium nobody can see past is worse than a short one.
  */
 const ORDER = [1, 0, 2];
-const HEIGHTS = [116, 86, 68];
+const HEIGHTS = [64, 48, 38];
+const FIGURES = [80, 64, 64];
 
 function Podium({
   entries,
@@ -188,19 +196,29 @@ function Podium({
         const entry = entries[i];
         if (!entry) return <View key={i} style={{ flex: 1 }} />;
         return (
-          <View key={entry.uid} style={{ flex: 1, alignItems: 'center', gap: spacing.xs }}>
-            <Avatar uid={entry.uid} name={entry.displayName} size={i === 0 ? 56 : 46} ring={medals[i]} />
-            <Text variant="bodyStrong" numberOfLines={1} style={{ maxWidth: '100%' }}>
-              {entry.isYou ? 'You' : entry.displayName}
-            </Text>
-            <Text variant="caption" color={palette.onSurfaceVariant}>
-              {entry.score.toLocaleString()}
-            </Text>
-            <Chip color={palette.tertiary}>+{prizes[i]}g</Chip>
+          <View key={entry.uid} style={{ flex: 1, alignItems: 'center' }}>
+            {/*
+              Full body rather than a bust: the top three are the one place on
+              the board where the shop's clothes, bottoms and shoes are worth
+              looking at, and a podium is a place people stand.
+            */}
+            <AvatarRenderer config={entry.avatar} mode="full" size={FIGURES[i]} ring={medals[i]} />
+
+            {/* No gap — the figure stands on the block rather than above it. */}
             <View style={[s.podiumStep, { height: HEIGHTS[i], backgroundColor: medals[i] }]}>
               <Text variant="title" color={palette.ink}>
                 {i + 1}
               </Text>
+            </View>
+
+            <View style={{ alignItems: 'center', gap: 2, paddingTop: spacing.xs }}>
+              <Text variant="bodyStrong" numberOfLines={1} style={{ maxWidth: '100%' }}>
+                {entry.isYou ? 'You' : entry.displayName}
+              </Text>
+              <Text variant="caption" color={palette.onSurfaceVariant}>
+                {entry.score.toLocaleString()}
+              </Text>
+              <Chip color={palette.tertiary}>+{prizes[i]}g</Chip>
             </View>
           </View>
         );

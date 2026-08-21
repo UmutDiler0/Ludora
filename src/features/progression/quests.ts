@@ -1,4 +1,4 @@
-import { createRng } from '@/features/games/core/rng';
+import { createRng, hashSeed } from '@/features/games/core/rng';
 import type { GameId } from '@/features/games/core/types';
 import type { QuestPeriod } from './periods';
 
@@ -74,16 +74,6 @@ const WEEKLY_POOL: QuestDef[] = [
 export const DAILY_COUNT = 3;
 export const WEEKLY_COUNT = 2;
 
-/** Stable 32-bit hash, so a period key always seeds the same draw. */
-function hashKey(key: string): number {
-  let hash = 2166136261;
-  for (let i = 0; i < key.length; i++) {
-    hash ^= key.charCodeAt(i);
-    hash = Math.imul(hash, 16777619);
-  }
-  return hash >>> 0;
-}
-
 /** Fisher–Yates against the injected rng — the same determinism rule as §9. */
 function shuffled<T>(items: readonly T[], seed: number): T[] {
   const rng = createRng(seed);
@@ -99,7 +89,7 @@ function shuffled<T>(items: readonly T[], seed: number): T[] {
 export function questsForPeriod(period: QuestPeriod, key: string): QuestDef[] {
   const pool = period === 'daily' ? DAILY_POOL : WEEKLY_POOL;
   const take = period === 'daily' ? DAILY_COUNT : WEEKLY_COUNT;
-  return shuffled(pool, hashKey(`${period}:${key}`)).slice(0, take);
+  return shuffled(pool, hashSeed(`${period}:${key}`)).slice(0, take);
 }
 
 export const stateFor = (progress: QuestProgress, questId: string): QuestState =>
