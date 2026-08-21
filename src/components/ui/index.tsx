@@ -1,7 +1,8 @@
 import { Ionicons } from '@expo/vector-icons';
-import { useMemo, useState, type ComponentProps, type ReactNode } from 'react';
+import { useEffect, useMemo, useState, type ComponentProps, type ReactNode } from 'react';
 import {
   ActivityIndicator,
+  Modal,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -13,6 +14,7 @@ import {
   type TextStyle,
   type ViewStyle,
 } from 'react-native';
+import Animated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { useTheme } from '@/theme/ThemeProvider';
@@ -790,4 +792,140 @@ export function EmptyState({
 export function Divider() {
   const { palette } = useTheme();
   return <View style={{ height: stroke.thin, backgroundColor: palette.outlineVariant }} />;
+}
+
+/* --------------------------------------------------------------- Dialog */
+
+/**
+ * Modal shell that pops onto the screen.
+ *
+ * The card springs in from 85% scale while the backdrop fades, which is the
+ * cartoon kit's own idiom applied to a modal — objects here have physical
+ * depth and arrive by moving, not by appearing. The pop is what tells the user
+ * an interruption happened; a dialog that cross-fades in is easy to miss and
+ * easy to dismiss by reflex, which is exactly wrong for a confirmation.
+ *
+ * `animationType="none"` on the RN Modal hands the entrance to Reanimated so
+ * the two animations cannot fight; the backdrop is ours, and the platform's
+ * own transition would otherwise run underneath it.
+ *
+ * Android's hardware back and a backdrop tap both route to `onDismiss`, so
+ * cancelling never requires hitting a specific control.
+ */
+export function Dialog({
+  visible,
+  onDismiss,
+  children,
+  /** Accessible name for the dialog as a whole. */
+  label,
+  /**
+   * Changing this re-mounts the card, so a dialog that advances through steps
+   * pops again on each one instead of silently swapping its contents. Without
+   * it, a confirmation reached from inside another dialog arrives with no
+   * transition at all — the one moment it most needs to announce itself.
+   */
+  contentKey,
+}: {
+  visible: boolean;
+  onDismiss: () => void;
+  children: ReactNode;
+  label: string;
+  contentKey?: string | number;
+}) {
+  const { s, palette } = useStyles();
+  const pop = useSharedValue(0);
+
+  // Driven by a shared value rather than an `entering=` layout animation:
+  // layout animations do not reliably fire inside an RN Modal on Android,
+  // because the Modal mounts its children into a separate root. An explicit
+  // spring on a mounted view has no such dependency.
+  useEffect(() => {
+    if (!visible) {
+      pop.value = 0;
+      return;
+    }
+    pop.value = 0;
+    pop.value = withSpring(1, { damping: 14, stiffness: 190, mass: 0.6 });
+  }, [visible, contentKey, pop]);
+
+  const backdropStyle = useAnimatedStyle(() => ({
+    opacity: Math.min(1, pop.value * 1.6),
+  }));
+
+  const cardStyle = useAnimatedStyle(() => ({
+    opacity: Math.min(1, pop.value * 2),
+    // Starts at 0.85 and overshoots slightly past 1 — the card lands with a
+    // bounce, matching how every other control in the kit behaves.
+    transform: [{ scale: 0.85 + 0.15 * pop.value }],
+  }));
+
+  return (
+    <Modal visible={visible} transparent animationType="none" onRequestClose={onDismiss}>
+      <Animated.View style={[StyleSheet.absoluteFill, backdropStyle]}>
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel="Close"
+          onPress={onDismiss}
+          style={[StyleSheet.absoluteFill, { backgroundColor: '#00000088' }]}
+        />
+      </Animated.View>
+
+      <View style={dialogLayout.centre} pointerEvents="box-none">
+        <Animated.View
+          accessibilityViewIsModal
+          accessibilityLabel={label}
+          style={[s.card, dialogLayout.card, { backgroundColor: palette.surface }, cardStyle]}>
+          {children}
+        </Animated.View>
+      </View>
+    </Modal>
+  );
+}
+
+const dialogLayout = StyleSheet.create({
+  centre: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: spacing.xl,
+  },
+  card: {
+    width: '100%',
+    maxWidth: 420,
+    padding: spacing.xl,
+    gap: spacing.lg,
+  },
+});
+
+/**
+ * The two-button footer a confirmation always ends with. Cancel is on the
+ * left and never destructive-toned, so the reflex tap is the safe one.
+ */
+export function DialogActions({
+  cancelLabel = 'Cancel',
+  confirmLabel,
+  tone = 'primary',
+  onCancel,
+  onConfirm,
+  confirmDisabled,
+}: {
+  cancelLabel?: string;
+  confirmLabel: string;
+  tone?: ButtonTone;
+  onCancel: () => void;
+  onConfirm: () => void;
+  confirmDisabled?: boolean;
+}) {
+  return (
+    <Row gap={spacing.sm} style={{ alignItems: 'stretch' }}>
+      <Button label={cancelLabel} tone="ghost" onPress={onCancel} style={{ flex: 1 }} />
+      <Button
+        label={confirmLabel}
+        tone={tone}
+        onPress={onConfirm}
+        disabled={confirmDisabled}
+        style={{ flex: 1 }}
+      />
+    </Row>
+  );
 }

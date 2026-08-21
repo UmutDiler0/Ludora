@@ -48,7 +48,14 @@ export default function AvatarCustomize() {
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
-        contentContainerStyle={{ gap: spacing.md, paddingVertical: spacing.sm }}>
+        // Same reason as SlotTabRow: without this the scroller claims the
+        // leftover column height and stretches its tiles.
+        style={{ flexGrow: 0 }}
+        contentContainerStyle={{
+          gap: spacing.md,
+          paddingVertical: spacing.sm,
+          alignItems: 'flex-start',
+        }}>
         {OPTIONAL_SLOTS.includes(slot) && (
           <OptionTile label="None" selected={avatar[slot] === null} onPress={() => equip(null)} />
         )}
