@@ -18,10 +18,12 @@ import {
   pruneProgress,
   questFraction,
   questsForPeriod,
+  sortQuestsForDisplay,
   stateFor,
   WEEKLY_COUNT,
   type QuestDef,
   type QuestEvent,
+  type QuestProgress,
 } from './quests';
 
 const snap = (over: Partial<ProgressSnapshot> = {}): ProgressSnapshot => ({
@@ -285,6 +287,58 @@ describe('quest progress', () => {
   it('leaves untouched quests alone', () => {
     const p = applyQuestEvent([play, win], {}, finished({ won: false }));
     expect(stateFor(p, 'w')).toEqual({ count: 0, seen: [], claimed: false });
+  });
+});
+
+describe('quest display order', () => {
+  const quest = (id: string, goal: number): QuestDef => ({
+    id, period: 'daily', name: id, description: '', icon: '', metric: 'play', goal, gold: 10, xp: 10,
+  });
+
+  const at = (count: number, claimed = false) => ({ count, seen: [], claimed });
+  const ids = (defs: QuestDef[]) => defs.map((d) => d.id);
+
+  const a = quest('a', 10);
+  const b = quest('b', 10);
+  const c = quest('c', 10);
+
+  it('puts the closest to done at the top', () => {
+    const progress: QuestProgress = { a: at(1), b: at(9), c: at(5) };
+    expect(ids(sortQuestsForDisplay([a, b, c], progress))).toEqual(['b', 'c', 'a']);
+  });
+
+  it('sinks collected quests to the bottom however far along the rest are', () => {
+    // The collected one is at 100% and would otherwise sort first — it is the
+    // one row on the board with nothing left to do.
+    const progress: QuestProgress = { a: at(10, true), b: at(1), c: at(0) };
+    expect(ids(sortQuestsForDisplay([a, b, c], progress))).toEqual(['b', 'c', 'a']);
+  });
+
+  it('keeps a finished-but-unclaimed quest at the very top', () => {
+    // Where the gold is. Falls out of sorting by progress, with no special case.
+    const progress: QuestProgress = { a: at(2), b: at(10), c: at(9) };
+    expect(ids(sortQuestsForDisplay([a, b, c], progress))[0]).toBe('b');
+  });
+
+  it('compares by fraction, not by raw count', () => {
+    // 3/5 beats 4/10 despite being the smaller number.
+    const small = quest('small', 5);
+    const big = quest('big', 10);
+    const progress: QuestProgress = { small: at(3), big: at(4) };
+    expect(ids(sortQuestsForDisplay([big, small], progress))).toEqual(['small', 'big']);
+  });
+
+  it('holds untouched quests in their drawn order', () => {
+    // No progress anywhere: rows must not swap places between renders.
+    const order = ids(sortQuestsForDisplay([a, b, c], {}));
+    expect(order).toEqual(['a', 'b', 'c']);
+    expect(ids(sortQuestsForDisplay([a, b, c], {}))).toEqual(order);
+  });
+
+  it('does not mutate the list it was given', () => {
+    const input = [a, b, c];
+    sortQuestsForDisplay(input, { b: at(9) });
+    expect(ids(input)).toEqual(['a', 'b', 'c']);
   });
 });
 

@@ -105,6 +105,35 @@ export const questFraction = (def: QuestDef, state: QuestState): number =>
 export const isClaimable = (def: QuestDef, state: QuestState): boolean =>
   isQuestComplete(def, state) && !state.claimed;
 
+/**
+ * The order quests are shown in: still-open first, closest to done at the top;
+ * collected ones sink to the bottom.
+ *
+ * Sorting by progress puts a finished-but-unclaimed quest (fraction 1) at the
+ * very top on its own, without a special case — which is right, because that is
+ * the row with gold sitting on it. Only *collected* quests drop to the bottom:
+ * once paid out there is nothing left to do with them, and they would otherwise
+ * push the actionable rows off the screen as the day goes on.
+ *
+ * Pure and total, so the list can be reordered on every render without the
+ * screen having to remember anything.
+ */
+export function sortQuestsForDisplay(
+  defs: readonly QuestDef[],
+  progress: QuestProgress,
+): QuestDef[] {
+  return defs
+    .map((def, index) => ({ def, index, state: stateFor(progress, def.id) }))
+    .sort((a, b) => {
+      if (a.state.claimed !== b.state.claimed) return a.state.claimed ? 1 : -1;
+      const byProgress = questFraction(b.def, b.state) - questFraction(a.def, a.state);
+      // Ties broken by the period's own draw order rather than left to the
+      // sort: two untouched quests must not swap places between renders.
+      return byProgress !== 0 ? byProgress : a.index - b.index;
+    })
+    .map((row) => row.def);
+}
+
 /** How much one event moves a single quest. */
 function advance(def: QuestDef, state: QuestState, event: QuestEvent): QuestState {
   switch (def.metric) {

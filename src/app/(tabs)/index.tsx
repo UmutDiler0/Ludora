@@ -19,8 +19,8 @@ import { AvatarRenderer } from '@/features/avatar/AvatarRenderer';
 import { AWARDS } from '@/features/economy/levels';
 import { GameArt } from '@/features/home/GameArt';
 import { DUMMY_CHAMPIONS, trendingGames, type Champion, type TrendingGame } from '@/features/home/dummy';
-import { QuestSection } from '@/features/progression/QuestList';
-import { useActiveQuests, useClaimableCount, useProgression } from '@/stores/progression';
+import { QuestPanel } from '@/features/progression/QuestList';
+import { useClaimableCount, useProgression } from '@/stores/progression';
 import { useDailyClaimable, useLevel, useProfile } from '@/stores/profile';
 import { useLocalGame } from '@/stores/localGame';
 import { useSession } from '@/stores/session';
@@ -71,7 +71,6 @@ export default function Home() {
 
   const trending = useMemo(() => trendingGames(), []);
 
-  const quests = useActiveQuests();
   const claimableQuests = useClaimableCount();
   const refreshQuests = useProgression((s) => s.refresh);
 
@@ -179,14 +178,13 @@ export default function Home() {
       {/* ------------------------------------------------------------ quests */}
       <Row style={{ justifyContent: 'space-between' }}>
         <Row gap={spacing.sm}>
-          <Ionicons name="list" size={20} color={palette.primary} />
+          <Ionicons name="clipboard" size={20} color={palette.primary} />
           <Text variant="heading">Quests</Text>
         </Row>
         {claimableQuests > 0 && <Badge color={palette.tertiary}>{claimableQuests} ready</Badge>}
       </Row>
 
-      <QuestSection period="daily" title="Today" quests={quests.daily} />
-      <QuestSection period="weekly" title="This week" quests={quests.weekly} />
+      <QuestPanel />
 
       {/* --------------------------------------------------------- champions */}
       <Card style={{ gap: spacing.md }}>

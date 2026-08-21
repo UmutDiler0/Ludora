@@ -131,6 +131,18 @@ const makeStyles = (p: Palette) =>
       alignItems: 'center',
       justifyContent: 'center',
     },
+    /** Count inside a segmented tab — smaller than Badge, which is too tall here. */
+    tabDot: {
+      minWidth: 17,
+      height: 17,
+      paddingHorizontal: 4,
+      borderRadius: radius.pill,
+      borderWidth: stroke.thin,
+      borderColor: p.ink,
+      backgroundColor: p.tertiary,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
   });
 
 type Styles = ReturnType<typeof makeStyles>;
@@ -572,7 +584,16 @@ export function SegmentedTabs<T extends string>({
   value,
   onChange,
 }: {
-  options: readonly { value: T; label: string }[];
+  options: readonly {
+    value: T;
+    label: string;
+    /**
+     * Count of things waiting behind this tab. Drawn in the reward colour on
+     * both states, so the tab you are *not* looking at can still tell you it
+     * has something — which is the only reason a tab needs a number.
+     */
+    badge?: number;
+  }[];
   value: T;
   onChange: (value: T) => void;
 }) {
@@ -581,19 +602,30 @@ export function SegmentedTabs<T extends string>({
     <View style={s.segment}>
       {options.map((option) => {
         const active = option.value === value;
+        const badge = option.badge ?? 0;
         return (
           <Pressable
             key={option.value}
             accessibilityRole="tab"
             accessibilityState={{ selected: active }}
+            accessibilityLabel={badge > 0 ? `${option.label}, ${badge} ready` : option.label}
             onPress={() => onChange(option.value)}
             style={[s.segmentItem, active && { backgroundColor: palette.primary }]}>
-            <Text
-              variant="label"
-              color={active ? palette.onPrimary : palette.onSurfaceVariant}
-              style={{ textTransform: 'uppercase' }}>
-              {option.label}
-            </Text>
+            <Row gap={spacing.xs}>
+              <Text
+                variant="label"
+                color={active ? palette.onPrimary : palette.onSurfaceVariant}
+                style={{ textTransform: 'uppercase' }}>
+                {option.label}
+              </Text>
+              {badge > 0 && (
+                <View style={s.tabDot}>
+                  <Text variant="label" color={palette.ink} style={{ fontSize: 10 }}>
+                    {badge}
+                  </Text>
+                </View>
+              )}
+            </Row>
           </Pressable>
         );
       })}
