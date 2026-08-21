@@ -1,6 +1,7 @@
 import { Pressable, View } from 'react-native';
 
 import { Avatar, Button, Card, Chip, Label, Row, Screen, Text } from '@/components/ui';
+import { useChat } from '@/stores/chat';
 import { useTheme } from '@/theme/ThemeProvider';
 import type { Palette } from '@/theme/palettes';
 import { radius, spacing, stroke } from '@/theme/tokens';
@@ -27,6 +28,7 @@ export function DayScreen({
 }) {
   const { palette } = useTheme();
   const s = makeStyles(palette);
+  const openChat = useChat((state) => state.open);
 
   const voting = view.phase === 'day_vote';
   const canVote = voting && view.you.alive;
@@ -119,10 +121,9 @@ export function DayScreen({
 
       <View style={{ flex: 1 }} />
 
-      {/* Chat is decision D10 — it ships with the realtime backend, which is
-          deliberately not wired yet. Shown disabled so the layout matches the
-          design rather than silently dropping the control. */}
-      <Button label="Chat · needs multiplayer" tone="ghost" disabled onPress={() => {}} />
+      {/* The chat control moved to the session header, where it is reachable
+          from every phase rather than only from this one. */}
+      <Button label="Open chat" icon="chatbubbles" tone="ghost" onPress={openChat} />
 
       {!voting && <Button label="Open voting" onPress={onOpenVoting} />}
     </Screen>

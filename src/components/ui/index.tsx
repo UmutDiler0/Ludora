@@ -857,12 +857,22 @@ export function Dialog({
    * transition at all — the one moment it most needs to announce itself.
    */
   contentKey,
+  size = 'auto',
 }: {
   visible: boolean;
   onDismiss: () => void;
   children: ReactNode;
   label: string;
   contentKey?: string | number;
+  /**
+   * `auto` hugs its content — the right shape for a question.
+   *
+   * `large` fills the screen instead, and drops the card's own padding so the
+   * content can run edge to edge. It is for a dialog that is really a surface:
+   * a chat room needs its scrollback to reach the frame, and a list that grows
+   * as you use it must not make the dialog resize under your hands.
+   */
+  size?: 'auto' | 'large';
 }) {
   const { s, palette } = useStyles();
   const pop = useSharedValue(0);
@@ -902,11 +912,19 @@ export function Dialog({
         />
       </Animated.View>
 
-      <View style={dialogLayout.centre} pointerEvents="box-none">
+      <View
+        style={[dialogLayout.centre, size === 'large' && dialogLayout.centreLarge]}
+        pointerEvents="box-none">
         <Animated.View
           accessibilityViewIsModal
           accessibilityLabel={label}
-          style={[s.card, dialogLayout.card, { backgroundColor: palette.surface }, cardStyle]}>
+          style={[
+            s.card,
+            dialogLayout.card,
+            size === 'large' && dialogLayout.cardLarge,
+            { backgroundColor: palette.surface },
+            cardStyle,
+          ]}>
           {children}
         </Animated.View>
       </View>
@@ -926,6 +944,20 @@ const dialogLayout = StyleSheet.create({
     maxWidth: 420,
     padding: spacing.xl,
     gap: spacing.lg,
+  },
+  centreLarge: {
+    // Tighter than `centre`, so the sheet reads as taking over the screen
+    // rather than floating in the middle of it.
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.xl,
+  },
+  cardLarge: {
+    flex: 1,
+    maxWidth: 520,
+    padding: 0,
+    gap: 0,
+    // The header and composer are pinned to the card's own rounded edges.
+    overflow: 'hidden',
   },
 });
 

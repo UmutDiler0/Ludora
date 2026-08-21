@@ -4,9 +4,11 @@ import { Pressable, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { IconButton, Text } from '@/components/ui';
+import { ChatRoom } from '@/features/games/vampireVillage/screens/Chat';
 import { PeerAlert } from '@/features/network/PeerAlert';
 import { presenceGateway } from '@/services/network/mockPresence';
-import { useLocalGame } from '@/stores/localGame';
+import { useChat, useUnreadCount } from '@/stores/chat';
+import { useLocalGame, useMyView } from '@/stores/localGame';
 import { fonts, spacing, stroke } from '@/theme/tokens';
 import { useTheme } from '@/theme/ThemeProvider';
 
@@ -27,10 +29,12 @@ function simulatePeerDrop() {
 }
 
 /**
- * In-session tab bar (decision D1): Game · Roles · Chat · Log.
+ * In-session tab bar (decision D1): Game · Roles · Log.
  *
- * Chat is omitted here rather than shipped as a dead route — it needs the
- * realtime backend (D10), which is deliberately not wired yet.
+ * Chat is not a tab. It is a full-height dialog reached from the header,
+ * because it is something you do *while* looking at the game — a tab would
+ * make you leave the vote in order to read the argument about it. The room
+ * itself is `ChatRoom`; the header only carries the button and the unread mark.
  *
  * `header` is shared across all three tabs so there is exactly one back
  * control for the whole session rather than one per screen — this nested
@@ -43,6 +47,7 @@ export default function GameLayout() {
   return (
     <>
       <PeerAlert />
+      <ChatRoom />
       <GameTabs palette={palette} />
     </>
   );
@@ -127,10 +132,63 @@ function GameHeader() {
             events come from the presence gateway, which is silent until §18's
             transport exists — without this there is no way to see the pop-up
             work. Stripped from release builds by the __DEV__ guard. */}
-        <Pressable onLongPress={__DEV__ ? simulatePeerDrop : undefined} delayLongPress={600}>
+        <Pressable
+          onLongPress={__DEV__ ? simulatePeerDrop : undefined}
+          delayLongPress={600}
+          style={{ flex: 1 }}>
           <Text variant="bodyStrong">Vampire Village</Text>
         </Pressable>
+
+        <ChatButton />
       </View>
     </SafeAreaView>
+  );
+}
+
+/**
+ * Opens the room, and says how much has been said since you last looked.
+ *
+ * The count only includes messages you are actually allowed to read — a badge
+ * for coven talk you cannot see would send you into an empty room.
+ */
+function ChatButton() {
+  const { palette } = useTheme();
+  const view = useMyView();
+  const open = useChat((s) => s.open);
+  const unread = useUnreadCount(view);
+
+  return (
+    <View>
+      <IconButton
+        name="chatbubbles"
+        label={unread > 0 ? `Open chat, ${unread} unread` : 'Open chat'}
+        onPress={open}
+      />
+      {unread > 0 && (
+        <View
+          style={{
+            position: 'absolute',
+            top: -2,
+            right: -4,
+            minWidth: 18,
+            height: 18,
+            paddingHorizontal: 4,
+            borderRadius: 9,
+            borderWidth: stroke.thin,
+            borderColor: palette.ink,
+            backgroundColor: palette.tertiary,
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+          // Announced by the button's own label instead; a second live region
+          // here would read the number twice.
+          accessibilityElementsHidden
+          importantForAccessibility="no-hide-descendants">
+          <Text variant="label" color={palette.ink} style={{ fontSize: 10 }}>
+            {unread > 9 ? '9+' : unread}
+          </Text>
+        </View>
+      )}
+    </View>
   );
 }
