@@ -13,6 +13,7 @@ import { useEffect } from 'react';
 import { View } from 'react-native';
 
 import { ConnectionDialog } from '@/features/network/ConnectionDialog';
+import { AchievementBanner } from '@/features/progression/AchievementBanner';
 import { useConnection } from '@/stores/connection';
 import { useSession } from '@/stores/session';
 import { useSettings } from '@/stores/settings';
@@ -89,7 +90,11 @@ function Shell() {
           animation: 'fade',
         }}
       />
-      {/* Above the navigator, so it covers whatever screen is showing. */}
+      {/* Above the navigator, so both cover whatever screen is showing.
+          The banner is mounted at the root because an achievement can land
+          during a game, on the shop, anywhere — it belongs to the app, not to
+          the screen that happened to trigger it. */}
+      <AchievementBanner />
       <ConnectionDialog />
     </>
   );

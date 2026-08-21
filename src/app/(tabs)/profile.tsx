@@ -8,6 +8,7 @@ import {
   GoldPill,
   IconButton,
   Label,
+  ListRow,
   ProgressBar,
   Row,
   Screen,
@@ -17,7 +18,9 @@ import {
 } from '@/components/ui';
 import { TABS } from '@/constants/app';
 import { AvatarRenderer } from '@/features/avatar/AvatarRenderer';
+import { completionOf } from '@/features/progression/achievements';
 import { useLevel, useProfile, useWinRate } from '@/stores/profile';
+import { useProgression } from '@/stores/progression';
 import { useSession } from '@/stores/session';
 import { radius, spacing, stroke } from '@/theme/tokens';
 import { useTheme } from '@/theme/ThemeProvider';
@@ -34,6 +37,7 @@ export default function Profile() {
   const { displayName, handle, gold, stats, avatar } = useProfile();
   const level = useLevel();
   const winRate = useWinRate();
+  const completion = completionOf(useProgression((s) => s.unlocked));
   const { signOut, isGuest } = useSession();
 
   const leave = async () => {
@@ -118,6 +122,15 @@ export default function Profile() {
         <StatTile value={String(stats.gamesWon)} caption="Won" color={palette.secondary} />
         <StatTile value={`${winRate}%`} caption="Win rate" color={palette.tertiary} />
       </Row>
+
+      <ListRow
+        title="Achievements"
+        subtitle={`${completion.done} of ${completion.total} earned`}
+        accent={palette.medalGold}
+        leading={<Ionicons name="trophy" size={22} color={palette.medalGold} />}
+        trailing={<Ionicons name="chevron-forward" size={18} color={palette.onSurfaceVariant} />}
+        onPress={() => router.push('/achievements')}
+      />
 
       <Button label="Sign out" tone="danger" onPress={leave} />
     </Screen>

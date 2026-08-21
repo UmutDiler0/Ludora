@@ -26,6 +26,12 @@ export interface AvatarItem {
   price: number;
   /** Player level required to buy, independent of price. */
   requiredLevel?: number;
+  /**
+   * Achievement that grants this item. Items carrying it are priced 0 and are
+   * filtered out of the shop entirely — earning is the only way in, which is
+   * the whole point of a trophy. Gold must never be a shortcut past one.
+   */
+  unlockedBy?: string;
   variant: string;
   color: string;
 }
@@ -125,7 +131,8 @@ export const AVATAR_CATALOGUE: AvatarItem[] = [
   { id: 'party_01', slot: 'hat', name: 'Party Hat', price: 120, variant: 'party', color: '#FFC93C' },
   { id: 'bucket_01', slot: 'hat', name: 'Bucket Hat', price: 130, variant: 'bucket', color: '#7E8B4A' },
   { id: 'band_01', slot: 'hat', name: 'Headband', price: 70, variant: 'headband', color: '#FF3B8D' },
-  { id: 'crown_01', slot: 'hat', name: 'Crown', price: 300, requiredLevel: 10, variant: 'crown', color: '#FFC93C' },
+  // Earned, never sold — see `unlockedBy`.
+  { id: 'crown_01', slot: 'hat', name: 'King’s Crown', price: 0, unlockedBy: 'level_50', variant: 'crown', color: '#FFC93C' },
 
   // accessory — no default equipped (null)
   { id: 'glasses_01', slot: 'accessory', name: 'Glasses', price: 100, variant: 'glasses', color: '#2E2545' },
@@ -134,7 +141,27 @@ export const AVATAR_CATALOGUE: AvatarItem[] = [
   { id: 'scarf_01', slot: 'accessory', name: 'Scarf', price: 110, variant: 'scarf', color: '#FF5B4A' },
   { id: 'earring_01', slot: 'accessory', name: 'Earrings', price: 90, variant: 'earrings', color: '#FFC93C' },
   { id: 'cans_01', slot: 'accessory', name: 'Headphones', price: 210, requiredLevel: 5, variant: 'headphones', color: '#7C4DFF' },
+  { id: 'shades_gold', slot: 'accessory', name: 'Gold Shades', price: 0, unlockedBy: 'games_100', variant: 'sunglasses', color: '#F0A81E' },
+
+  // Earned background — the champion's ground.
+  { id: 'bg_champion', slot: 'background', name: 'Champion', price: 0, unlockedBy: 'wins_50', variant: 'solid', color: '#F5C542' },
 ];
+
+/** True when the only way to own this is to earn it. */
+export const isEarnedOnly = (item: AvatarItem): boolean => !!item.unlockedBy;
+
+/**
+ * Free from the start, and owned by everyone.
+ *
+ * Deliberately not "price === 0": earned items are also priced zero, and
+ * treating price alone as the test would hand every trophy to every player the
+ * moment it was added to the catalogue.
+ */
+export const isFreeStarter = (item: AvatarItem): boolean => item.price === 0 && !item.unlockedBy;
+
+/** Whether the player may wear this right now. */
+export const ownsItem = (item: AvatarItem, ownedItemIds: readonly string[]): boolean =>
+  isFreeStarter(item) || ownedItemIds.includes(item.id);
 
 const BY_ID = new Map(AVATAR_CATALOGUE.map((item) => [item.id, item]));
 

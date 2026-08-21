@@ -4,7 +4,7 @@ import { Pressable, ScrollView, View } from 'react-native';
 
 import { Button, Screen, ScreenHeader, Text } from '@/components/ui';
 import { AvatarRenderer, ItemThumb } from '@/features/avatar/AvatarRenderer';
-import { AVATAR_CATALOGUE, type AvatarItem } from '@/features/avatar/catalogue';
+import { AVATAR_CATALOGUE, ownsItem, type AvatarItem } from '@/features/avatar/catalogue';
 import { SlotTabRow } from '@/features/avatar/SlotTabRow';
 import { OPTIONAL_SLOTS, SLOT_LABELS, type AvatarSlot } from '@/features/avatar/types';
 import { useProfile } from '@/stores/profile';
@@ -31,13 +31,7 @@ export default function AvatarCustomize() {
 
   const owned = useMemo(
     () =>
-      AVATAR_CATALOGUE.filter(
-        (item) =>
-          item.slot === slot &&
-          // Free pieces are owned by definition; the store records them too,
-          // but a profile restored from an older save might not list them yet.
-          (item.price === 0 || ownedItemIds.includes(item.id)),
-      ),
+      AVATAR_CATALOGUE.filter((item) => item.slot === slot && ownsItem(item, ownedItemIds)),
     [slot, ownedItemIds],
   );
 

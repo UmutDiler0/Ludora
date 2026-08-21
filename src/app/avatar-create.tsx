@@ -4,7 +4,7 @@ import { Pressable, ScrollView, View } from 'react-native';
 
 import { Button, Label, Row, Screen, Text } from '@/components/ui';
 import { AvatarRenderer } from '@/features/avatar/AvatarRenderer';
-import { itemsForSlot, type AvatarItem } from '@/features/avatar/catalogue';
+import { itemsForSlot, ownsItem, type AvatarItem } from '@/features/avatar/catalogue';
 import { useProfile } from '@/stores/profile';
 import { useTheme } from '@/theme/ThemeProvider';
 import { DEFAULT_AVATAR, type AvatarConfig, type AvatarSlot } from '@/features/avatar/types';
@@ -74,9 +74,9 @@ export default function AvatarCreate() {
 
           <OptionRow
             items={itemsForSlot(step.slot)}
-            // Only free starter pieces here. Offering items the player cannot
-            // afford yet would turn the welcome into a storefront.
-            available={(item) => item.price === 0 || ownedItemIds.includes(item.id)}
+            // Only pieces already owned. Offering items the player cannot have
+            // yet would turn the welcome into a storefront.
+            available={(item) => ownsItem(item, ownedItemIds)}
             selected={draft[step.slot]}
             onSelect={(id) => choose(step.slot, id)}
             slot={step.slot}

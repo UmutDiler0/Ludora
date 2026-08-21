@@ -1,10 +1,11 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { useMemo } from 'react';
+import { useEffect, useMemo } from 'react';
 import { Pressable, useWindowDimensions, View } from 'react-native';
 
 import {
   Avatar,
+  Badge,
   Button,
   Card,
   Chip,
@@ -18,6 +19,8 @@ import { AvatarRenderer } from '@/features/avatar/AvatarRenderer';
 import { AWARDS } from '@/features/economy/levels';
 import { GameArt } from '@/features/home/GameArt';
 import { DUMMY_CHAMPIONS, trendingGames, type Champion, type TrendingGame } from '@/features/home/dummy';
+import { QuestSection } from '@/features/progression/QuestList';
+import { useActiveQuests, useClaimableCount, useProgression } from '@/stores/progression';
 import { useDailyClaimable, useLevel, useProfile } from '@/stores/profile';
 import { useLocalGame } from '@/stores/localGame';
 import { useSession } from '@/stores/session';
@@ -67,6 +70,16 @@ export default function Home() {
   const newGame = useLocalGame((s) => s.newGame);
 
   const trending = useMemo(() => trendingGames(), []);
+
+  const quests = useActiveQuests();
+  const claimableQuests = useClaimableCount();
+  const refreshQuests = useProgression((s) => s.refresh);
+
+  // Rolls the day or week over if the app was left open across a boundary,
+  // which is the common case — people leave this screen on and come back.
+  useEffect(() => {
+    refreshQuests();
+  }, [refreshQuests]);
 
   // Available width is the screen minus Screen's own horizontal padding (spacing.xl each side).
   const gridWidth = width - spacing.xl * 2;
@@ -162,6 +175,18 @@ export default function Home() {
           onPress={() => router.push('/(tabs)/play')}
         />
       </Row>
+
+      {/* ------------------------------------------------------------ quests */}
+      <Row style={{ justifyContent: 'space-between' }}>
+        <Row gap={spacing.sm}>
+          <Ionicons name="list" size={20} color={palette.primary} />
+          <Text variant="heading">Quests</Text>
+        </Row>
+        {claimableQuests > 0 && <Badge color={palette.tertiary}>{claimableQuests} ready</Badge>}
+      </Row>
+
+      <QuestSection period="daily" title="Today" quests={quests.daily} />
+      <QuestSection period="weekly" title="This week" quests={quests.weekly} />
 
       {/* --------------------------------------------------------- champions */}
       <Card style={{ gap: spacing.md }}>

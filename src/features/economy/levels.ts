@@ -63,6 +63,22 @@ export const AWARDS = {
   rewardedAd: { xp: 0, gold: 20 },
 } as const;
 
+/**
+ * Gold paid for reaching `level`.
+ *
+ * Rises with level so the curve keeps paying as it slows down — later levels
+ * cost far more XP (`xpToNext` is linear in level), so a flat reward would make
+ * every level-up feel worse than the last.
+ */
+export const goldForReachingLevel = (level: number): number => 40 + 10 * level;
+
+/** Total level-up gold for crossing from one level to another. */
+export function levelUpGold(fromLevel: number, toLevel: number): number {
+  let total = 0;
+  for (let level = fromLevel + 1; level <= toLevel; level++) total += goldForReachingLevel(level);
+  return total;
+}
+
 export interface AwardInput {
   won: boolean;
   isFirstGameOfDay: boolean;

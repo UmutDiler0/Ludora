@@ -15,7 +15,7 @@ import {
   Text,
 } from '@/components/ui';
 import { AvatarRenderer, ItemThumb } from '@/features/avatar/AvatarRenderer';
-import { itemsForSlot, type AvatarItem } from '@/features/avatar/catalogue';
+import { isEarnedOnly, itemsForSlot, type AvatarItem } from '@/features/avatar/catalogue';
 import { SlotTabRow } from '@/features/avatar/SlotTabRow';
 import type { AvatarSlot } from '@/features/avatar/types';
 import { useLevel, useProfile } from '@/stores/profile';
@@ -58,7 +58,9 @@ export default function AvatarShop() {
   const grantItem = useProfile((s) => s.grantItem);
   const setAvatar = useProfile((s) => s.setAvatar);
 
-  const items = itemsForSlot(slot).filter((item) => item.price > 0);
+  // Earned items are excluded explicitly rather than relying on their price
+  // being zero, so pricing one by mistake could never put a trophy on sale.
+  const items = itemsForSlot(slot).filter((item) => !isEarnedOnly(item) && item.price > 0);
 
   // Measured rather than expressed as a percentage: three columns plus two
   // gaps inside the screen's own padding never lands on a round percentage,

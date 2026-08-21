@@ -7,6 +7,7 @@ import engine from '@/features/games/vampireVillage/engine';
 import { ROLES } from '@/features/games/vampireVillage/roles';
 import type { VVPlayer, VVPlayerView, VVState } from '@/features/games/vampireVillage/state';
 import type { PeerPresenceEvent } from '@/services/network/types';
+import { useProgression } from './progression';
 
 /**
  * Local, offline game driver.
@@ -124,6 +125,39 @@ function driveBots(start: VVState, now: number, rng: Rng): VVState {
   return s;
 }
 
+/**
+ * Pays out a finished game, exactly once.
+ *
+ * Every action funnels through `commit`, so the game-over edge is detected in
+ * one place rather than in each of the four reducers — and settling on the
+ * *edge* rather than on the phase is what stops a re-render or a second action
+ * paying for the same game twice.
+ */
+function settleIfFinished(before: VVState | null, after: VVState) {
+  if (after.phase !== 'game_over' || before?.phase === 'game_over') return;
+
+  const you = after.players[HUMAN_UID];
+  const won = !!you && ROLES[you.role].alignment === after.winner;
+
+  useProgression.getState().recordGameFinished({
+    gameId: 'vampireVillage',
+    won,
+    // Surviving to the end counts every round; being eliminated counts the
+    // rounds actually played through.
+    roundsSurvived: you?.alive ? after.round : Math.max(0, after.round - 1),
+  });
+}
+
+/** Store the new state, then pay out if this move ended the game. */
+function commit(
+  before: VVState | null,
+  after: VVState,
+  set: (partial: Partial<LocalGameStore>) => void,
+) {
+  set({ state: after, error: null });
+  settleIfFinished(before, after);
+}
+
 interface LocalGameStore {
   state: VVState | null;
   error: string | null;
@@ -199,7 +233,7 @@ export const useLocalGame = create<LocalGameStore>((set, get) => ({
     const rng = createRng(now >>> 0);
     const r = engine.reduce(state, { type: 'ACK_ROLE' }, { uid: HUMAN_UID, now, rng });
     if (!r.ok) return set({ error: r.error.message });
-    set({ state: driveBots(r.value, now, rng), error: null });
+    commit(state, driveBots(r.value, now, rng), set);
   },
 
   nightAction: (target) => {
@@ -209,7 +243,7 @@ export const useLocalGame = create<LocalGameStore>((set, get) => ({
     const rng = createRng(now >>> 0);
     const r = engine.reduce(state, { type: 'NIGHT_ACTION', target }, { uid: HUMAN_UID, now, rng });
     if (!r.ok) return set({ error: r.error.message });
-    set({ state: driveBots(r.value, now, rng), error: null });
+    commit(state, driveBots(r.value, now, rng), set);
   },
 
   vote: (target) => {
@@ -219,7 +253,7 @@ export const useLocalGame = create<LocalGameStore>((set, get) => ({
     const rng = createRng(now >>> 0);
     const r = engine.reduce(state, { type: 'VOTE', target }, { uid: HUMAN_UID, now, rng });
     if (!r.ok) return set({ error: r.error.message });
-    set({ state: driveBots(r.value, now, rng), error: null });
+    commit(state, driveBots(r.value, now, rng), set);
   },
 
   openVoting: () => {
@@ -229,7 +263,7 @@ export const useLocalGame = create<LocalGameStore>((set, get) => ({
     const rng = createRng(now >>> 0);
     // tick past the discussion deadline to open the vote
     const advanced = engine.tick(state, state.deadlineAt);
-    set({ state: driveBots(advanced, now, rng), error: null });
+    commit(state, driveBots(advanced, now, rng), set);
   },
 
   clearError: () => set({ error: null }),
