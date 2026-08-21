@@ -12,6 +12,8 @@ import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
 import { View } from 'react-native';
 
+import { ConnectionDialog } from '@/features/network/ConnectionDialog';
+import { useConnection } from '@/stores/connection';
 import { useSession } from '@/stores/session';
 import { useSettings } from '@/stores/settings';
 import { ThemeProvider, useTheme } from '@/theme/ThemeProvider';
@@ -66,6 +68,17 @@ export default function RootLayout() {
 /** Inside the provider, so it can react to Light / Dark / System. */
 function Shell() {
   const { palette, isDark } = useTheme();
+  const startMonitoring = useConnection((s) => s.start);
+  const stopMonitoring = useConnection((s) => s.stop);
+
+  // Monitoring runs for the life of the app, not per screen: an outage is not
+  // something only one route needs to know about, and restarting the probe on
+  // every navigation would reset the grace window mid-outage.
+  useEffect(() => {
+    startMonitoring();
+    return stopMonitoring;
+  }, [startMonitoring, stopMonitoring]);
+
   return (
     <>
       <StatusBar style={isDark ? 'light' : 'dark'} />
@@ -76,6 +89,8 @@ function Shell() {
           animation: 'fade',
         }}
       />
+      {/* Above the navigator, so it covers whatever screen is showing. */}
+      <ConnectionDialog />
     </>
   );
 }

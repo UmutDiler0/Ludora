@@ -18,14 +18,21 @@ export default function GameScreen() {
 
   const router = useRouter();
   const view = useMyView();
+  const endedReason = useLocalGame((s) => s.endedReason);
   const { ackRole, nightAction, vote, openVoting, newGame } = useLocalGame();
 
   if (!view) {
+    // A session that ended because the network gave out gets said out loud.
+    // "No game in progress" after being dropped reads as the app losing track
+    // of something, rather than as the thing that actually happened.
+    const dropped = endedReason === 'disconnected';
     return (
       <Screen>
-        <Text variant="title">No game in progress</Text>
+        <Text variant="title">{dropped ? 'You were disconnected' : 'No game in progress'}</Text>
         <Text variant="body" color={palette.onSurfaceVariant}>
-          Start one from the home screen.
+          {dropped
+            ? 'The game carried on without you. Your progress up to that point was kept.'
+            : 'Start one from the home screen.'}
         </Text>
         <Button label="Back to home" onPress={() => router.replace('/')} />
       </Screen>

@@ -6,6 +6,7 @@ import { DEFAULT_VV_CONFIG } from '@/features/games/vampireVillage/config';
 import engine from '@/features/games/vampireVillage/engine';
 import { ROLES } from '@/features/games/vampireVillage/roles';
 import type { VVPlayer, VVPlayerView, VVState } from '@/features/games/vampireVillage/state';
+import type { PeerPresenceEvent } from '@/services/network/types';
 
 /**
  * Local, offline game driver.
@@ -128,6 +129,14 @@ interface LocalGameStore {
   error: string | null;
   /** Incremented per game so screens can key off a fresh session. */
   sessionId: number;
+  /** Why the last session ended, when it ended for a reason worth explaining. */
+  endedReason: 'disconnected' | null;
+  /**
+   * Peer presence events waiting to be shown, oldest first. A queue rather
+   * than a single slot: two players dropping at once is exactly when the
+   * message matters most, and the second one must not overwrite the first.
+   */
+  peerEvents: PeerPresenceEvent[];
 
   newGame: (playerCount?: number) => void;
   ackRole: () => void;
@@ -136,12 +145,25 @@ interface LocalGameStore {
   /** Day discussion has no action — the human decides when to open voting. */
   openVoting: () => void;
   clearError: () => void;
+
+  /** Queue an event about somebody else in the room. */
+  notePeerEvent: (event: PeerPresenceEvent) => void;
+  /** Drop the oldest queued peer event once it has been shown. */
+  dismissPeerEvent: () => void;
+  /**
+   * Called when the connection gives up. Returns whether a game was actually
+   * lost, so the dialog can say "you were dropped from your game" only when
+   * that is true.
+   */
+  endForDisconnect: () => boolean;
 }
 
 export const useLocalGame = create<LocalGameStore>((set, get) => ({
   state: null,
   error: null,
   sessionId: 0,
+  endedReason: null,
+  peerEvents: [],
 
   newGame: (playerCount = 6) => {
     const now = Date.now();
@@ -159,7 +181,15 @@ export const useLocalGame = create<LocalGameStore>((set, get) => ({
       set({ error: created.error.message });
       return;
     }
-    set((prev) => ({ state: created.value, error: null, sessionId: prev.sessionId + 1 }));
+    set((prev) => ({
+      state: created.value,
+      error: null,
+      sessionId: prev.sessionId + 1,
+      endedReason: null,
+      // A fresh session starts with a clean room; stale drop notices from the
+      // last game would otherwise pop up over the new one.
+      peerEvents: [],
+    }));
   },
 
   ackRole: () => {
@@ -203,6 +233,18 @@ export const useLocalGame = create<LocalGameStore>((set, get) => ({
   },
 
   clearError: () => set({ error: null }),
+
+  notePeerEvent: (event) => set((s) => ({ peerEvents: [...s.peerEvents, event] })),
+
+  dismissPeerEvent: () => set((s) => ({ peerEvents: s.peerEvents.slice(1) })),
+
+  endForDisconnect: () => {
+    // Nothing in progress: an outage on the home screen must not manufacture
+    // a "you were dropped from your game" that never happened.
+    if (!get().state) return false;
+    set({ state: null, endedReason: 'disconnected', peerEvents: [] });
+    return true;
+  },
 }));
 
 /** The human's projection — exactly what the server would send them (§9.1). */
