@@ -76,6 +76,13 @@ export const AVATAR_CATALOGUE: AvatarItem[] = [
   { id: 'mouth_04', slot: 'mouth', name: 'Gasp', price: 70, variant: 'open', color: '#2E2545' },
   { id: 'mouth_05', slot: 'mouth', name: 'Deadpan', price: 70, variant: 'flat', color: '#2E2545' },
 
+  // facial hair — optional, so there is no free "none" item; null covers it
+  { id: 'beard_01', slot: 'facialHair', name: 'Stubble', price: 60, variant: 'stubble', color: '#3A2B22' },
+  { id: 'beard_02', slot: 'facialHair', name: 'Moustache', price: 90, variant: 'moustache', color: '#3A2B22' },
+  { id: 'beard_03', slot: 'facialHair', name: 'Goatee', price: 100, variant: 'goatee', color: '#3A2B22' },
+  { id: 'beard_04', slot: 'facialHair', name: 'Full Beard', price: 140, variant: 'beard', color: '#5B3A24' },
+  { id: 'beard_05', slot: 'facialHair', name: 'Chops', price: 110, variant: 'chops', color: '#7A4B2A' },
+
   // hair
   { id: 'hair_01', slot: 'hair', name: 'Short', price: 0, variant: 'short', color: '#3A2B22' },
   { id: 'hair_02', slot: 'hair', name: 'Curly', price: 120, variant: 'curly', color: '#7A4B2A' },

@@ -12,6 +12,7 @@ import {
   ClothesPiece,
   EyesPiece,
   FacePiece,
+  FacialHairPiece,
   HairPiece,
   HatPiece,
   MouthPiece,
@@ -60,6 +61,8 @@ function renderSlot(slot: AvatarSlot, itemId: string | null, ink: string, build:
       return <FacePiece variant={item.variant} color={item.color} />;
     case 'eyes':
       return <EyesPiece variant={item.variant} ink={ink} />;
+    case 'facialHair':
+      return <FacialHairPiece variant={item.variant} color={item.color} ink={ink} />;
     case 'mouth':
       return <MouthPiece variant={item.variant} ink={ink} />;
     case 'hair':
@@ -101,7 +104,14 @@ export function AvatarRenderer({
 
   // The full body is 160 × 280, so its frame has to be taller than it is wide;
   // forcing it square would either letterbox the figure or crop its feet.
-  const height = isFull ? (size * 280) / 160 : size;
+  //
+  // The border is subtracted before applying the ratio and added back after.
+  // React Native borders are drawn inside the box, so the SVG's actual viewport
+  // is `size - 2 × border`; scaling the outer box to 160:280 leaves the inner
+  // box a slightly different shape, and `meet` then letterboxes it — which is
+  // the sliver of the old background that showed above and below the figure.
+  const border = stroke.base;
+  const height = isFull ? ((size - border * 2) * 280) / 160 + border * 2 : size;
 
   return (
     <View
@@ -134,6 +144,7 @@ const THUMB_VIEWBOX: Record<AvatarSlot, string> = {
   face: '38 28 84 84',
   eyes: '38 24 84 72',
   mouth: '46 44 68 60',
+  facialHair: '42 40 76 68',
   hair: '20 4 120 110',
   hat: '20 0 120 100',
   accessory: '20 14 120 120',
@@ -154,7 +165,10 @@ export function ItemThumb({ item, size = 56 }: { item: AvatarItem; size?: number
   const { palette } = useTheme();
 
   // Everything default except the slot being sold, so nothing else competes.
-  const config = normalizeAvatar({ [item.slot]: item.id, background: 'bg_01' });
+  // The pinned background must come FIRST: spread the other way round and a
+  // background item overwrites itself with the default, which is why every
+  // background in the shop looked identical.
+  const config = normalizeAvatar({ background: 'bg_01', [item.slot]: item.id });
 
   return (
     <View

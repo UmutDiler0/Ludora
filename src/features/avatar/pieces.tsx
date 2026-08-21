@@ -2,6 +2,8 @@ import { Circle, Ellipse, G, Line, Path, Rect } from 'react-native-svg';
 
 import {
   armGeometry,
+  bustLine,
+  garmentPath,
   CENTRE,
   HEAD,
   INK,
@@ -48,7 +50,10 @@ function Star({ x, y, size, color }: { x: number; y: number; size: number; color
 /* ---------------------------------------------------------- background */
 
 export function BackgroundPiece({ color }: { color: string }) {
-  return <Rect x={0} y={0} width={160} height={280} fill={color} />;
+  // Bleeds well past the viewBox on every side. An SVG root clips to its
+  // viewport, not its viewBox, so this keeps the colour edge-to-edge under any
+  // crop or aspect mismatch instead of leaving a strip of whatever is behind.
+  return <Rect x={-60} y={-60} width={280} height={400} fill={color} />;
 }
 
 /* --------------------------------------------------------------- body */
@@ -224,6 +229,49 @@ export function MouthPiece({ variant, ink }: { variant: string; ink: string }) {
   return <Path d="M68 74 Q80 86 92 74" {...stroke} />;
 }
 
+/* -------------------------------------------------------- facial hair */
+
+/**
+ * Drawn before the mouth (see `SLOT_ORDER`), so a full beard frames the mouth
+ * instead of covering it — the same reason a moustache can sit above the lip
+ * without either piece knowing about the other.
+ */
+export function FacialHairPiece({ variant, color, ink }: PieceProps) {
+  const outline = { fill: color, stroke: ink, strokeWidth: 2.5, strokeLinejoin: 'round' as const };
+
+  if (variant === 'stubble') {
+    // No outline: stubble is a tone on the skin, not a shape sitting on it.
+    return <Path d="M50 62 Q52 94 80 97 Q108 94 110 62 Q104 83 80 83 Q56 83 50 62 Z" fill={color} opacity={0.32} />;
+  }
+  if (variant === 'moustache') {
+    return <Path d="M64 70 Q72 63 80 70 Q88 63 96 70 Q88 78 80 73 Q72 78 64 70 Z" {...outline} />;
+  }
+  if (variant === 'goatee') {
+    return (
+      <G>
+        <Path d="M66 70 Q73 64 80 70 Q87 64 94 70 Q87 77 80 73 Q73 77 66 70 Z" {...outline} />
+        <Path d="M71 84 Q80 81 89 84 Q87 96 80 98 Q73 96 71 84 Z" {...outline} />
+      </G>
+    );
+  }
+  if (variant === 'chops') {
+    return (
+      <G {...outline}>
+        <Path d="M49 52 Q47 78 57 87 Q61 71 59 52 Z" />
+        <Path d="M111 52 Q113 78 103 87 Q99 71 101 52 Z" />
+      </G>
+    );
+  }
+  // 'beard' — full
+  return (
+    <Path
+      d="M48 56 Q48 96 80 100 Q112 96 112 56 Q108 82 95 81 Q88 73 80 73 Q72 73 65 81 Q52 82 48 56 Z"
+      {...outline}
+      strokeWidth={THIN}
+    />
+  );
+}
+
 /* --------------------------------------------------------------- hair */
 
 const DOME = 'M46 60 Q46 22 80 22 Q114 22 114 60 Q114 46 80 44 Q46 46 46 60 Z';
@@ -317,6 +365,17 @@ export function HairPiece({ variant, color, ink }: PieceProps) {
 
 /* ------------------------------------------------------------ clothes */
 
+/**
+ * Soft shading under the chest, for builds that have one. Drawn on the garment
+ * rather than the skin: `clothes` is never empty, so a line on the body would
+ * be permanently hidden.
+ */
+function BustLine({ b, ink }: { b: BuildMetrics; ink: string }) {
+  const d = bustLine(b);
+  if (!d) return null;
+  return <Path d={d} stroke={ink} strokeWidth={2.5} fill="none" opacity={0.35} strokeLinecap="round" />;
+}
+
 /** Sleeves follow the arms, so a garment never floats beside the body. */
 function Sleeves({ b, color, ink, fraction }: { b: BuildMetrics; color: string; ink: string; fraction: number }) {
   return (
@@ -408,24 +467,24 @@ export function ClothesPiece({ variant, color, ink, build }: BuildProps) {
   }
 
   if (variant === 'tank') {
-    const top = Y.shoulder + 4;
+    const topHalf = b.chest - 1;
     return (
       <G>
         {/* Straps first, so the body of the garment closes over their ends. */}
         {([-1, 1] as const).map((side) => (
           <Path
             key={side}
-            d={`M${CENTRE + side * 17} ${top + 8} L${CENTRE + side * 21} ${Y.shoulder - 9}`}
+            d={`M${CENTRE + side * topHalf * 0.6} ${Y.shoulder + 14} L${CENTRE + side * (topHalf * 0.62)} ${Y.shoulder - 10}`}
             stroke={color}
             strokeWidth={11}
             strokeLinecap="round"
             fill="none"
           />
         ))}
-        <Path
-          d={`M${CENTRE - b.chest - 1} ${top} Q${CENTRE} ${top + 18} ${CENTRE + b.chest + 1} ${top} C${CENTRE + b.waist + 3} ${Y.waist} ${CENTRE + b.hip + 2} ${Y.hip - 8} ${CENTRE + b.hip + 1} ${Y.hip + 3} L${CENTRE - b.hip - 1} ${Y.hip + 3} C${CENTRE - b.hip - 2} ${Y.hip - 8} ${CENTRE - b.waist - 3} ${Y.waist} ${CENTRE - b.chest - 1} ${top} Z`}
-          {...outline}
-        />
+        {/* Same silhouette generator as every other top — a scooped neckline
+            and a lower top edge, not a bespoke outline. */}
+        <Path d={garmentPath(b, { inflate: 2, top: Y.shoulder + 6, topHalf, neckArc: -16 })} {...outline} />
+        <BustLine b={b} ink={ink} />
       </G>
     );
   }
@@ -439,6 +498,7 @@ export function ClothesPiece({ variant, color, ink, build }: BuildProps) {
           {...outline}
         />
         <Line x1={CENTRE - b.waist - 2} y1={Y.waist} x2={CENTRE + b.waist + 2} y2={Y.waist} stroke={ink} strokeWidth={THIN} />
+        <BustLine b={b} ink={ink} />
       </G>
     );
   }
@@ -470,6 +530,7 @@ export function ClothesPiece({ variant, color, ink, build }: BuildProps) {
         fill="none"
         strokeLinecap="round"
       />
+      <BustLine b={b} ink={ink} />
     </G>
   );
 }

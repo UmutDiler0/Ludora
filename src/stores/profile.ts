@@ -134,11 +134,12 @@ export const useProfile = create<ProfileState>()(
     {
       name: 'ludora.profile',
       storage: createJSONStorage(() => AsyncStorage),
-      // v2 added the `build`, `pants` and `shoes` slots. A profile saved before
-      // them has those keys missing, which renders a barefoot, trouserless
-      // figure — broken, but not obviously so. Filling the gaps on read is
-      // cheaper than teaching every screen to tolerate a partial config.
-      version: 2,
+      // v2 added the `build`, `pants` and `shoes` slots; v3 added `facialHair`.
+      // A profile saved before them has those keys missing, which renders a
+      // barefoot, trouserless figure — broken, but not obviously so. Filling
+      // the gaps on read is cheaper than teaching every screen to tolerate a
+      // partial config. Bump this whenever a slot is added.
+      version: 3,
       migrate: (persisted) => {
         const prior = (persisted ?? {}) as Partial<ProfileState>;
         return {

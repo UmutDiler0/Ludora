@@ -22,6 +22,8 @@ export const SLOT_ORDER = [
   'clothes',
   'face',
   'eyes',
+  // Before the mouth on purpose: a full beard should frame it, not cover it.
+  'facialHair',
   'mouth',
   'hair',
   'hat',
@@ -52,6 +54,7 @@ export const DEFAULT_AVATAR: AvatarConfig = {
   clothes: 'tee_01',
   face: 'face_01',
   eyes: 'eyes_01',
+  facialHair: null,
   mouth: 'mouth_01',
   hair: 'hair_01',
   hat: null,
@@ -66,6 +69,7 @@ export const EDITABLE_SLOTS: AvatarSlot[] = [
   'eyes',
   'mouth',
   'hair',
+  'facialHair',
   'clothes',
   'pants',
   'shoes',
@@ -82,6 +86,7 @@ export const SLOT_LABELS: Record<AvatarSlot, string> = {
   eyes: 'Eyes',
   mouth: 'Mouth',
   hair: 'Hair',
+  facialHair: 'Beard',
   clothes: 'Top',
   pants: 'Bottoms',
   shoes: 'Shoes',
@@ -90,7 +95,7 @@ export const SLOT_LABELS: Record<AvatarSlot, string> = {
 };
 
 /** Slots where wearing nothing is a real choice rather than a missing piece. */
-export const OPTIONAL_SLOTS: AvatarSlot[] = ['hat', 'accessory', 'face'];
+export const OPTIONAL_SLOTS: AvatarSlot[] = ['hat', 'accessory', 'face', 'facialHair'];
 
 /**
  * Fills in slots a stored config predates.

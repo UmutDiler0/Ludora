@@ -49,6 +49,12 @@ export interface BuildMetrics {
   thigh: number;
   legGap: number;
   armWidth: number;
+  /**
+   * Extra outward curve at chest height. Zero means the torso runs straight
+   * from shoulder to waist. Garments inherit it through `torsoPath`, so a top
+   * follows the chest without any per-build clothing artwork.
+   */
+  bust: number;
 }
 
 /**
@@ -61,39 +67,69 @@ export interface BuildMetrics {
  * changes how a hat or a pair of shoes fits.
  */
 const BUILDS: Record<BuildVariant, BuildMetrics> = {
-  neutral: { shoulder: 34, chest: 32, waist: 27, hip: 31, thigh: 13, legGap: 2, armWidth: 13 },
-  feminine: { shoulder: 30, chest: 29, waist: 23, hip: 34, thigh: 13, legGap: 2, armWidth: 12 },
-  masculine: { shoulder: 38, chest: 36, waist: 31, hip: 30, thigh: 14, legGap: 2, armWidth: 14 },
+  neutral: { shoulder: 34, chest: 32, waist: 27, hip: 31, thigh: 13, legGap: 2, armWidth: 13, bust: 0 },
+  feminine: { shoulder: 30, chest: 29, waist: 23, hip: 34, thigh: 13, legGap: 2, armWidth: 12, bust: 5 },
+  masculine: { shoulder: 38, chest: 36, waist: 31, hip: 30, thigh: 14, legGap: 2, armWidth: 14, bust: 0 },
 };
 
 export const buildMetrics = (variant: string | undefined): BuildMetrics =>
   BUILDS[(variant as BuildVariant) ?? 'neutral'] ?? BUILDS.neutral;
 
+export interface GarmentOptions {
+  /** Grows the whole shape evenly, so a top sits outside the body it covers. */
+  inflate?: number;
+  /** Y of the top edge. Lower than the shoulder for sleeveless cuts. */
+  top?: number;
+  /** Half-width at `top`. Defaults to the shoulder. */
+  topHalf?: number;
+  /** How far the top edge arcs. Positive rises over the shoulders, negative scoops into a neckline. */
+  neckArc?: number;
+}
+
 /**
- * The torso outline, from shoulders to hips.
+ * The torso outline, from a top edge down to the hips.
  *
- * `inflate` grows it evenly so a garment can be drawn as the same silhouette a
- * few units larger — which is what keeps a hoodie looking like it is worn by
- * this body rather than pasted onto it.
+ * Every garment is this same shape with different arguments, which is the point:
+ * the bust curve, the waist taper and the hip flare are defined once, so a top
+ * cannot drift out of agreement with the body underneath it. A tank that drew
+ * its own outline is exactly how the feminine build ended up looking identical
+ * to the others while wearing one.
  */
-export function torsoPath(b: BuildMetrics, inflate = 0): string {
-  const sh = b.shoulder + inflate;
-  const ch = b.chest + inflate;
+export function garmentPath(b: BuildMetrics, options: GarmentOptions = {}): string {
+  const { inflate = 0, top = Y.shoulder, topHalf = b.shoulder, neckArc = 13 } = options;
+
+  const th = topHalf + inflate;
   const wa = b.waist + inflate;
   const hi = b.hip + inflate;
-  const top = Y.shoulder - inflate;
+  const t = top - inflate;
   const bottom = Y.hip + inflate;
 
+  // The chest control point carries the bust: pulled outward and slightly up,
+  // it bows the top-to-waist run into a curve rather than a straight taper.
+  const cpX = b.chest + inflate + 2 + b.bust * 1.7;
+  const cpY = Y.chest - b.bust * 1.2;
+
   return [
-    `M ${CENTRE - sh} ${top}`,
-    `Q ${CENTRE} ${top - 13} ${CENTRE + sh} ${top}`,
-    `C ${CENTRE + ch + 2} ${Y.chest} ${CENTRE + wa + 2} ${Y.waist - 8} ${CENTRE + wa} ${Y.waist}`,
+    `M ${CENTRE - th} ${t}`,
+    `Q ${CENTRE} ${t - neckArc} ${CENTRE + th} ${t}`,
+    `C ${CENTRE + cpX} ${cpY} ${CENTRE + wa + 2} ${Y.waist - 8} ${CENTRE + wa} ${Y.waist}`,
     `C ${CENTRE + hi} ${Y.hip - 12} ${CENTRE + hi} ${bottom - 6} ${CENTRE + hi - 4} ${bottom}`,
     `L ${CENTRE - hi + 4} ${bottom}`,
     `C ${CENTRE - hi} ${bottom - 6} ${CENTRE - hi} ${Y.hip - 12} ${CENTRE - wa} ${Y.waist}`,
-    `C ${CENTRE - wa - 2} ${Y.waist - 8} ${CENTRE - ch - 2} ${Y.chest} ${CENTRE - sh} ${top}`,
+    `C ${CENTRE - wa - 2} ${Y.waist - 8} ${CENTRE - cpX} ${cpY} ${CENTRE - th} ${t}`,
     'Z',
   ].join(' ');
+}
+
+/** The bare torso — a garment with no adjustments. */
+export const torsoPath = (b: BuildMetrics, inflate = 0): string => garmentPath(b, { inflate });
+
+/** Underbust shading line, for builds that have one. Empty otherwise. */
+export function bustLine(b: BuildMetrics): string {
+  if (b.bust <= 0) return '';
+  const w = b.chest * 0.52;
+  const y = Y.chest + 5;
+  return `M${CENTRE - w} ${y} Q${CENTRE - w * 0.45} ${y + 9} ${CENTRE} ${y} Q${CENTRE + w * 0.45} ${y + 9} ${CENTRE + w} ${y}`;
 }
 
 /** Centre-line x of one leg. */
