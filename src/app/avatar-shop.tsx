@@ -265,7 +265,8 @@ function PreviewBody({
         <Label>Preview</Label>
         <AvatarRenderer
           config={{ ...avatar, [item.slot]: item.id }}
-          size={168}
+          mode="full"
+          size={140}
           ring={palette.primaryContainer}
         />
         <Text variant="heading" center>

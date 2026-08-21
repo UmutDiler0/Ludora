@@ -51,7 +51,10 @@ export default function Register() {
     const ok = await register(email, password, username);
     if (!ok) return;
     hydrateFrom(username.trim());
-    router.replace('/(tabs)');
+    // New accounts build an avatar before landing on the dashboard. `replace`
+    // rather than `push`: the account already exists by this point, so backing
+    // into the registration form would only offer to create it twice.
+    router.replace('/avatar-create');
   };
 
   const edit = (setter: (v: string) => void) => (v: string) => {

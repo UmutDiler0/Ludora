@@ -4,6 +4,7 @@ import Svg, { G } from 'react-native-svg';
 import { useTheme } from '@/theme/ThemeProvider';
 import { radius, stroke } from '@/theme/tokens';
 import { getAvatarItem, type AvatarItem } from './catalogue';
+import { buildMetrics, VIEWBOX, type BuildMetrics } from './geometry';
 import {
   AccessoryPiece,
   BackgroundPiece,
@@ -14,35 +15,55 @@ import {
   HairPiece,
   HatPiece,
   MouthPiece,
+  PantsPiece,
+  ShoesPiece,
 } from './pieces';
-import { SLOT_ORDER, type AvatarConfig, type AvatarSlot } from './types';
+import { normalizeAvatar, SLOT_ORDER, type AvatarConfig, type AvatarSlot } from './types';
 
 /**
- * Composites a full `AvatarConfig` from the layered pieces in pieces.tsx, in
+ * Composites an `AvatarConfig` from the layered pieces in pieces.tsx, in
  * `SLOT_ORDER` (background first, accessory last — types.ts is the source of
- * truth for z-order). Draws whatever the config says; it does not check
- * `ownedItemIds` — that's a set-time concern for the shop/customizer, not a
- * render-time one, same split the real Firestore rules will enforce (§12).
+ * truth for z-order).
+ *
+ * There is one drawing and two crops. `full` shows the whole figure for the
+ * customizer, the shop try-on and sign-up; `bust` frames the head and shoulders
+ * for the circular avatars in lists and leaderboards. Both read the same
+ * config, so a hat cannot look correct in one place and wrong in the other —
+ * which is the failure mode a separate portrait asset would have introduced.
+ *
+ * It draws whatever the config says and does not check `ownedItemIds`. That is
+ * a set-time concern for the shop and customizer, not a render-time one — the
+ * same split the real Firestore rules will enforce (§12).
  */
 
-function renderSlot(slot: AvatarSlot, itemId: string | null, ink: string) {
+export type AvatarMode = 'bust' | 'full';
+
+function renderSlot(slot: AvatarSlot, itemId: string | null, ink: string, build: BuildMetrics) {
+  // `build` is a silhouette modifier every other piece reads, not a layer.
+  if (slot === 'build') return null;
+
   const item = getAvatarItem(itemId);
   if (!item) return null;
+
   switch (slot) {
     case 'background':
       return <BackgroundPiece color={item.color} />;
     case 'body':
-      return <BodyPiece color={item.color} ink={ink} />;
+      return <BodyPiece color={item.color} ink={ink} build={build} />;
+    case 'pants':
+      return <PantsPiece variant={item.variant} color={item.color} ink={ink} build={build} />;
+    case 'shoes':
+      return <ShoesPiece variant={item.variant} color={item.color} ink={ink} build={build} />;
+    case 'clothes':
+      return <ClothesPiece variant={item.variant} color={item.color} ink={ink} build={build} />;
     case 'face':
       return <FacePiece variant={item.variant} color={item.color} />;
     case 'eyes':
       return <EyesPiece variant={item.variant} ink={ink} />;
     case 'mouth':
-      return <MouthPiece ink={ink} />;
+      return <MouthPiece variant={item.variant} ink={ink} />;
     case 'hair':
       return <HairPiece variant={item.variant} color={item.color} ink={ink} />;
-    case 'clothes':
-      return <ClothesPiece variant={item.variant} color={item.color} ink={ink} />;
     case 'hat':
       return <HatPiece variant={item.variant} color={item.color} ink={ink} />;
     case 'accessory':
@@ -50,83 +71,90 @@ function renderSlot(slot: AvatarSlot, itemId: string | null, ink: string) {
   }
 }
 
+/** The layered figure, without any framing. Shared by every consumer below. */
+function Figure({ config, ink }: { config: AvatarConfig; ink: string }) {
+  const build = buildMetrics(getAvatarItem(config.build)?.variant);
+  return (
+    <>
+      {SLOT_ORDER.map((slot) => (
+        <G key={slot}>{renderSlot(slot, config[slot], ink, build)}</G>
+      ))}
+    </>
+  );
+}
+
 export function AvatarRenderer({
   config,
   size = 64,
+  mode = 'bust',
   ring,
 }: {
-  config: AvatarConfig;
+  config: Partial<AvatarConfig>;
+  /** Width for `full`, diameter for `bust`. */
   size?: number;
+  mode?: AvatarMode;
   ring?: string;
 }) {
   const { palette } = useTheme();
+  const full = normalizeAvatar(config);
+  const isFull = mode === 'full';
+
+  // The full body is 160 × 280, so its frame has to be taller than it is wide;
+  // forcing it square would either letterbox the figure or crop its feet.
+  const height = isFull ? (size * 280) / 160 : size;
 
   return (
     <View
       style={{
         width: size,
-        height: size,
-        borderRadius: size / 2,
+        height,
+        borderRadius: isFull ? radius.lg : size / 2,
         overflow: 'hidden',
         backgroundColor: palette.surfaceLow,
         borderWidth: stroke.base,
         borderColor: ring ?? palette.ink,
       }}>
-      <Svg width={size} height={size} viewBox="0 0 160 160">
-        {SLOT_ORDER.map((slot) => (
-          <G key={slot}>{renderSlot(slot, config[slot], palette.ink)}</G>
-        ))}
+      <Svg width="100%" height="100%" viewBox={isFull ? VIEWBOX.full : VIEWBOX.bust}>
+        <Figure config={full} ink={palette.ink} />
       </Svg>
     </View>
   );
 }
 
-/** Small standalone preview of one catalogue item, for shop/customizer lists. */
+/**
+ * The window each slot's thumbnail frames.
+ *
+ * A pair of shoes shown inside a whole-body thumbnail is four pixels tall and
+ * unsellable, so every slot crops to the part of the figure it changes.
+ */
+const THUMB_VIEWBOX: Record<AvatarSlot, string> = {
+  background: '0 0 160 280',
+  build: '0 60 160 220',
+  body: '20 10 120 120',
+  face: '38 28 84 84',
+  eyes: '38 24 84 72',
+  mouth: '46 44 68 60',
+  hair: '20 4 120 110',
+  hat: '20 0 120 100',
+  accessory: '20 14 120 120',
+  clothes: '16 84 128 118',
+  pants: '16 148 128 116',
+  shoes: '16 208 128 74',
+};
+
+/**
+ * Preview of one catalogue item on a neutral mannequin.
+ *
+ * The item is always shown *worn*, never floating: a jacket's shape only means
+ * something on shoulders, and shoes only read as shoes with legs above them.
+ * The mannequin uses the default build and skin so two items in the same grid
+ * are compared against an identical baseline.
+ */
 export function ItemThumb({ item, size = 56 }: { item: AvatarItem; size?: number }) {
   const { palette } = useTheme();
-  const ink = palette.ink;
-  const onHead = (piece: React.ReactNode) => (
-    <>
-      <BodyPiece color={palette.surfaceHigh} ink={ink} />
-      {piece}
-    </>
-  );
 
-  let piece: React.ReactNode;
-  switch (item.slot) {
-    case 'background':
-      piece = <BackgroundPiece color={item.color} />;
-      break;
-    case 'body':
-      piece = <BodyPiece color={item.color} ink={ink} />;
-      break;
-    case 'clothes':
-      piece = <ClothesPiece variant={item.variant} color={item.color} ink={ink} />;
-      break;
-    case 'face':
-      piece = onHead(<FacePiece variant={item.variant} color={item.color} />);
-      break;
-    case 'eyes':
-      piece = onHead(<EyesPiece variant={item.variant} ink={ink} />);
-      break;
-    case 'hair':
-      piece = onHead(<HairPiece variant={item.variant} color={item.color} ink={ink} />);
-      break;
-    case 'hat':
-      piece = onHead(<HatPiece variant={item.variant} color={item.color} ink={ink} />);
-      break;
-    case 'accessory':
-      piece = onHead(
-        <>
-          <EyesPiece variant="round" ink={ink} />
-          <AccessoryPiece variant={item.variant} color={item.color} ink={ink} />
-        </>,
-      );
-      break;
-    case 'mouth':
-      piece = <MouthPiece ink={ink} />;
-      break;
-  }
+  // Everything default except the slot being sold, so nothing else competes.
+  const config = normalizeAvatar({ [item.slot]: item.id, background: 'bg_01' });
 
   return (
     <View
@@ -139,8 +167,8 @@ export function ItemThumb({ item, size = 56 }: { item: AvatarItem; size?: number
         borderWidth: stroke.thin,
         borderColor: palette.ink,
       }}>
-      <Svg width={size} height={size} viewBox="0 0 160 160">
-        {piece}
+      <Svg width="100%" height="100%" viewBox={THUMB_VIEWBOX[item.slot]} preserveAspectRatio="xMidYMid slice">
+        <Figure config={config} ink={palette.ink} />
       </Svg>
     </View>
   );

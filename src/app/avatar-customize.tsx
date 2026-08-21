@@ -6,30 +6,38 @@ import { Button, Screen, ScreenHeader, Text } from '@/components/ui';
 import { AvatarRenderer, ItemThumb } from '@/features/avatar/AvatarRenderer';
 import { AVATAR_CATALOGUE, type AvatarItem } from '@/features/avatar/catalogue';
 import { SlotTabRow } from '@/features/avatar/SlotTabRow';
-import { SLOT_LABELS, type AvatarSlot } from '@/features/avatar/types';
+import { OPTIONAL_SLOTS, SLOT_LABELS, type AvatarSlot } from '@/features/avatar/types';
 import { useProfile } from '@/stores/profile';
 import { useTheme } from '@/theme/ThemeProvider';
 import { radius, spacing, stroke } from '@/theme/tokens';
 
-/** Slots with no starter item — equipping nothing is a valid, meaningful choice. */
-const OPTIONAL_SLOTS: AvatarSlot[] = ['hat', 'accessory'];
-
 /**
  * Live avatar builder — equips from what's already owned (bought in the
- * shop), big preview up top updates on every tap. No spending happens here;
- * that split keeps "try things on" and "pay for things" as separate, honest
- * actions.
+ * shop), full-body preview up top updates on every tap. No spending happens
+ * here; that split keeps "try things on" and "pay for things" as separate,
+ * honest actions.
+ *
+ * `build` is an ordinary tab here rather than a setting hidden somewhere else,
+ * which is what makes the sign-up choice genuinely reversible instead of
+ * nominally so.
  */
 export default function AvatarCustomize() {
   const router = useRouter();
   const { palette } = useTheme();
-  const [slot, setSlot] = useState<AvatarSlot>('hair');
+  const [slot, setSlot] = useState<AvatarSlot>('build');
 
   const { avatar, ownedItemIds } = useProfile();
   const setAvatar = useProfile((s) => s.setAvatar);
 
   const owned = useMemo(
-    () => AVATAR_CATALOGUE.filter((item) => item.slot === slot && ownedItemIds.includes(item.id)),
+    () =>
+      AVATAR_CATALOGUE.filter(
+        (item) =>
+          item.slot === slot &&
+          // Free pieces are owned by definition; the store records them too,
+          // but a profile restored from an older save might not list them yet.
+          (item.price === 0 || ownedItemIds.includes(item.id)),
+      ),
     [slot, ownedItemIds],
   );
 
@@ -39,8 +47,8 @@ export default function AvatarCustomize() {
     <Screen>
       <ScreenHeader title="Customize Avatar" onBack={() => router.back()} />
 
-      <View style={{ alignItems: 'center', paddingVertical: spacing.md }}>
-        <AvatarRenderer config={avatar} size={168} ring={palette.primaryContainer} />
+      <View style={{ alignItems: 'center' }}>
+        <AvatarRenderer config={avatar} mode="full" size={180} ring={palette.primaryContainer} />
       </View>
 
       <SlotTabRow value={slot} onChange={setSlot} />
@@ -54,6 +62,7 @@ export default function AvatarCustomize() {
         contentContainerStyle={{
           gap: spacing.md,
           paddingVertical: spacing.sm,
+          paddingRight: spacing.xl,
           alignItems: 'flex-start',
         }}>
         {OPTIONAL_SLOTS.includes(slot) && (
@@ -93,7 +102,11 @@ function OptionTile({
 }) {
   const { palette } = useTheme();
   return (
-    <Pressable accessibilityRole="button" onPress={onPress} style={{ alignItems: 'center', gap: spacing.xs, width: 68 }}>
+    <Pressable
+      accessibilityRole="button"
+      accessibilityLabel={item?.name ?? label}
+      onPress={onPress}
+      style={{ alignItems: 'center', gap: spacing.xs, width: 68 }}>
       {item ? (
         <View
           style={{

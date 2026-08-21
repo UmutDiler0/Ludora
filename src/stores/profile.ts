@@ -2,7 +2,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 
-import { DEFAULT_AVATAR, type AvatarConfig } from '@/features/avatar/types';
+import { DEFAULT_AVATAR, normalizeAvatar, type AvatarConfig } from '@/features/avatar/types';
 import { levelProgress, type Award } from '@/features/economy/levels';
 import { useSession } from '@/stores/session';
 
@@ -131,7 +131,23 @@ export const useProfile = create<ProfileState>()(
 
       reset: () => set(initial),
     }),
-    { name: 'ludora.profile', storage: createJSONStorage(() => AsyncStorage) },
+    {
+      name: 'ludora.profile',
+      storage: createJSONStorage(() => AsyncStorage),
+      // v2 added the `build`, `pants` and `shoes` slots. A profile saved before
+      // them has those keys missing, which renders a barefoot, trouserless
+      // figure — broken, but not obviously so. Filling the gaps on read is
+      // cheaper than teaching every screen to tolerate a partial config.
+      version: 2,
+      migrate: (persisted) => {
+        const prior = (persisted ?? {}) as Partial<ProfileState>;
+        return {
+          ...prior,
+          avatar: normalizeAvatar(prior.avatar),
+          ownedItemIds: [...new Set([...(prior.ownedItemIds ?? []), ...STARTER_ITEM_IDS])],
+        } as ProfileState;
+      },
+    },
   ),
 );
 
