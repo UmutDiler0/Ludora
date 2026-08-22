@@ -117,13 +117,14 @@ export function AvatarRenderer({
   // The full body is 160 × 280, so its frame has to be taller than it is wide;
   // forcing it square would either letterbox the figure or crop its feet.
   //
-  // The border is subtracted before applying the ratio and added back after.
-  // React Native borders are drawn inside the box, so the SVG's actual viewport
-  // is `size - 2 × border`; scaling the outer box to 160:280 leaves the inner
-  // box a slightly different shape, and `meet` then letterboxes it — which is
-  // the sliver of the old background that showed above and below the figure.
-  const border = stroke.base;
-  const height = isFull ? ((size - border * 2) * 280) / 160 + border * 2 : size;
+  // The border width is subtracted before applying the ratio and added back
+  // after. React Native borders are drawn inside the box, so the SVG's actual
+  // viewport is `size - 2 × borderWidth`; scaling the outer box to 160:280
+  // leaves the inner box a slightly different shape, and `meet` then
+  // letterboxes it — which is the sliver of the old background that showed
+  // above and below the figure.
+  const borderWidth = border ? stroke.base : 0;
+  const height = isFull ? ((size - borderWidth * 2) * 280) / 160 + borderWidth * 2 : size;
 
   return (
     <View
@@ -133,7 +134,7 @@ export function AvatarRenderer({
         borderRadius: isFull ? radius.lg : size / 2,
         overflow: 'hidden',
         backgroundColor: background ? palette.surfaceLow : 'transparent',
-        borderWidth: border ? stroke.base : 0,
+        borderWidth,
         borderColor: ring ?? palette.ink,
       }}>
       <Svg width="100%" height="100%" viewBox={isFull ? VIEWBOX.full : VIEWBOX.bust}>

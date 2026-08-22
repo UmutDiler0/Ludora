@@ -117,7 +117,7 @@ export default function Leaderboard() {
                       the other. Background off: the row already has its own
                       surface, and a colored disc behind the figure read as a
                       second, mismatched background. */}
-                  <AvatarRenderer config={entry.avatar} size={38} background={false} />
+                  <AvatarRenderer config={entry.avatar} size={38} background={false} border={false} />
                 </Row>
               }
               title={entry.isYou ? 'You' : entry.displayName}
