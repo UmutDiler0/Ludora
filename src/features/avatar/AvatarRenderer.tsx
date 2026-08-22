@@ -91,15 +91,27 @@ export function AvatarRenderer({
   size = 64,
   mode = 'bust',
   ring,
+  background = true,
+  border = true,
 }: {
   config: Partial<AvatarConfig>;
   /** Width for `full`, diameter for `bust`. */
   size?: number;
   mode?: AvatarMode;
   ring?: string;
+  /**
+   * False drops the equipped background piece and the wrapper's own backdrop
+   * fill, so the figure sits on whatever is behind it instead — a colored
+   * disc reads as a second background when the avatar already sits on a
+   * card/row surface, e.g. the leaderboard's list rows and podium.
+   */
+  background?: boolean;
+  /** False drops the ink outline frame — pairs with `background={false}` for a bare cutout. */
+  border?: boolean;
 }) {
   const { palette } = useTheme();
   const full = normalizeAvatar(config);
+  const displayConfig = background ? full : { ...full, background: null };
   const isFull = mode === 'full';
 
   // The full body is 160 × 280, so its frame has to be taller than it is wide;
@@ -120,12 +132,12 @@ export function AvatarRenderer({
         height,
         borderRadius: isFull ? radius.lg : size / 2,
         overflow: 'hidden',
-        backgroundColor: palette.surfaceLow,
-        borderWidth: stroke.base,
+        backgroundColor: background ? palette.surfaceLow : 'transparent',
+        borderWidth: border ? stroke.base : 0,
         borderColor: ring ?? palette.ink,
       }}>
       <Svg width="100%" height="100%" viewBox={isFull ? VIEWBOX.full : VIEWBOX.bust}>
-        <Figure config={full} ink={palette.ink} />
+        <Figure config={displayConfig} ink={palette.ink} />
       </Svg>
     </View>
   );

@@ -114,8 +114,10 @@ export default function Leaderboard() {
                   </Text>
                   {/* Bust crop, same config as the podium — one avatar, two
                       framings, so a hat cannot look right in one and wrong in
-                      the other. */}
-                  <AvatarRenderer config={entry.avatar} size={38} />
+                      the other. Background off: the row already has its own
+                      surface, and a colored disc behind the figure read as a
+                      second, mismatched background. */}
+                  <AvatarRenderer config={entry.avatar} size={38} background={false} />
                 </Row>
               }
               title={entry.isYou ? 'You' : entry.displayName}
@@ -202,7 +204,13 @@ function Podium({
               the board where the shop's clothes, bottoms and shoes are worth
               looking at, and a podium is a place people stand.
             */}
-            <AvatarRenderer config={entry.avatar} mode="full" size={FIGURES[i]} ring={medals[i]} />
+            <AvatarRenderer
+              config={entry.avatar}
+              mode="full"
+              size={FIGURES[i]}
+              ring={medals[i]}
+              background={false}
+            />
 
             {/* No gap — the figure stands on the block rather than above it. */}
             <View style={[s.podiumStep, { height: HEIGHTS[i], backgroundColor: medals[i] }]}>
