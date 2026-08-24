@@ -58,6 +58,10 @@ interface LocalTabooStore {
   sessionId: number;
 
   newGame: (playerCount?: number, config?: TabooConfig) => void;
+  /** Starts from a roster the room owner built by hand — named seats, each
+   *  already assigned to a team. See `PlayerSeat.team` and engine.ts's
+   *  `createInitialState`, which honours it when every seat carries one. */
+  newGameWithRoster: (seats: PlayerSeat[], config?: TabooConfig) => void;
   startTurn: () => void;
   mark: (result: TabooCardResult) => void;
   continueTurn: () => void;
@@ -73,9 +77,13 @@ export const useLocalTaboo = create<LocalTabooStore>((set, get) => ({
   sessionId: 0,
 
   newGame: (playerCount = 4, config = DEFAULT_TABOO_CONFIG) => {
+    get().newGameWithRoster(seatNames(playerCount), config);
+  },
+
+  newGameWithRoster: (seats, config = DEFAULT_TABOO_CONFIG) => {
     const now = Date.now();
     const rng = createRng(now >>> 0);
-    const created = engine.createInitialState(seatNames(playerCount), config, rng, now);
+    const created = engine.createInitialState(seats, config, rng, now);
     if (!created.ok) {
       set({ error: created.error.message });
       return;

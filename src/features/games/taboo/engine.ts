@@ -149,11 +149,23 @@ export const tabooEngine: GameEngine<TabooState, TabooConfig, TabooAction, Taboo
       return err('TOO_MANY_PLAYERS', `Taboo allows at most ${TABOO_MAX_PLAYERS} players.`);
     }
 
-    // Shuffled before the split, so team membership is not just seating order.
-    const seated = shuffle(rng, players);
-    const teamA: Uid[] = [];
-    const teamB: Uid[] = [];
-    seated.forEach((p, i) => (i % 2 === 0 ? teamA : teamB).push(p.uid));
+    // A room owner who picked teams by hand gets exactly that roster, in the
+    // order they built it — no reshuffling their choice. Only when nobody
+    // specified a team (the quick-play path, where every seat is generic) does
+    // the engine fall back to dealing teams itself.
+    const explicit = players.every((p) => p.team === 'A' || p.team === 'B');
+    let teamA: Uid[] = [];
+    let teamB: Uid[] = [];
+    if (explicit) {
+      teamA = players.filter((p) => p.team === 'A').map((p) => p.uid);
+      teamB = players.filter((p) => p.team === 'B').map((p) => p.uid);
+      if (teamA.length === 0 || teamB.length === 0) {
+        return err('INVALID_CONFIG', 'Each team needs at least one player.');
+      }
+    } else {
+      const seated = shuffle(rng, players);
+      seated.forEach((p, i) => (i % 2 === 0 ? teamA : teamB).push(p.uid));
+    }
 
     const makeTeam = (id: TabooTeamId, name: string, memberUids: Uid[]): TabooTeam => ({
       id,

@@ -3,7 +3,7 @@ import { useRouter } from 'expo-router';
 import { useMemo, useState } from 'react';
 import { Pressable, View } from 'react-native';
 
-import { Button, Card, Chip, Label, Row, Screen, ScreenHeader, Text } from '@/components/ui';
+import { Button, Card, Chip, Label, NumberStepper, Row, Screen, ScreenHeader, Text } from '@/components/ui';
 import {
   autoVampireCount,
   DEFAULT_VV_CONFIG,
@@ -228,73 +228,6 @@ const presetStyle = (p: Palette) => ({
   backgroundColor: p.surface,
   alignItems: 'center' as const,
 });
-
-/**
- * `+`/`−` rather than a raw text field — every value here is small, bounded,
- * and meaningful only within its range, so a keyboard would invite an input a
- * clamp then has to silently correct.
- */
-function NumberStepper({
-  value,
-  min,
-  max,
-  step = 1,
-  onChange,
-  format,
-}: {
-  value: number;
-  min: number;
-  max: number;
-  step?: number;
-  onChange: (value: number) => void;
-  format: (value: number) => string;
-}) {
-  const nudge = (dir: 1 | -1) => onChange(Math.max(min, Math.min(max, value + dir * step)));
-
-  return (
-    <Row gap={spacing.md} style={{ alignItems: 'center' }}>
-      <StepButton icon="remove" disabled={value <= min} onPress={() => nudge(-1)} />
-      <Text variant="bodyStrong" style={{ flex: 1, textAlign: 'center' }}>
-        {format(value)}
-      </Text>
-      <StepButton icon="add" disabled={value >= max} onPress={() => nudge(1)} />
-    </Row>
-  );
-}
-
-function StepButton({
-  icon,
-  disabled,
-  onPress,
-}: {
-  icon: 'add' | 'remove';
-  disabled: boolean;
-  onPress: () => void;
-}) {
-  const { palette } = useTheme();
-  return (
-    <Pressable
-      accessibilityRole="button"
-      accessibilityLabel={icon === 'add' ? 'Increase' : 'Decrease'}
-      accessibilityState={{ disabled }}
-      disabled={disabled}
-      onPress={onPress}
-      hitSlop={8}
-      style={({ pressed }) => ({
-        width: 40,
-        height: 40,
-        borderRadius: radius.md,
-        alignItems: 'center',
-        justifyContent: 'center',
-        borderWidth: stroke.base,
-        borderColor: palette.ink,
-        backgroundColor: disabled ? palette.surfaceLow : palette.surface,
-        opacity: disabled ? 0.4 : pressed ? 0.85 : 1,
-      })}>
-      <Ionicons name={icon} size={18} color={palette.onSurface} />
-    </Pressable>
-  );
-}
 
 function ToggleRow({
   label,

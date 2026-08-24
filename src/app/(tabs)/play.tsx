@@ -106,17 +106,17 @@ export default function Play() {
           Pass-and-play, two teams. Describe the word without saying it — or
           any word on the forbidden list.
         </Text>
-        <Row gap={spacing.sm}>
-          {[4, 6, 8].map((count) => (
-            <Button
-              key={count}
-              label={`${count} players`}
-              tone={count === 4 ? 'primary' : 'ghost'}
-              onPress={() => startTaboo(count)}
-              style={{ flex: 1 }}
-            />
-          ))}
-        </Row>
+        <Button label="Quick play — 4 players" onPress={() => startTaboo(4)} />
+        {/* Unlike Vampire Village's three buttons, a headcount alone cannot
+            stand in for Taboo's setup — who's on which team is a real choice,
+            not a shuffle, so building the roster gets its own screen rather
+            than a size picker. */}
+        <Button
+          label="Name players & build teams"
+          icon="people"
+          tone="ghost"
+          onPress={() => router.push('/taboo-setup')}
+        />
       </Card>
 
       <Label>Multiplayer</Label>

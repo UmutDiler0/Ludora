@@ -21,6 +21,15 @@ export interface Rng {
 export interface PlayerSeat {
   uid: Uid;
   displayName: string;
+  /**
+   * Optional team hint for games with a fixed team structure (Taboo). Games
+   * without teams (Vampire Village) never read it. It lives on the shared
+   * seat shape rather than a per-game wrapper so one roster serves every
+   * game's `createInitialState`, the same way `displayName` already does —
+   * a team-based engine honours it when every seat carries one and falls
+   * back to its own default split otherwise.
+   */
+  team?: string;
 }
 
 export interface EngineCtx {

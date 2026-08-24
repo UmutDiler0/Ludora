@@ -55,6 +55,35 @@ describe('createInitialState', () => {
     expect(s.activeTeam).toBe('A');
     expect(s.describerUid).toBe(s.teams.A.memberUids[0]);
   });
+
+  it('honours a manually assigned roster instead of dealing its own', () => {
+    const manual: PlayerSeat[] = [
+      { uid: 'u0', displayName: 'Ada', team: 'A' },
+      { uid: 'u1', displayName: 'Bo', team: 'B' },
+      { uid: 'u2', displayName: 'Cy', team: 'A' },
+      { uid: 'u3', displayName: 'Di', team: 'B' },
+      { uid: 'u4', displayName: 'Eve', team: 'A' },
+    ];
+    const s = unwrap(engine.createInitialState(manual, DEFAULT_TABOO_CONFIG, createRng(1), 0));
+    expect(s.teams.A.memberUids).toEqual(['u0', 'u2', 'u4']);
+    expect(s.teams.B.memberUids).toEqual(['u1', 'u3']);
+  });
+
+  it('refuses a roster that leaves one team empty', () => {
+    const manual: PlayerSeat[] = [
+      { uid: 'u0', displayName: 'Ada', team: 'A' },
+      { uid: 'u1', displayName: 'Bo', team: 'A' },
+      { uid: 'u2', displayName: 'Cy', team: 'A' },
+      { uid: 'u3', displayName: 'Di', team: 'A' },
+    ];
+    expectErr(engine.createInitialState(manual, DEFAULT_TABOO_CONFIG, createRng(1), 0), 'INVALID_CONFIG');
+  });
+
+  it('falls back to an automatic split when no team is specified', () => {
+    const s = start(6);
+    expect(s.teams.A.memberUids.length).toBeGreaterThan(0);
+    expect(s.teams.B.memberUids.length).toBeGreaterThan(0);
+  });
 });
 
 describe('turn flow', () => {
