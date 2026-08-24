@@ -106,6 +106,10 @@ export default function Home() {
       router.push('/taboo');
       return;
     }
+    if (id === 'drawingGuess') {
+      router.push('/sketch-setup');
+      return;
+    }
     newGame(6);
     router.push('/game');
   };

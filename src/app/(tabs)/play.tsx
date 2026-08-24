@@ -41,6 +41,7 @@ export default function Play() {
   // straight to setup instead of quick-starting like Vampire Village does.
   const startCatalogueGame = (id: GameId) => {
     if (id === 'taboo') return router.push('/taboo-setup');
+    if (id === 'drawingGuess') return router.push('/sketch-setup');
     return startLocal(6);
   };
 

@@ -12,6 +12,7 @@ import type { GameId } from './types';
 export const GAME_REGISTRY = {
   vampireVillage: () => import('../vampireVillage/engine'),
   taboo: () => import('../taboo/engine'),
+  drawingGuess: () => import('../sketchIt/engine'),
 } as const satisfies Partial<Record<GameId, () => Promise<unknown>>>;
 
 export type RegisteredGameId = keyof typeof GAME_REGISTRY;
@@ -60,7 +61,7 @@ export const GAME_CATALOGUE: GameCatalogueEntry[] = [
     name: 'Sketch It',
     category: 'Drawing',
     isPremium: true,
-    enabled: false,
+    enabled: true,
     minPlayers: 3,
     maxPlayers: 8,
   },

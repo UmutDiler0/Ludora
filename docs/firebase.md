@@ -89,18 +89,19 @@ No Firestore document yet holds anything beyond what Auth itself carries (`uid`,
 ### 3.7 Firestore `game_definitions/{gameId}` — game registry
 
 - **Local mirror:** [features/games/core/registry.ts](../src/features/games/core/registry.ts) `GAME_CATALOGUE` — "mirrored from `game_definitions`... kept here so the client can render before Firestore exists; Firestore is authoritative once it does" (its own header).
-- Six `GameId`s registered; only `vampireVillage` and `taboo` have engines (`GAME_REGISTRY`). Adding a game is still exactly the one-line-per-file recipe ARCHITECTURE §9.2 describes.
+- Six `GameId`s registered; `vampireVillage`, `taboo`, and `drawingGuess` (Sketch It) have engines (`GAME_REGISTRY`). Adding a game is still exactly the one-line-per-file recipe ARCHITECTURE §9.2 describes.
 
-### 3.8 RTDB `state` node — live session sync (Vampire Village, Taboo)
+### 3.8 RTDB `state` node — live session sync (Vampire Village, Taboo, Sketch It)
 
-- Both engines' state is documented, in their own `state.ts` headers, as "written straight to the RTDB `state` node (§6.3)". `projectFor(state, uid)` is the anti-cheat primitive from §9.1 in both — a client never receives hidden information (Vampire Village's live roles/coven/night targets; Taboo's current card) for anyone but the uid it's projected for.
-- **Taboo is new since ARCHITECTURE.md was written** and needs its own `game_definitions/taboo` document once that collection is real — its config schema (`roundSeconds`, `skipLimit`, `targetScore`, `maxTurns`) already exists as `TABOO_CONFIG_FIELDS` in [features/games/taboo/config.ts](../src/features/games/taboo/config.ts), mirroring the same "drives the dynamic config UI" pattern §14 describes for Vampire Village.
+- All three engines' state is documented, in their own `state.ts` headers, as "written straight to the RTDB `state` node (§6.3)". `projectFor(state, uid)` is the anti-cheat primitive from §9.1 in all three — a client never receives hidden information (Vampire Village's live roles/coven/night targets; Taboo's current card; Sketch It's current word) for anyone but the uid it's projected for.
+- **Taboo and Sketch It are both new since ARCHITECTURE.md was written** and each needs its own `game_definitions/{gameId}` document once that collection is real — their config schemas (`TABOO_CONFIG_FIELDS` in [features/games/taboo/config.ts](../src/features/games/taboo/config.ts), `SKETCH_CONFIG_FIELDS` in [features/games/sketchIt/config.ts](../src/features/games/sketchIt/config.ts)) already exist, mirroring the same "drives the dynamic config UI" pattern §14 describes for Vampire Village.
 - **Manual team assignment has no modelled room shape yet.** `PlayerSeat` gained an optional `team?: string` ([features/games/core/types.ts](../src/features/games/core/types.ts)) so a room owner can pre-assign Taboo's two teams instead of a random split. Once rooms are real, this needs `/rooms/{roomId}/players/{uid}.team`, an addition to §6.4's `players/{uid}` shape (currently `{ displayName, avatarConfig, isReady, joinedAt, role? }` — `role?` covers Vampire Village; `team?` is the Taboo equivalent).
+- **Sketch It's drawing itself is deliberately not part of this node.** Strokes are ephemeral, local-only UI state ([features/games/sketchIt/screens/Canvas.tsx](../src/features/games/sketchIt/screens/Canvas.tsx)) — the engine's own `state.ts` header explains why: the game's outcome never depends on the pixels, only on who guessed and in what order. A real multiplayer build needs its own realtime path for the live strokes (something like `rooms/{roomId}/sketch/strokes`), streamed separately the same way chat got its own path instead of living on this state node — not designed yet, since local hot-seat play has no second device to stream to.
 
-### 3.9 Firestore `game_content/taboo/cards` — word deck
+### 3.9 Firestore `game_content/taboo/cards` and `game_content/sketchIt/prompts` — word/prompt decks
 
-- **Local mirror:** [features/games/taboo/words.ts](../src/features/games/taboo/words.ts), 30 curated cards (`id`, `word`, `forbidden[]`). Its own header names the real path directly and calls out that this file becomes the **offline fallback**, not the only deck, once that collection exists.
-- **New collection, not in ARCHITECTURE §6.2.** Structurally the same idea as `items/{itemId}` — a small content catalogue read-only to clients — so it likely wants the same rules shape (§10.2's `match /items/{id}`).
+- **Local mirrors:** [features/games/taboo/words.ts](../src/features/games/taboo/words.ts) (30 cards, `id`/`word`/`forbidden[]`) and [features/games/sketchIt/prompts.ts](../src/features/games/sketchIt/prompts.ts) (40 prompts, `id`/`word`). Taboo's header names its real path directly and calls out that the file becomes the **offline fallback**, not the only deck, once that collection exists — Sketch It's is the same idea, one collection per game under `game_content/`.
+- **New collections, not in ARCHITECTURE §6.2.** Structurally the same idea as `items/{itemId}` — a small content catalogue read-only to clients — so they likely want the same rules shape (§10.2's `match /items/{id}`).
 
 ### 3.10 RTDB `rooms/{roomId}/chat/{channel}` — chat
 
@@ -120,6 +121,7 @@ Collected here so they don't quietly rot in twelve separate comments. None of th
 5. **`game_content/taboo/cards`** is a new collection, not in §6.2.
 6. **`items/{itemId}.unlockedBy`** is a new field alongside §22.5's `requiredLevel`/`setId`.
 7. **`/rooms/{roomId}/players/{uid}.team`** is needed for Taboo's manual team assignment; §6.4 only modelled `.role?` (Vampire Village).
+8. **Sketch It's live drawing has no RTDB path at all yet** — strokes are local-only for now (see §3.8); a real multiplayer build needs a new realtime path for them, not modelled anywhere in ARCHITECTURE.md because the game didn't exist when it was written.
 
 ### 4.1 Why the chat path changed
 
