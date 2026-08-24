@@ -1,0 +1,92 @@
+import { useRouter } from 'expo-router';
+import { View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+
+import { Button, Chip, IconButton, Row, Screen, Text } from '@/components/ui';
+import { ZartaGameOverScreen } from '@/features/games/zarta/screens/GameOver';
+import { ZartaRoundRecapScreen } from '@/features/games/zarta/screens/RoundRecap';
+import { VotingScreen } from '@/features/games/zarta/screens/Voting';
+import { WritingScreen } from '@/features/games/zarta/screens/Writing';
+import { useLocalZarta, useZartaView } from '@/stores/localZarta';
+import { useTheme } from '@/theme/ThemeProvider';
+import { spacing, stroke } from '@/theme/tokens';
+
+/**
+ * Zarta session surface — the sibling of `/taboo` and `/sketch`, same split
+ * between session chrome (this file) and one component per phase. The one
+ * structural difference: `writing` and `voting` each hand the phone to every
+ * seat in turn rather than one active seat per round, which is why those two
+ * phase components (not this file) own the per-player "pass the phone" beat.
+ */
+export default function ZartaRoute() {
+  const router = useRouter();
+  const view = useZartaView();
+  const ready = useLocalZarta((s) => s.ready);
+  const submitAnswer = useLocalZarta((s) => s.submitAnswer);
+  const submitVote = useLocalZarta((s) => s.submitVote);
+  const continueRound = useLocalZarta((s) => s.continueRound);
+  const forfeitTurnNow = useLocalZarta((s) => s.forfeitTurnNow);
+  const newGame = useLocalZarta((s) => s.newGame);
+
+  if (!view) {
+    return (
+      <Screen>
+        <Text variant="title">No game in progress</Text>
+        <Text variant="body">Start one from the Play tab.</Text>
+        <Button label="Back to Play" onPress={() => router.replace('/(tabs)/play')} />
+      </Screen>
+    );
+  }
+
+  return (
+    <View style={{ flex: 1 }}>
+      <ZartaHeader onLeave={() => router.replace('/(tabs)')} round={view.round} totalRounds={view.totalRounds} />
+
+      {view.phase === 'writing' && (
+        <WritingScreen view={view} onReady={ready} onSubmit={submitAnswer} onTimeUp={forfeitTurnNow} />
+      )}
+      {view.phase === 'voting' && (
+        <VotingScreen view={view} onReady={ready} onSubmit={submitVote} onTimeUp={forfeitTurnNow} />
+      )}
+      {view.phase === 'round_recap' && <ZartaRoundRecapScreen view={view} onContinue={continueRound} />}
+      {view.phase === 'game_over' && (
+        <ZartaGameOverScreen view={view} onPlayAgain={() => newGame(view.leaderboard.length)} />
+      )}
+    </View>
+  );
+}
+
+function ZartaHeader({
+  onLeave,
+  round,
+  totalRounds,
+}: {
+  onLeave: () => void;
+  round: number;
+  totalRounds: number;
+}) {
+  const { palette } = useTheme();
+
+  return (
+    <SafeAreaView
+      edges={['top']}
+      style={{
+        backgroundColor: palette.surface,
+        borderBottomWidth: stroke.base,
+        borderBottomColor: palette.ink,
+      }}>
+      <Row
+        style={{
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          paddingHorizontal: spacing.lg,
+          paddingVertical: spacing.sm,
+        }}>
+        <IconButton name="chevron-back" label="Leave game" onPress={onLeave} />
+        <Chip color={palette.secondary}>
+          Round {round} / {totalRounds}
+        </Chip>
+      </Row>
+    </SafeAreaView>
+  );
+}

@@ -110,6 +110,10 @@ export default function Home() {
       router.push('/sketch-setup');
       return;
     }
+    if (id === 'zarta') {
+      router.push('/zarta-setup');
+      return;
+    }
     newGame(6);
     router.push('/game');
   };

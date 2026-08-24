@@ -42,6 +42,7 @@ export default function Play() {
   const startCatalogueGame = (id: GameId) => {
     if (id === 'taboo') return router.push('/taboo-setup');
     if (id === 'drawingGuess') return router.push('/sketch-setup');
+    if (id === 'zarta') return router.push('/zarta-setup');
     return startLocal(6);
   };
 

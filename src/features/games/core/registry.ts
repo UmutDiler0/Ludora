@@ -13,6 +13,7 @@ export const GAME_REGISTRY = {
   vampireVillage: () => import('../vampireVillage/engine'),
   taboo: () => import('../taboo/engine'),
   drawingGuess: () => import('../sketchIt/engine'),
+  zarta: () => import('../zarta/engine'),
 } as const satisfies Partial<Record<GameId, () => Promise<unknown>>>;
 
 export type RegisteredGameId = keyof typeof GAME_REGISTRY;
@@ -70,7 +71,7 @@ export const GAME_CATALOGUE: GameCatalogueEntry[] = [
     name: 'Zarta',
     category: 'Party',
     isPremium: false,
-    enabled: false,
+    enabled: true,
     minPlayers: 3,
     maxPlayers: 10,
   },
