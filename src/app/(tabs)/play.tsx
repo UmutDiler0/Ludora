@@ -5,7 +5,6 @@ import { Button, Card, Chip, Label, ListRow, Row, Screen, ScreenHeader, Text } f
 import { GAME_CATALOGUE, type GameCatalogueEntry } from '@/features/games/core/registry';
 import type { GameId } from '@/features/games/core/types';
 import { GameArt } from '@/features/home/GameArt';
-import { useLocalGame } from '@/stores/localGame';
 import { radius, spacing, stroke } from '@/theme/tokens';
 import { useTheme } from '@/theme/ThemeProvider';
 
@@ -29,21 +28,15 @@ export default function Play() {
   const { width } = useWindowDimensions();
 
   const router = useRouter();
-  const newVillageGame = useLocalGame((s) => s.newGame);
 
-  const startLocal = (players: number) => {
-    newVillageGame(players);
-    router.push('/game');
-  };
-
-  // Each enabled game owns its route — Taboo has no headcount shortcut since
-  // its roster (names, teams) is a real choice, so the catalogue sends it
-  // straight to setup instead of quick-starting like Vampire Village does.
+  // Every enabled game owns a setup route and lands there first — no game
+  // starts without being configured, even Vampire Village's old "quick start
+  // as 6 players" shortcut, which skipped it.
   const startCatalogueGame = (id: GameId) => {
     if (id === 'taboo') return router.push('/taboo-setup');
     if (id === 'drawingGuess') return router.push('/sketch-setup');
     if (id === 'zarta') return router.push('/zarta-setup');
-    return startLocal(6);
+    return router.push('/game-setup');
   };
 
   // Available width is the screen minus Screen's own horizontal padding (spacing.xl each side).
@@ -69,24 +62,13 @@ export default function Play() {
         <Text variant="body" color={palette.onSurfaceVariant}>
           Vampire Village, hot-seat on one device. Pass the phone around — no account, no network.
         </Text>
-        <Row gap={spacing.sm}>
-          {[4, 6, 9].map((count, i) => (
-            <Button
-              key={count}
-              label={`${count} players`}
-              tone={i === 1 ? 'primary' : 'ghost'}
-              onPress={() => startLocal(count)}
-              style={{ flex: 1 }}
-            />
-          ))}
-        </Row>
-        {/* The three buttons above are the Classic preset at a fixed size —
-            this is the same room-owner setup a real lobby will have, just
-            reached one tap later because there is only ever one owner here. */}
+        {/* No player-count shortcut here on purpose — every game, including
+            this one, is configured before it starts (§ config-screen policy),
+            so this always lands on the setup screen rather than picking a
+            count for you. */}
         <Button
-          label="Configure the room"
+          label="Configure & Play"
           icon="options"
-          tone="ghost"
           onPress={() => router.push('/game-setup')}
         />
       </Card>
@@ -133,8 +115,8 @@ export default function Play() {
 /**
  * Grid tile for the catalogue — art from `GameArt` (real key art, not a
  * placeholder), category/player-count line, and a status chip. Enabled games
- * are pressable and drop straight into a 6-player local game, same shortcut
- * the Home trending strip uses; disabled ones are shown but honestly inert.
+ * are pressable and open that game's setup screen, same as the Home trending
+ * strip; disabled ones are shown but honestly inert.
  */
 function GameCard({
   game,

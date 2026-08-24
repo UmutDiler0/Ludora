@@ -22,8 +22,6 @@ import { DUMMY_CHAMPIONS, trendingGames, type Champion, type TrendingGame } from
 import { QuestPanel } from '@/features/progression/QuestList';
 import { useClaimableCount, useProgression } from '@/stores/progression';
 import { useDailyClaimable, useLevel, useProfile } from '@/stores/profile';
-import { useLocalGame } from '@/stores/localGame';
-import { useLocalTaboo } from '@/stores/localTaboo';
 import { useSession } from '@/stores/session';
 import { useTheme } from '@/theme/ThemeProvider';
 import type { Palette } from '@/theme/palettes';
@@ -68,8 +66,6 @@ export default function Home() {
   const isGuest = useSession((s) => s.isGuest);
   const claimable = useDailyClaimable() && !isGuest;
   const claimDaily = useProfile((s) => s.claimDaily);
-  const newGame = useLocalGame((s) => s.newGame);
-  const newTabooGame = useLocalTaboo((s) => s.newGame);
 
   const trending = useMemo(() => trendingGames(), []);
 
@@ -88,22 +84,22 @@ export default function Home() {
   const trendingCardWidth = (gridWidth - spacing.sm * (trendingColumns - 1)) / trendingColumns;
 
   /**
-   * Quick Play runs the local hot-seat game. Matchmaking is Phase 2 and needs
-   * realtime infrastructure that does not exist yet, so the hero button does
-   * the most complete thing available and says exactly what that is instead of
-   * promising a lobby it cannot open.
+   * Quick Play opens Vampire Village's own setup screen rather than starting
+   * a 6-player game outright. Matchmaking is Phase 2 and needs realtime
+   * infrastructure that does not exist yet, so the hero button does the most
+   * complete thing available — configure, then start the local hot-seat game
+   * — the same one tap further every other entry point into a game now takes.
    */
   const quickPlay = () => {
-    newGame(6);
-    router.push('/game');
+    router.push('/game-setup');
   };
 
-  /** Trending cards route to whichever game they represent — each enabled game
-   *  owns its own route and local driver, same split the Play tab keeps. */
+  /** Trending cards route to whichever game they represent — each enabled
+   *  game owns its own setup route, same split the Play tab keeps. Nothing
+   *  starts a game directly from here; every game is configured first. */
   const playTrending = (id: (typeof trending)[number]['id']) => {
     if (id === 'taboo') {
-      newTabooGame(4);
-      router.push('/taboo');
+      router.push('/taboo-setup');
       return;
     }
     if (id === 'drawingGuess') {
@@ -114,8 +110,7 @@ export default function Home() {
       router.push('/zarta-setup');
       return;
     }
-    newGame(6);
-    router.push('/game');
+    router.push('/game-setup');
   };
 
   return (
@@ -180,7 +175,7 @@ export default function Home() {
       <View style={{ gap: spacing.sm }}>
         <Button label="Quick Play" icon="play" size="lg" onPress={quickPlay} />
         <Text variant="caption" color={palette.onSurfaceVariant} center>
-          Vampire Village · 6 players · hot-seat on this device
+          Vampire Village · hot-seat on this device
         </Text>
       </View>
 

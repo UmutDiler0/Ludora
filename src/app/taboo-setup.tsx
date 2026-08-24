@@ -190,7 +190,7 @@ export default function TabooSetup() {
               ]}>
               <Text
                 variant="bodyStrong"
-                color={preset === name ? palette.primary : palette.onSurface}
+                color={preset === name ? palette.onPrimary : palette.onSurface}
                 style={{ textTransform: 'capitalize' }}>
                 {name}
               </Text>

@@ -39,7 +39,10 @@ export function DrawingScreen({
   }, [view.round, view.artistUid]);
 
   return (
-    <Screen scroll={false}>
+    // Tighter than the shared default (spacing.lg): the canvas gets flex:1
+    // of whatever the header, toolbar and colour rows leave behind, so a
+    // smaller gap between them is what "make the canvas bigger" actually is.
+    <Screen scroll={false} style={{ gap: spacing.sm }}>
       <Row style={{ justifyContent: 'space-between' }}>
         <Chip color={palette.tertiary} filled>
           Round {view.round} / {view.totalRounds}

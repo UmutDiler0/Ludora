@@ -57,6 +57,18 @@ export function SketchCanvas({
   const live = useRef<SketchPoint[]>([]);
   const [liveStroke, setLiveStroke] = useState<SketchPoint[] | null>(null);
 
+  // The PanResponder below is built exactly once (`useRef(...).current`), so
+  // its handlers close over whatever `color`/`brushWidth` were current on
+  // that first render — a normal variable read inside them would never see a
+  // later colour change. Mirroring the latest props into refs every render
+  // keeps the responder stable across the gesture (never rebuilt mid-stroke)
+  // while `onPanResponderRelease` still reads the colour actually selected
+  // when the finger lifted, not the one from mount.
+  const colorRef = useRef(color);
+  colorRef.current = color;
+  const brushWidthRef = useRef(brushWidth);
+  brushWidthRef.current = brushWidth;
+
   const onLayout = (e: LayoutChangeEvent) => {
     size.current = { w: e.nativeEvent.layout.width, h: e.nativeEvent.layout.height };
   };
@@ -81,7 +93,9 @@ export function SketchCanvas({
         setLiveStroke(live.current);
       },
       onPanResponderRelease: () => {
-        if (live.current.length > 0) onAddStroke({ color, width: brushWidth, points: live.current });
+        if (live.current.length > 0) {
+          onAddStroke({ color: colorRef.current, width: brushWidthRef.current, points: live.current });
+        }
         live.current = [];
         setLiveStroke(null);
       },
