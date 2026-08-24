@@ -23,6 +23,7 @@ import { QuestPanel } from '@/features/progression/QuestList';
 import { useClaimableCount, useProgression } from '@/stores/progression';
 import { useDailyClaimable, useLevel, useProfile } from '@/stores/profile';
 import { useLocalGame } from '@/stores/localGame';
+import { useLocalTaboo } from '@/stores/localTaboo';
 import { useSession } from '@/stores/session';
 import { useTheme } from '@/theme/ThemeProvider';
 import type { Palette } from '@/theme/palettes';
@@ -68,6 +69,7 @@ export default function Home() {
   const claimable = useDailyClaimable() && !isGuest;
   const claimDaily = useProfile((s) => s.claimDaily);
   const newGame = useLocalGame((s) => s.newGame);
+  const newTabooGame = useLocalTaboo((s) => s.newGame);
 
   const trending = useMemo(() => trendingGames(), []);
 
@@ -92,6 +94,18 @@ export default function Home() {
    * promising a lobby it cannot open.
    */
   const quickPlay = () => {
+    newGame(6);
+    router.push('/game');
+  };
+
+  /** Trending cards route to whichever game they represent — each enabled game
+   *  owns its own route and local driver, same split the Play tab keeps. */
+  const playTrending = (id: (typeof trending)[number]['id']) => {
+    if (id === 'taboo') {
+      newTabooGame(4);
+      router.push('/taboo');
+      return;
+    }
     newGame(6);
     router.push('/game');
   };
@@ -220,14 +234,7 @@ export default function Home() {
             key={game.id}
             game={game}
             width={trendingCardWidth}
-            onPress={
-              game.enabled
-                ? () => {
-                    newGame(6);
-                    router.push('/game');
-                  }
-                : undefined
-            }
+            onPress={game.enabled ? () => playTrending(game.id) : undefined}
           />
         ))}
       </View>

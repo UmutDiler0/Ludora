@@ -3,8 +3,10 @@ import { Pressable, useWindowDimensions, View } from 'react-native';
 
 import { Button, Card, Chip, Label, ListRow, Row, Screen, ScreenHeader, Text } from '@/components/ui';
 import { GAME_CATALOGUE, type GameCatalogueEntry } from '@/features/games/core/registry';
+import type { GameId } from '@/features/games/core/types';
 import { GameArt } from '@/features/home/GameArt';
 import { useLocalGame } from '@/stores/localGame';
+import { useLocalTaboo } from '@/stores/localTaboo';
 import { radius, spacing, stroke } from '@/theme/tokens';
 import { useTheme } from '@/theme/ThemeProvider';
 
@@ -19,19 +21,33 @@ const MIN_CARD_WIDTH = 156;
  *
  * The three room paths are Phase 2 and need realtime infrastructure that does
  * not exist yet, so they are visibly pending. Local Play is not a placeholder:
- * it runs the real Vampire Village engine hot-seat on one device, which is why
- * it sits above them.
+ * it runs the real engines — Vampire Village and Taboo — hot-seat on one
+ * device, which is why the two of them sit above the pending rooms rather
+ * than being just another catalogue tile.
  */
 export default function Play() {
   const { palette } = useTheme();
   const { width } = useWindowDimensions();
 
   const router = useRouter();
-  const newGame = useLocalGame((s) => s.newGame);
+  const newVillageGame = useLocalGame((s) => s.newGame);
+  const newTabooGame = useLocalTaboo((s) => s.newGame);
 
   const startLocal = (players: number) => {
-    newGame(players);
+    newVillageGame(players);
     router.push('/game');
+  };
+
+  const startTaboo = (players: number) => {
+    newTabooGame(players);
+    router.push('/taboo');
+  };
+
+  // Each enabled game owns its route and its own local driver — the catalogue
+  // only needs to know which of the two to call.
+  const startCatalogueGame = (id: GameId) => {
+    if (id === 'taboo') return startTaboo(4);
+    return startLocal(6);
   };
 
   // Available width is the screen minus Screen's own horizontal padding (spacing.xl each side).
@@ -79,6 +95,30 @@ export default function Play() {
         />
       </Card>
 
+      <Card accent={palette.secondaryContainer} style={{ gap: spacing.md }}>
+        <Row style={{ justifyContent: 'space-between' }}>
+          <Text variant="heading">Taboo Words</Text>
+          <Chip color={palette.secondary} filled>
+            Ready
+          </Chip>
+        </Row>
+        <Text variant="body" color={palette.onSurfaceVariant}>
+          Pass-and-play, two teams. Describe the word without saying it — or
+          any word on the forbidden list.
+        </Text>
+        <Row gap={spacing.sm}>
+          {[4, 6, 8].map((count) => (
+            <Button
+              key={count}
+              label={`${count} players`}
+              tone={count === 4 ? 'primary' : 'ghost'}
+              onPress={() => startTaboo(count)}
+              style={{ flex: 1 }}
+            />
+          ))}
+        </Row>
+      </Card>
+
       <Label>Multiplayer</Label>
       <View style={{ gap: spacing.sm }}>
         <ListRow
@@ -110,7 +150,7 @@ export default function Play() {
             key={game.id}
             game={game}
             width={cardWidth}
-            onPress={game.enabled ? () => startLocal(6) : undefined}
+            onPress={game.enabled ? () => startCatalogueGame(game.id) : undefined}
           />
         ))}
       </View>

@@ -11,6 +11,7 @@ import type { GameId } from './types';
  */
 export const GAME_REGISTRY = {
   vampireVillage: () => import('../vampireVillage/engine'),
+  taboo: () => import('../taboo/engine'),
 } as const satisfies Partial<Record<GameId, () => Promise<unknown>>>;
 
 export type RegisteredGameId = keyof typeof GAME_REGISTRY;
@@ -50,7 +51,7 @@ export const GAME_CATALOGUE: GameCatalogueEntry[] = [
     name: 'Taboo Words',
     category: 'Word Game',
     isPremium: false,
-    enabled: false,
+    enabled: true,
     minPlayers: 4,
     maxPlayers: 8,
   },
