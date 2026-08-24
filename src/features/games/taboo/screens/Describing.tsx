@@ -1,4 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
+import * as Haptics from 'expo-haptics';
 import { useEffect, useState } from 'react';
 import { Pressable, View } from 'react-native';
 
@@ -118,6 +119,7 @@ function useCountdown(deadlineAt: number, onExpire: () => void): number {
     };
 
     if (tick() <= 0) {
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
       onExpire();
       return;
     }
@@ -125,6 +127,7 @@ function useCountdown(deadlineAt: number, onExpire: () => void): number {
     const id = setInterval(() => {
       if (tick() <= 0) {
         clearInterval(id);
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
         onExpire();
       }
     }, 1000);

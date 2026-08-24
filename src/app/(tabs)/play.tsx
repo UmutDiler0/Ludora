@@ -6,7 +6,6 @@ import { GAME_CATALOGUE, type GameCatalogueEntry } from '@/features/games/core/r
 import type { GameId } from '@/features/games/core/types';
 import { GameArt } from '@/features/home/GameArt';
 import { useLocalGame } from '@/stores/localGame';
-import { useLocalTaboo } from '@/stores/localTaboo';
 import { radius, spacing, stroke } from '@/theme/tokens';
 import { useTheme } from '@/theme/ThemeProvider';
 
@@ -31,22 +30,17 @@ export default function Play() {
 
   const router = useRouter();
   const newVillageGame = useLocalGame((s) => s.newGame);
-  const newTabooGame = useLocalTaboo((s) => s.newGame);
 
   const startLocal = (players: number) => {
     newVillageGame(players);
     router.push('/game');
   };
 
-  const startTaboo = (players: number) => {
-    newTabooGame(players);
-    router.push('/taboo');
-  };
-
-  // Each enabled game owns its route and its own local driver — the catalogue
-  // only needs to know which of the two to call.
+  // Each enabled game owns its route — Taboo has no headcount shortcut since
+  // its roster (names, teams) is a real choice, so the catalogue sends it
+  // straight to setup instead of quick-starting like Vampire Village does.
   const startCatalogueGame = (id: GameId) => {
-    if (id === 'taboo') return startTaboo(4);
+    if (id === 'taboo') return router.push('/taboo-setup');
     return startLocal(6);
   };
 
@@ -92,30 +86,6 @@ export default function Play() {
           icon="options"
           tone="ghost"
           onPress={() => router.push('/game-setup')}
-        />
-      </Card>
-
-      <Card accent={palette.secondaryContainer} style={{ gap: spacing.md }}>
-        <Row style={{ justifyContent: 'space-between' }}>
-          <Text variant="heading">Taboo Words</Text>
-          <Chip color={palette.secondary} filled>
-            Ready
-          </Chip>
-        </Row>
-        <Text variant="body" color={palette.onSurfaceVariant}>
-          Pass-and-play, two teams. Describe the word without saying it — or
-          any word on the forbidden list.
-        </Text>
-        <Button label="Quick play — 4 players" onPress={() => startTaboo(4)} />
-        {/* Unlike Vampire Village's three buttons, a headcount alone cannot
-            stand in for Taboo's setup — who's on which team is a real choice,
-            not a shuffle, so building the roster gets its own screen rather
-            than a size picker. */}
-        <Button
-          label="Name players & build teams"
-          icon="people"
-          tone="ghost"
-          onPress={() => router.push('/taboo-setup')}
         />
       </Card>
 
