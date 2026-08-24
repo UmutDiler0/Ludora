@@ -25,7 +25,8 @@ import { useProgression } from './progression';
 
 export const HUMAN_UID = 'you';
 
-const seatNames = (count: number): PlayerSeat[] =>
+/** Exported so the lobby screen can preview the exact seats `newGame` will assign. */
+export const seatNames = (count: number): PlayerSeat[] =>
   Array.from({ length: count }, (_, i) =>
     i === 0 ? { uid: HUMAN_UID, displayName: 'You' } : { uid: `p${i}`, displayName: `Player ${i + 1}` },
   );

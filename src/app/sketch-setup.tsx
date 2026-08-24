@@ -13,7 +13,6 @@ import {
   validateSketchConfig,
   type SketchConfig,
 } from '@/features/games/sketchIt/config';
-import { useLocalSketch } from '@/stores/localSketch';
 import { useTheme } from '@/theme/ThemeProvider';
 import type { Palette } from '@/theme/palettes';
 import { radius, spacing, stroke } from '@/theme/tokens';
@@ -35,8 +34,6 @@ export default function SketchSetup() {
   const router = useRouter();
   const { palette } = useTheme();
 
-  const newGame = useLocalSketch((s) => s.newGame);
-
   const [playerCount, setPlayerCount] = useState(4);
   const [config, setConfig] = useState<SketchConfig>(DEFAULT_SKETCH_CONFIG);
   const [preset, setPreset] = useState<keyof typeof SKETCH_PRESETS | 'custom'>('classic');
@@ -55,8 +52,10 @@ export default function SketchSetup() {
 
   const start = () => {
     if (!result.ok) return;
-    newGame(playerCount, result.value);
-    router.push('/sketch');
+    router.push({
+      pathname: '/sketch-lobby',
+      params: { playerCount: String(playerCount), config: JSON.stringify(result.value) },
+    });
   };
 
   return (
@@ -143,7 +142,7 @@ export default function SketchSetup() {
         </Row>
       </Card>
 
-      <Button label="Start Game" size="lg" onPress={start} disabled={!result.ok} />
+      <Button label="Continue to Lobby" size="lg" onPress={start} disabled={!result.ok} />
     </Screen>
   );
 }

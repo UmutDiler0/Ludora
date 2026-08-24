@@ -24,7 +24,8 @@ import { useProgression } from './progression';
 
 export const HUMAN_UID = 'you';
 
-const BOT_NAMES = [
+/** Exported so the lobby screen can preview the exact names `newGame` will assign. */
+export const BOT_NAMES = [
   'ShadowNinja',
   'BlazeQueen',
   'TrashPanda',

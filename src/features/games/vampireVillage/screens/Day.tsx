@@ -179,6 +179,14 @@ export function DayScreen({
  * Counts down from `DISCUSSION_SECONDS` while `active`, vibrating and firing
  * `onExpire` exactly once when it hits zero. Resets on every rising edge of
  * `active`, so a new day's discussion always gets the full clock.
+ *
+ * The tick and the zero-side-effects are two separate effects on purpose:
+ * calling `onExpire` (a store action that updates other components) from
+ * inside `setSecondsLeft`'s functional updater ran it during React's render
+ * phase for this component, which is exactly what triggered "Cannot update a
+ * component while rendering a different component". Moving it to its own
+ * effect that reacts to `secondsLeft` hitting 0 defers it to after commit,
+ * where a store update is safe.
  */
 function useDiscussionClock(active: boolean, onExpire: () => void): number {
   const [secondsLeft, setSecondsLeft] = useState(DISCUSSION_SECONDS);
@@ -188,22 +196,21 @@ function useDiscussionClock(active: boolean, onExpire: () => void): number {
     setSecondsLeft(DISCUSSION_SECONDS);
 
     const id = setInterval(() => {
-      setSecondsLeft((current) => {
-        if (current <= 1) {
-          clearInterval(id);
-          Vibration.vibrate(TIME_UP_PATTERN);
-          onExpire();
-          return 0;
-        }
-        return current - 1;
-      });
+      setSecondsLeft((current) => Math.max(0, current - 1));
     }, 1000);
 
     return () => clearInterval(id);
-    // `onExpire` is a store action (stable identity) — only `active`'s rising
-    // edge should restart the clock, not every render.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [active]);
+
+  useEffect(() => {
+    if (!active || secondsLeft > 0) return;
+    Vibration.vibrate(TIME_UP_PATTERN);
+    onExpire();
+    // `onExpire` is a store action (stable identity); including it would not
+    // change how often this fires, but omitting it keeps the guard's intent
+    // (fire once per rising edge of "hit zero") explicit.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [active, secondsLeft]);
 
   return secondsLeft;
 }

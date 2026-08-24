@@ -25,7 +25,6 @@ import {
   type TabooConfig,
 } from '@/features/games/taboo/config';
 import type { TabooTeamId } from '@/features/games/taboo/state';
-import { useLocalTaboo } from '@/stores/localTaboo';
 import { useProfile } from '@/stores/profile';
 import { useTheme } from '@/theme/ThemeProvider';
 import type { Palette } from '@/theme/palettes';
@@ -60,7 +59,6 @@ export default function TabooSetup() {
   const { palette } = useTheme();
 
   const you = useProfile((s) => s.displayName);
-  const newGameWithRoster = useLocalTaboo((s) => s.newGameWithRoster);
 
   const nextId = useRef(4);
   const [roster, setRoster] = useState<RosterEntry[]>(() => [
@@ -122,8 +120,10 @@ export default function TabooSetup() {
   const start = () => {
     if (!configResult.ok || !rosterOk) return;
     const seats: PlayerSeat[] = roster.map((p) => ({ uid: p.uid, displayName: p.name.trim() || p.name, team: p.team }));
-    newGameWithRoster(seats, configResult.value);
-    router.push('/taboo');
+    router.push({
+      pathname: '/taboo-lobby',
+      params: { seats: JSON.stringify(seats), config: JSON.stringify(configResult.value) },
+    });
   };
 
   return (
@@ -233,7 +233,7 @@ export default function TabooSetup() {
         </Row>
       </Card>
 
-      <Button label="Start Game" size="lg" onPress={start} disabled={!canStart} />
+      <Button label="Continue to Lobby" size="lg" onPress={start} disabled={!canStart} />
     </Screen>
   );
 }

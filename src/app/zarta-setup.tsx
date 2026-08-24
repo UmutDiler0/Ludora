@@ -13,7 +13,6 @@ import {
   validateZartaConfig,
   type ZartaConfig,
 } from '@/features/games/zarta/config';
-import { useLocalZarta } from '@/stores/localZarta';
 import { useTheme } from '@/theme/ThemeProvider';
 import type { Palette } from '@/theme/palettes';
 import { radius, spacing, stroke } from '@/theme/tokens';
@@ -30,8 +29,6 @@ type FieldKey = (typeof ZARTA_CONFIG_FIELDS)[number]['key'];
 export default function ZartaSetup() {
   const router = useRouter();
   const { palette } = useTheme();
-
-  const newGame = useLocalZarta((s) => s.newGame);
 
   const [playerCount, setPlayerCount] = useState(4);
   const [config, setConfig] = useState<ZartaConfig>(DEFAULT_ZARTA_CONFIG);
@@ -51,8 +48,10 @@ export default function ZartaSetup() {
 
   const start = () => {
     if (!result.ok) return;
-    newGame(playerCount, result.value);
-    router.push('/zarta');
+    router.push({
+      pathname: '/zarta-lobby',
+      params: { playerCount: String(playerCount), config: JSON.stringify(result.value) },
+    });
   };
 
   return (
@@ -139,7 +138,7 @@ export default function ZartaSetup() {
         </Row>
       </Card>
 
-      <Button label="Start Game" size="lg" onPress={start} disabled={!result.ok} />
+      <Button label="Continue to Lobby" size="lg" onPress={start} disabled={!result.ok} />
     </Screen>
   );
 }

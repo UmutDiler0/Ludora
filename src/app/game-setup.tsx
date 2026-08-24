@@ -14,7 +14,6 @@ import {
   VV_PRESETS,
   type VVConfig,
 } from '@/features/games/vampireVillage/config';
-import { useLocalGame } from '@/stores/localGame';
 import { useTheme } from '@/theme/ThemeProvider';
 import type { Palette } from '@/theme/palettes';
 import { radius, spacing, stroke } from '@/theme/tokens';
@@ -62,8 +61,6 @@ export default function GameSetup() {
   const router = useRouter();
   const { palette } = useTheme();
 
-  const newGame = useLocalGame((s) => s.newGame);
-
   const [playerCount, setPlayerCount] = useState(6);
   const [config, setConfig] = useState<VVConfig>(DEFAULT_VV_CONFIG);
   const [preset, setPreset] = useState<keyof typeof VV_PRESETS | 'custom'>('classic');
@@ -89,8 +86,10 @@ export default function GameSetup() {
 
   const start = () => {
     if (!result.ok) return;
-    newGame(playerCount, result.value);
-    router.push('/game');
+    router.push({
+      pathname: '/game-lobby',
+      params: { playerCount: String(playerCount), config: JSON.stringify(result.value) },
+    });
   };
 
   return (
@@ -212,7 +211,7 @@ export default function GameSetup() {
         )}
       </Card>
 
-      <Button label="Start Game" size="lg" onPress={start} disabled={!result.ok} />
+      <Button label="Continue to Lobby" size="lg" onPress={start} disabled={!result.ok} />
     </Screen>
   );
 }
