@@ -920,24 +920,27 @@ Every conflict in §1 is resolved here. Each decision states its rationale and i
 
 Minimal, room-scoped, ephemeral. Not a messaging product.
 
-```
-/rooms/{roomId}/chat/{msgId}
-  { uid, displayName, text, at, channel }
+**Corrected from this section's original draft**, which modelled `channel` as a field rather than a path segment — see `docs/firebase.md` §4.1 for the full reasoning:
 
-channel: 'alive' | 'dead' | 'lobby'
 ```
+/rooms/{roomId}/chat/{channel}/{msgId}
+  { uid, displayName, text, at }
+```
+
+RTDB `.read` rules cascade to every child of the path they're granted on and cannot filter *which* children of a single list a given reader may see — a `channel` field on a shared `/chat/{msgId}` list cannot actually keep the wrong audience out of a list subscription. Splitting into one path per channel is what makes a channel genuinely unreadable to the wrong audience.
+
+Channel vocabulary is per-game rather than fixed here, decided by that game's own access rules (e.g. Vampire Village's `village`/`coven`, in `features/games/vampireVillage/chat.ts`) — a lobby-only channel or a different social-deduction split is that game's decision, not this boundary's.
 
 | Rule | Enforcement |
 | --- | --- |
 | Only room members may write | RTDB rules against `/rooms/{id}/players/{uid}` |
-| Eliminated players write only to `dead` | Rules check `players/{uid}.eliminated` |
-| Living players never *read* `dead` | Rules deny read unless eliminated or game finished |
+| A game's own access rule decides which channel a player writes to and may read | Rules mirror that game's pure access module (e.g. eliminated players lose write, keep read) |
 | Text ≤ 300 chars, 1 msg/sec | Rules validate length; client throttles, rules enforce `at` spacing |
 | Ring buffer, last 200 messages | Cloud Function trims on write |
 | Deleted with the room | Existing §7.2 sweep — no extra work |
 | No history persistence | Chat never reaches Firestore |
 
-Dead-channel separation is the load-bearing rule: in social deduction, eliminated players knowing the answer must not be able to tell the living.
+Channel separation is the load-bearing rule: in social deduction, a player who shouldn't have a piece of information must not be able to read the channel carrying it.
 
 Moderation for MVP is report-only — a report writes to `moderation_reports` in Firestore for offline review. No live filtering.
 
