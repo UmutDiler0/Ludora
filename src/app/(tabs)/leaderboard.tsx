@@ -204,12 +204,14 @@ function Podium({
               the board where the shop's clothes, bottoms and shoes are worth
               looking at, and a podium is a place people stand.
             */}
+            {/* No ring — the medal-coloured step underneath is what marks the
+                tier now, so the figure itself sits framed by nothing. */}
             <AvatarRenderer
               config={entry.avatar}
               mode="full"
               size={FIGURES[i]}
-              ring={medals[i]}
               background={false}
+              border={false}
             />
 
             {/* No gap — the figure stands on the block rather than above it. */}

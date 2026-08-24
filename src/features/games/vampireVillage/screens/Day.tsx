@@ -23,6 +23,16 @@ const DISCUSSION_SECONDS = 10;
 const TIME_UP_PATTERN = [0, 200, 120, 200, 120, 200];
 
 /**
+ * True when `uid` is a fellow vampire, in the eyes of the current viewer.
+ *
+ * `view.coven` is `null` for anyone who is not a vampire — stripped by
+ * `projectFor` before the view ever leaves the server (§9.1) — so this is
+ * unconditionally false for a villager. There is no branch here that could
+ * leak it to one; the projection already decided that upstream.
+ */
+const isCovenMate = (view: VVPlayerView, uid: string): boolean => !!view.coven?.includes(uid);
+
+/**
  * Day Phase — the designed "Day Phase - Discussion & Voting" screen.
  *
  * Discussion and voting are one screen with two states, as the design shows:
@@ -46,7 +56,7 @@ export function DayScreen({
   onVote: (uid: string) => void;
   onOpenVoting: () => void;
 }) {
-  const { palette } = useTheme();
+  const { palette, roleColors } = useTheme();
   const s = makeStyles(palette);
   const openChat = useChat((state) => state.open);
 
@@ -82,6 +92,8 @@ export function DayScreen({
           const isMe = p.uid === view.you.uid;
           const votes = view.voteCounts?.[p.uid] ?? 0;
           const chosen = view.yourVote === p.uid;
+          // Only ever true for a vampire looking at the list — see isCovenMate.
+          const coven = isCovenMate(view, p.uid);
 
           if (!p.alive) {
             return (
@@ -90,7 +102,7 @@ export function DayScreen({
                 <View style={{ flex: 1 }}>
                   <Text
                     variant="bodyStrong"
-                    color={palette.outline}
+                    color={coven ? roleColors.vampire : palette.outline}
                     style={{ textDecorationLine: 'line-through' }}>
                     {p.displayName}
                   </Text>
@@ -125,7 +137,17 @@ export function DayScreen({
                 ring={isMe ? palette.primaryContainer : undefined}
               />
               <View style={{ flex: 1 }}>
-                <Text variant="bodyStrong">{isMe ? 'You' : p.displayName}</Text>
+                <Row gap={spacing.xs}>
+                  <Text variant="bodyStrong" color={coven ? roleColors.vampire : undefined}>
+                    {isMe ? 'You' : p.displayName}
+                  </Text>
+                  {/* A vampire's own tell, visible only to their coven — the game's
+                      one piece of secret shared knowledge rendered in the UI
+                      rather than left to be remembered from the reveal screen. */}
+                  {coven && !isMe && (
+                    <Ionicons name="skull" size={12} color={roleColors.vampire} />
+                  )}
+                </Row>
                 <Text variant="caption" color={palette.onSurfaceVariant}>
                   Alive
                 </Text>

@@ -36,6 +36,13 @@ export function NightScreen({
   const prompt = ability ? PROMPT[view.you.role] : null;
   const submitted = view.yourNightTarget !== null;
 
+  // Only ever populated for a vampire — `view.coven` is null for everyone
+  // else, stripped by `projectFor` before the view leaves the server (§9.1).
+  const covenMates = (view.coven ?? [])
+    .filter((uid) => uid !== view.you.uid)
+    .map((uid) => view.players.find((p) => p.uid === uid))
+    .filter((p): p is (typeof view.players)[number] => !!p && p.alive);
+
   const selectable = view.players.filter((p) => {
     if (!p.alive) return false;
     if (view.you.role === 'investigator' && p.uid === view.you.uid) return false;
@@ -73,6 +80,19 @@ export function NightScreen({
               {prompt.instruction}
             </Text>
           </Card>
+
+          {covenMates.length > 0 && (
+            <Row gap={spacing.sm} style={{ flexWrap: 'wrap' }}>
+              <Text variant="caption" color={palette.onSurfaceVariant}>
+                Your coven:
+              </Text>
+              {covenMates.map((mate) => (
+                <Text key={mate.uid} variant="bodyStrong" color={roleColors.vampire}>
+                  {mate.displayName}
+                </Text>
+              ))}
+            </Row>
+          )}
 
           <View style={{ gap: spacing.sm }}>
             {selectable.map((p) => {

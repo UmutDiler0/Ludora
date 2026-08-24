@@ -2,7 +2,7 @@ import { create } from 'zustand';
 
 import { createRng, randomInt } from '@/features/games/core/rng';
 import type { PlayerSeat, Rng, Uid } from '@/features/games/core/types';
-import { DEFAULT_VV_CONFIG } from '@/features/games/vampireVillage/config';
+import { DEFAULT_VV_CONFIG, type VVConfig } from '@/features/games/vampireVillage/config';
 import engine from '@/features/games/vampireVillage/engine';
 import { ROLES } from '@/features/games/vampireVillage/roles';
 import type { VVPlayer, VVPlayerView, VVState } from '@/features/games/vampireVillage/state';
@@ -172,7 +172,8 @@ interface LocalGameStore {
    */
   peerEvents: PeerPresenceEvent[];
 
-  newGame: (playerCount?: number) => void;
+  /** Config defaults to the Classic preset — the same game Quick Play always ran. */
+  newGame: (playerCount?: number, config?: VVConfig) => void;
   ackRole: () => void;
   nightAction: (target: Uid) => void;
   vote: (target: Uid) => void;
@@ -199,7 +200,7 @@ export const useLocalGame = create<LocalGameStore>((set, get) => ({
   endedReason: null,
   peerEvents: [],
 
-  newGame: (playerCount = 6) => {
+  newGame: (playerCount = 6, config = DEFAULT_VV_CONFIG) => {
     const now = Date.now();
     const rng = createRng(now >>> 0);
     const seats: PlayerSeat[] = [
@@ -210,7 +211,7 @@ export const useLocalGame = create<LocalGameStore>((set, get) => ({
       })),
     ];
 
-    const created = engine.createInitialState(seats, DEFAULT_VV_CONFIG, rng, now);
+    const created = engine.createInitialState(seats, config, rng, now);
     if (!created.ok) {
       set({ error: created.error.message });
       return;

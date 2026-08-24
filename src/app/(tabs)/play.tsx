@@ -68,6 +68,15 @@ export default function Play() {
             />
           ))}
         </Row>
+        {/* The three buttons above are the Classic preset at a fixed size —
+            this is the same room-owner setup a real lobby will have, just
+            reached one tap later because there is only ever one owner here. */}
+        <Button
+          label="Configure the room"
+          icon="options"
+          tone="ghost"
+          onPress={() => router.push('/game-setup')}
+        />
       </Card>
 
       <Label>Multiplayer</Label>
