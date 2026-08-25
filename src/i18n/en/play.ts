@@ -10,10 +10,8 @@ export const play = {
   quickMatchBody: 'Drop into the fullest public room that still fits',
   createGame: 'Create game',
   createGameBody: 'Pick a game, configure it, host the room',
-  joinByCode: 'Join by code',
-  joinByCodeBody: 'Enter a six-character room code',
-  browseRooms: 'Browse rooms',
-  browseRoomsBody: 'See every public room that is open',
+  browseRooms: 'Find a room',
+  browseRoomsBody: 'Enter a code or browse open public rooms',
   phase2: 'Phase 2',
   catalogue: 'Catalogue',
 };

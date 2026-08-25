@@ -12,10 +12,8 @@ export const play: typeof en = {
   quickMatchBody: 'Sığabileceğin en dolu genel odaya katıl',
   createGame: 'Oyun oluştur',
   createGameBody: 'Bir oyun seç, ayarla ve odayı sen aç',
-  joinByCode: 'Kodla katıl',
-  joinByCodeBody: 'Altı karakterlik oda kodunu gir',
-  browseRooms: 'Odalara göz at',
-  browseRoomsBody: 'Açık olan tüm genel odaları gör',
+  browseRooms: 'Oda bul',
+  browseRoomsBody: 'Bir kod gir ya da açık genel odalara göz at',
   phase2: '2. Aşama',
   catalogue: 'Katalog',
 };

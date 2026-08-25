@@ -4,6 +4,8 @@ import { useMemo } from 'react';
 import { LobbyScreen, type LobbySeat } from '@/features/games/core/LobbyScreen';
 import type { SketchConfig } from '@/features/games/sketchIt/config';
 import { useI18n } from '@/i18n/I18nProvider';
+import { roomGateway } from '@/services/rooms/mockRooms';
+import type { RoomVisibility } from '@/services/rooms/types';
 import { HUMAN_UID, seatNames, useLocalSketch } from '@/stores/localSketch';
 
 /**
@@ -14,8 +16,9 @@ import { HUMAN_UID, seatNames, useLocalSketch } from '@/stores/localSketch';
 export default function SketchLobby() {
   const router = useRouter();
   const { t } = useI18n();
-  const params = useLocalSearchParams<{ playerCount: string; config: string }>();
+  const params = useLocalSearchParams<{ playerCount: string; config: string; visibility: string; code: string }>();
   const newGame = useLocalSketch((s) => s.newGame);
+  const visibility: RoomVisibility = params.visibility === 'private' ? 'private' : 'public';
 
   const playerCount = Number(params.playerCount);
   const config = useMemo(() => JSON.parse(params.config) as SketchConfig, [params.config]);
@@ -29,6 +32,7 @@ export default function SketchLobby() {
   const summary = [t((s) => s.common.players)(playerCount), t((s) => s.sketchIt.lobby.secondsToDraw)(config.roundSeconds)];
 
   const start = () => {
+    roomGateway.closeRoom(params.code);
     newGame(playerCount, config);
     router.replace('/sketch');
   };
@@ -37,6 +41,8 @@ export default function SketchLobby() {
     <LobbyScreen
       title={t((s) => s.gameCore.roomLobbyTitle)}
       subtitle={t((s) => s.sketchIt.lobby.subtitle)}
+      roomCode={params.code}
+      visibility={visibility}
       seats={seats}
       summary={summary}
       onBack={() => router.back()}

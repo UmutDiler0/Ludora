@@ -24,8 +24,11 @@ import {
   validateTabooConfig,
   type TabooConfig,
 } from '@/features/games/taboo/config';
+import { RoomVisibilityCard } from '@/features/games/core/RoomVisibilityCard';
 import type { TabooTeamId } from '@/features/games/taboo/state';
 import { useI18n } from '@/i18n/I18nProvider';
+import { roomGateway } from '@/services/rooms/mockRooms';
+import type { RoomVisibility } from '@/services/rooms/types';
 import { useProfile } from '@/stores/profile';
 import { useTheme } from '@/theme/ThemeProvider';
 import type { Palette } from '@/theme/palettes';
@@ -72,6 +75,7 @@ export default function TabooSetup() {
 
   const [config, setConfig] = useState<TabooConfig>(DEFAULT_TABOO_CONFIG);
   const [preset, setPreset] = useState<keyof typeof TABOO_PRESETS | 'custom'>('classic');
+  const [visibility, setVisibility] = useState<RoomVisibility>('public');
 
   const counts = useMemo(
     () => ({
@@ -122,10 +126,16 @@ export default function TabooSetup() {
   const start = () => {
     if (!configResult.ok || !rosterOk) return;
     const seats: PlayerSeat[] = roster.map((p) => ({ uid: p.uid, displayName: p.name.trim() || p.name, team: p.team }));
-    router.push({
-      pathname: '/taboo-lobby',
+    const room = roomGateway.createRoom({
+      gameId: 'taboo',
+      hostName: you || t((s) => s.common.you),
+      visibility,
+      playerCount: roster.length,
+      maxPlayers: TABOO_MAX_PLAYERS,
+      route: '/taboo-lobby',
       params: { seats: JSON.stringify(seats), config: JSON.stringify(configResult.value) },
     });
+    router.push({ pathname: room.route, params: room.params });
   };
 
   return (
@@ -175,6 +185,8 @@ export default function TabooSetup() {
           </Text>
         </Row>
       </Card>
+
+      <RoomVisibilityCard value={visibility} onChange={setVisibility} />
 
       <Card style={{ gap: spacing.md }}>
         <Label>{t((s) => s.gameCore.presets)}</Label>

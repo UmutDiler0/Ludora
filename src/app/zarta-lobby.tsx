@@ -4,6 +4,8 @@ import { useMemo } from 'react';
 import { LobbyScreen, type LobbySeat } from '@/features/games/core/LobbyScreen';
 import type { ZartaConfig } from '@/features/games/zarta/config';
 import { useI18n } from '@/i18n/I18nProvider';
+import { roomGateway } from '@/services/rooms/mockRooms';
+import type { RoomVisibility } from '@/services/rooms/types';
 import { HUMAN_UID, seatNames, useLocalZarta } from '@/stores/localZarta';
 
 /**
@@ -13,8 +15,9 @@ import { HUMAN_UID, seatNames, useLocalZarta } from '@/stores/localZarta';
 export default function ZartaLobby() {
   const router = useRouter();
   const { t } = useI18n();
-  const params = useLocalSearchParams<{ playerCount: string; config: string }>();
+  const params = useLocalSearchParams<{ playerCount: string; config: string; visibility: string; code: string }>();
   const newGame = useLocalZarta((s) => s.newGame);
+  const visibility: RoomVisibility = params.visibility === 'private' ? 'private' : 'public';
 
   const playerCount = Number(params.playerCount);
   const config = useMemo(() => JSON.parse(params.config) as ZartaConfig, [params.config]);
@@ -28,6 +31,7 @@ export default function ZartaLobby() {
   const summary = [t((s) => s.common.players)(playerCount), t((s) => s.zarta.lobby.questions)(config.totalRounds)];
 
   const start = () => {
+    roomGateway.closeRoom(params.code);
     newGame(playerCount, config);
     router.replace('/zarta');
   };
@@ -36,6 +40,8 @@ export default function ZartaLobby() {
     <LobbyScreen
       title={t((s) => s.gameCore.roomLobbyTitle)}
       subtitle={t((s) => s.zarta.lobby.subtitle)}
+      roomCode={params.code}
+      visibility={visibility}
       seats={seats}
       summary={summary}
       onBack={() => router.back()}

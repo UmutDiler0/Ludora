@@ -13,7 +13,11 @@ import {
   validateSketchConfig,
   type SketchConfig,
 } from '@/features/games/sketchIt/config';
+import { RoomVisibilityCard } from '@/features/games/core/RoomVisibilityCard';
 import { useI18n } from '@/i18n/I18nProvider';
+import { roomGateway } from '@/services/rooms/mockRooms';
+import type { RoomVisibility } from '@/services/rooms/types';
+import { useProfile } from '@/stores/profile';
 import { useTheme } from '@/theme/ThemeProvider';
 import type { Palette } from '@/theme/palettes';
 import { radius, spacing, stroke } from '@/theme/tokens';
@@ -35,10 +39,12 @@ export default function SketchSetup() {
   const router = useRouter();
   const { palette } = useTheme();
   const { t } = useI18n();
+  const you = useProfile((s) => s.displayName);
 
   const [playerCount, setPlayerCount] = useState(4);
   const [config, setConfig] = useState<SketchConfig>(DEFAULT_SKETCH_CONFIG);
   const [preset, setPreset] = useState<keyof typeof SKETCH_PRESETS | 'custom'>('classic');
+  const [visibility, setVisibility] = useState<RoomVisibility>('public');
 
   const set = (key: FieldKey, value: number) => {
     setConfig((c) => ({ ...c, [key]: value }));
@@ -54,10 +60,16 @@ export default function SketchSetup() {
 
   const start = () => {
     if (!result.ok) return;
-    router.push({
-      pathname: '/sketch-lobby',
+    const room = roomGateway.createRoom({
+      gameId: 'drawingGuess',
+      hostName: you || t((s) => s.common.you),
+      visibility,
+      playerCount,
+      maxPlayers: SKETCH_MAX_PLAYERS,
+      route: '/sketch-lobby',
       params: { playerCount: String(playerCount), config: JSON.stringify(result.value) },
     });
+    router.push({ pathname: room.route, params: room.params });
   };
 
   return (
@@ -86,6 +98,8 @@ export default function SketchSetup() {
           {t((s) => s.sketchIt.setup.passPhoneBody)}
         </Text>
       </Card>
+
+      <RoomVisibilityCard value={visibility} onChange={setVisibility} />
 
       <Card style={{ gap: spacing.md }}>
         <Label>{t((s) => s.gameCore.presets)}</Label>

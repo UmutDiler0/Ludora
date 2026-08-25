@@ -14,9 +14,14 @@ export const gameCore = {
   off: 'Off',
   roomLobbyTitle: 'Room Lobby',
   room: 'Room',
-  localRoom: 'Local room',
-  localRoomBody:
-    'Everyone below is already seated on this device. Once games are playable over the network, this is where you would wait for the room to fill before the owner starts it.',
+  roomCodeBody: 'Share this code so a friend can find this room, or look it up later from Play → Find a Room.',
+  visibility: {
+    title: 'Who can join',
+    public: 'Public',
+    publicBody: 'Listed in Find a Room for anyone to join by browsing.',
+    private: 'Private',
+    privateBody: 'Hidden from the room list — joinable only with the code.',
+  },
   playersCount: (n: number) => `Players · ${n}`,
   owner: 'Owner',
   ready: 'Ready',

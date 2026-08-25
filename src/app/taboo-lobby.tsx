@@ -5,6 +5,8 @@ import { LobbyScreen, type LobbySeat } from '@/features/games/core/LobbyScreen';
 import type { PlayerSeat } from '@/features/games/core/types';
 import type { TabooConfig } from '@/features/games/taboo/config';
 import { useI18n } from '@/i18n/I18nProvider';
+import { roomGateway } from '@/services/rooms/mockRooms';
+import type { RoomVisibility } from '@/services/rooms/types';
 import { useLocalTaboo } from '@/stores/localTaboo';
 
 /**
@@ -15,8 +17,9 @@ import { useLocalTaboo } from '@/stores/localTaboo';
 export default function TabooLobby() {
   const router = useRouter();
   const { t } = useI18n();
-  const params = useLocalSearchParams<{ seats: string; config: string }>();
+  const params = useLocalSearchParams<{ seats: string; config: string; visibility: string; code: string }>();
   const newGameWithRoster = useLocalTaboo((s) => s.newGameWithRoster);
+  const visibility: RoomVisibility = params.visibility === 'private' ? 'private' : 'public';
 
   const roster = useMemo(() => JSON.parse(params.seats) as PlayerSeat[], [params.seats]);
   const config = useMemo(() => JSON.parse(params.config) as TabooConfig, [params.config]);
@@ -36,6 +39,7 @@ export default function TabooLobby() {
   ];
 
   const start = () => {
+    roomGateway.closeRoom(params.code);
     newGameWithRoster(roster, config);
     router.replace('/taboo');
   };
@@ -44,6 +48,8 @@ export default function TabooLobby() {
     <LobbyScreen
       title={t((s) => s.gameCore.roomLobbyTitle)}
       subtitle={t((s) => s.taboo.lobby.subtitle)}
+      roomCode={params.code}
+      visibility={visibility}
       seats={seats}
       summary={summary}
       onBack={() => router.back()}

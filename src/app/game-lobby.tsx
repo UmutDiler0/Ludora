@@ -4,6 +4,8 @@ import { useMemo } from 'react';
 import { LobbyScreen, type LobbySeat } from '@/features/games/core/LobbyScreen';
 import { autoVampireCount, type VVConfig } from '@/features/games/vampireVillage/config';
 import { useI18n } from '@/i18n/I18nProvider';
+import { roomGateway } from '@/services/rooms/mockRooms';
+import type { RoomVisibility } from '@/services/rooms/types';
 import { BOT_NAMES, HUMAN_UID, useLocalGame } from '@/stores/localGame';
 import { useProfile } from '@/stores/profile';
 
@@ -16,9 +18,10 @@ import { useProfile } from '@/stores/profile';
 export default function GameLobby() {
   const router = useRouter();
   const { t } = useI18n();
-  const params = useLocalSearchParams<{ playerCount: string; config: string }>();
+  const params = useLocalSearchParams<{ playerCount: string; config: string; visibility: string; code: string }>();
   const you = useProfile((s) => s.displayName);
   const newGame = useLocalGame((s) => s.newGame);
+  const visibility: RoomVisibility = params.visibility === 'private' ? 'private' : 'public';
 
   const playerCount = Number(params.playerCount);
   const config = useMemo(() => JSON.parse(params.config) as VVConfig, [params.config]);
@@ -44,6 +47,7 @@ export default function GameLobby() {
   ];
 
   const start = () => {
+    roomGateway.closeRoom(params.code);
     newGame(playerCount, config);
     router.replace('/game');
   };
@@ -52,6 +56,8 @@ export default function GameLobby() {
     <LobbyScreen
       title={t((s) => s.gameCore.roomLobbyTitle)}
       subtitle={t((s) => s.vampireVillage.lobby.subtitle)}
+      roomCode={params.code}
+      visibility={visibility}
       seats={seats}
       summary={summary}
       onBack={() => router.back()}

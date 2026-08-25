@@ -15,6 +15,7 @@ import { onboarding } from './onboarding';
 import { play } from './play';
 import { profile } from './profile';
 import { quests } from './quests';
+import { rooms } from './rooms';
 import { settings } from './settings';
 import { sketchIt } from './sketchIt';
 import { story } from './story';
@@ -41,6 +42,7 @@ export const tr: Strings = {
   play,
   profile,
   quests,
+  rooms,
   settings,
   sketchIt,
   story,

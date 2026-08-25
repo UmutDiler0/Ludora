@@ -2,6 +2,7 @@ import { View } from 'react-native';
 
 import { Avatar, Button, Card, Chip, Label, ListRow, Row, Screen, ScreenHeader, Text } from '@/components/ui';
 import { useI18n } from '@/i18n/I18nProvider';
+import type { RoomVisibility } from '@/services/rooms/types';
 import { useTheme } from '@/theme/ThemeProvider';
 import { spacing } from '@/theme/tokens';
 
@@ -13,6 +14,10 @@ import { spacing } from '@/theme/tokens';
  * before tapping Start) is exactly what a real networked room will be, so
  * when `RealtimeTransport` lands this screen's props are what a lobby
  * subscription will feed rather than what a setup screen hands over locally.
+ *
+ * `roomCode`/`visibility` come from `roomGateway.createRoom` (services/rooms)
+ * — real codes, registered in the mock room directory the Find Room screen
+ * reads, not placeholder text.
  */
 
 export interface LobbySeat {
@@ -26,6 +31,8 @@ export interface LobbySeat {
 export function LobbyScreen({
   title,
   subtitle,
+  roomCode,
+  visibility,
   seats,
   summary,
   onBack,
@@ -34,6 +41,8 @@ export function LobbyScreen({
 }: {
   title: string;
   subtitle: string;
+  roomCode: string;
+  visibility: RoomVisibility;
   seats: LobbySeat[];
   /** Short config-recap lines, e.g. "Classic preset", "Seer: On". */
   summary: string[];
@@ -43,6 +52,7 @@ export function LobbyScreen({
 }) {
   const { palette } = useTheme();
   const { t } = useI18n();
+  const visibilityCopy = t((s) => s.gameCore.visibility);
 
   return (
     <Screen>
@@ -51,12 +61,15 @@ export function LobbyScreen({
       <Card accent={palette.primaryContainer} style={{ gap: spacing.xs }}>
         <Row style={{ justifyContent: 'space-between' }}>
           <Label>{t((s) => s.gameCore.room)}</Label>
-          <Chip color={palette.secondary} filled>
-            {t((s) => s.gameCore.localRoom)}
+          <Chip color={visibility === 'public' ? palette.secondary : palette.tertiary} filled>
+            {visibility === 'public' ? visibilityCopy.public : visibilityCopy.private}
           </Chip>
         </Row>
+        <Text variant="heading" style={{ letterSpacing: 4 }}>
+          {roomCode}
+        </Text>
         <Text variant="caption" color={palette.onSurfaceVariant}>
-          {t((s) => s.gameCore.localRoomBody)}
+          {t((s) => s.gameCore.roomCodeBody)}
         </Text>
       </Card>
 

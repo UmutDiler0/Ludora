@@ -48,6 +48,7 @@ Every domain that will eventually talk to Firebase is split into three pieces, c
 | Identity | `AuthGateway` — [services/auth/types.ts](../src/services/auth/types.ts) | `mockAuthGateway` — AsyncStorage, plaintext, dev-only | `firebaseAuthGateway` — **written**, [services/auth/firebaseAuth.ts](../src/services/auth/firebaseAuth.ts), not wired |
 | Connectivity + room presence | `ConnectivityProbe`, `PresenceGateway` — [services/network/types.ts](../src/services/network/types.ts) | `httpProbe` (a 204 fetch, proxying "is the internet up" for "can we reach Ludora"), `mockPresence` (in-memory pub/sub, silent on a real device) | RTDB `.info/connected` for the probe, RTDB `onDisconnect()` for presence |
 | Chat | `ChatGateway` — [services/chat/types.ts](../src/services/chat/types.ts) | `mockChat` — in-memory loopback, `send` calls straight back out through `subscribe` | RTDB push under `rooms/{roomId}/chat/{channel}`, read via `child_added` |
+| Room directory | `RoomGateway` — [services/rooms/types.ts](../src/services/rooms/types.ts) | `roomGateway` (mockRooms.ts) — in-memory `Map<code, Room>`, module-level like `mockPresence`; single device only, see §3.11 | RTDB `/rooms`, `/room_codes/{CODE}`, `/public_rooms/{roomId}` (§6.4) |
 
 The point of the pattern: nothing above the gateway line changes when a mock is replaced. `stores/connection.ts`, `stores/chat.ts`, every screen that reads `useLocalGame`/`useLocalTaboo` — all of them already read exactly the shape the server will eventually send (`VVPlayerView`, `TabooPlayerView`, `PeerPresenceEvent`), because the mocks were built to that contract from the start, not the other way round.
 
@@ -116,6 +117,14 @@ No Firestore document yet holds anything beyond what Auth itself carries (`uid`,
 - **Local mirror:** [services/chat/mockChat.ts](../src/services/chat/mockChat.ts), a loopback gateway. `chatAccess()` in [features/games/vampireVillage/chat.ts](../src/features/games/vampireVillage/chat.ts) is the pure rule module deciding who may read/write which channel per phase — the same "server will run this file too" discipline as progression's rule modules.
 - **This moved past ARCHITECTURE §22.1's original shape — corrected there; see §4.1 for why.**
 
+### 3.11 RTDB `/rooms`, `/room_codes/{CODE}`, `/public_rooms/{roomId}` — room directory
+
+- **Local mirror:** [services/rooms/mockRooms.ts](../src/services/rooms/mockRooms.ts), a module-level `Map<code, Room>` in the same shape as `mockPresence` — created once, outliving any single screen's mount so a room stays findable after its creator navigates away. `generateRoomCode()` ([services/rooms/roomCode.ts](../src/services/rooms/roomCode.ts)) draws from the `ROOM_CODE_ALPHABET`/`ROOM_CODE_LENGTH` constants that already existed in [constants/app.ts](../src/constants/app.ts) but were unused until this landed.
+- **Collapses `roomId` and `CODE` into one key**, unlike the real schema's `/room_codes/{CODE} → roomId` indirection (§6.4/§7). There is no `roomId` concept yet — every game's setup screen creates the room, so `code` doubles as the lookup key. Add the indirection back once rooms need an identity independent of their (recyclable) code.
+- **Every game's `*-setup.tsx` calls `roomGateway.createRoom()`** on "Continue to Lobby", passing a `RoomVisibility` chosen from the new `RoomVisibilityCard` ([features/games/core/RoomVisibilityCard.tsx](../src/features/games/core/RoomVisibilityCard.tsx)); the corresponding `*-lobby.tsx` calls `closeRoom()` when the owner starts the game. `stores/rooms.ts` is a thin reactive mirror of `listPublicRooms()` for the new Find Room screen ([app/find-room.tsx](../src/app/find-room.tsx)).
+- **Single-device honesty, not a room-membership simulation.** There is no second player to fill a seat, so "browsing rooms" only ever lists rooms this device created, and "joining" — by code or from the list — replays the room's own stored route/params rather than adding a participant. This is the same restraint `mockPresence`'s own header describes ("no traffic of its own — there is no server to hear from"); the real gap this leaves is that `playerCount`/`maxPlayers` on a `Room` are cosmetic today, not actually enforced or filled by anyone else.
+- **No idle sweep.** ARCHITECTURE §7.2's 5-minute empty-room cleanup isn't implemented — a room a user abandons mid-setup (backs out without starting) stays listed for the rest of the session. Acceptable for a local mock that resets on app restart; a real backend needs the sweep regardless, for the server-crash case.
+
 ---
 
 ## 4. Divergences from ARCHITECTURE.md — open items
@@ -137,6 +146,7 @@ Collected here so they don't quietly rot in twelve separate comments. None of th
 13. **`game_content/detective/stories.icon`** and **`game_content/story/fragments.icon`** are new fields on those two collections (§3.9) — client-only cover-art, not modelled anywhere.
 14. **`game_content/imposter/categories`** is a fifth new collection under `game_content/`, not in §6.2 — see §3.9.
 15. **Imposter's `deadlineAt` surviving a failed vote** has no security-rules precedent, the same open question Zarta's simultaneous-submission shape raised in item 9 — see §3.8.
+16. **`mockRooms.ts` collapses `roomId` and `CODE` into one key**, skipping the `/room_codes/{CODE} → roomId` indirection §6.4/§7 model — see §3.11.
 
 ### 4.1 Why the chat path changed
 

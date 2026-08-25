@@ -95,14 +95,9 @@ export default function Play() {
           trailing={<Chip>{t((s) => s.play.phase2)}</Chip>}
         />
         <ListRow
-          title={t((s) => s.play.joinByCode)}
-          subtitle={t((s) => s.play.joinByCodeBody)}
-          trailing={<Chip>{t((s) => s.play.phase2)}</Chip>}
-        />
-        <ListRow
           title={t((s) => s.play.browseRooms)}
           subtitle={t((s) => s.play.browseRoomsBody)}
-          trailing={<Chip>{t((s) => s.play.phase2)}</Chip>}
+          onPress={() => router.push('/find-room')}
         />
       </View>
 

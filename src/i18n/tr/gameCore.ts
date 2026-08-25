@@ -10,9 +10,14 @@ export const gameCore: typeof en = {
   off: 'Kapalı',
   roomLobbyTitle: 'Oda Lobisi',
   room: 'Oda',
-  localRoom: 'Yerel oda',
-  localRoomBody:
-    'Aşağıdakilerin hepsi zaten bu cihazda oturuyor. Oyunlar ağ üzerinden oynanabilir hale geldiğinde, oda sahibi başlatana kadar burada odanın dolmasını beklersin.',
+  roomCodeBody: "Bir arkadaşının bu odayı bulması için bu kodu paylaş, ya da sonra Oyna → Oda Bul üzerinden ara.",
+  visibility: {
+    title: 'Kimler katılabilir',
+    public: 'Herkese Açık',
+    publicBody: 'Oda Bul listesinde herkes tarafından görülüp katılınabilir.',
+    private: 'Özel',
+    privateBody: 'Oda listesinde görünmez — sadece kodla katılınabilir.',
+  },
   playersCount: (n) => `Oyuncular · ${n}`,
   owner: 'Sahibi',
   ready: 'Hazır',
