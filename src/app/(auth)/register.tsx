@@ -7,6 +7,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Button, Card, Input, Row, Text } from '@/components/ui';
 import { APP_NAME } from '@/constants/app';
 import { SocialAuthRow } from '@/features/auth/components/SocialAuthRow';
+import { useI18n } from '@/i18n/I18nProvider';
 import { useProfile } from '@/stores/profile';
 import { useSession } from '@/stores/session';
 import { spacing, type } from '@/theme/tokens';
@@ -22,6 +23,7 @@ import type { Palette } from '@/theme/palettes';
  */
 export default function Register() {
   const { palette } = useTheme();
+  const { t } = useI18n();
   const s = useMemo(() => makeStyles(palette), [palette]);
 
   const router = useRouter();
@@ -44,7 +46,7 @@ export default function Register() {
   const submit = async () => {
     if (!canSubmit) return;
     if (password !== confirm) {
-      setMismatch('Passwords do not match.');
+      setMismatch(t((s) => s.auth.register.passwordsDontMatch));
       return;
     }
     setMismatch(null);
@@ -77,7 +79,7 @@ export default function Register() {
               {APP_NAME}
             </Text>
             <Text variant="caption" color={palette.onSurfaceVariant} center>
-              Join the ultimate high-energy social arena.
+              {t((s) => s.auth.register.tagline)}
             </Text>
           </Animated.View>
 
@@ -85,41 +87,41 @@ export default function Register() {
             <Card style={{ gap: spacing.xs }}>
               <View style={{ gap: spacing.xs, marginBottom: spacing.sm }}>
                 <Text variant="heading" center>
-                  Create account
+                  {t((s) => s.auth.register.createAccount)}
                 </Text>
                 <Text variant="caption" color={palette.onSurfaceVariant} center>
-                  Enter your details to get started.
+                  {t((s) => s.auth.register.subtitle)}
                 </Text>
               </View>
 
               <Input
-                label="Username"
+                label={t((s) => s.auth.register.username)}
                 value={username}
                 onChangeText={edit(setUsername)}
-                placeholder="GameMaster99"
+                placeholder={t((s) => s.auth.register.usernamePlaceholder)}
                 autoComplete="username"
                 returnKeyType="next"
               />
               <Input
-                label="Email"
+                label={t((s) => s.auth.register.email)}
                 value={email}
                 onChangeText={edit(setEmail)}
-                placeholder="player@example.com"
+                placeholder={t((s) => s.auth.register.emailPlaceholder)}
                 keyboardType="email-address"
                 autoComplete="email"
                 returnKeyType="next"
               />
               <Input
-                label="Password"
+                label={t((s) => s.auth.register.password)}
                 value={password}
                 onChangeText={edit(setPassword)}
-                placeholder="Password"
+                placeholder={t((s) => s.auth.register.password)}
                 secureTextEntry
                 autoComplete="new-password"
                 returnKeyType="next"
               />
               <Input
-                label="Confirm password"
+                label={t((s) => s.auth.register.confirmPassword)}
                 value={confirm}
                 onChangeText={edit(setConfirm)}
                 placeholder="••••••••"
@@ -130,14 +132,14 @@ export default function Register() {
                 error={mismatch ?? error}
               />
 
-              <Button label="Create account" onPress={submit} disabled={!canSubmit} loading={busy} />
+              <Button label={t((s) => s.auth.register.createAccount)} onPress={submit} disabled={!canSubmit} loading={busy} />
 
               <Row gap={spacing.xs} style={{ justifyContent: 'center', marginTop: spacing.md }}>
                 <Text variant="caption" color={palette.onSurfaceVariant}>
-                  Already have an account?
+                  {t((s) => s.auth.register.haveAccount)}
                 </Text>
                 <Link href="/(auth)/login" style={[type.caption, s.linkPrimary]}>
-                  Login
+                  {t((s) => s.auth.register.login)}
                 </Link>
               </Row>
             </Card>

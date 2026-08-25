@@ -1,0 +1,37 @@
+import type { achievements as en } from '../en/achievements';
+
+export const achievements: typeof en = {
+  title: 'Başarımlar',
+  subtitle: 'Kazanılmış ya da kazanılmamış, hepsi burada.',
+  completed: 'Tamamlanan',
+  unlockedFromCustomizer: 'Kilidi açıldı — özelleştiriciden giyebilirsin.',
+  cannotBeBought: 'Altınla satın alınamaz.',
+  unlockedBanner: 'Başarım kazanıldı',
+  dismissLabel: (name) => `Başarım kazanıldı: ${name}. Kapat.`,
+  plusGold: (n) => `+${n} altın`,
+  plusXp: (n) => `+${n} XP`,
+  itemUnlocked: (name) => `${name} kilidi açıldı`,
+  tier: {
+    common: 'Sıradan',
+    rare: 'Nadir',
+    epic: 'Destansı',
+    legendary: 'Efsanevi',
+  },
+  items: {
+    first_game: { name: 'İlk Kan', description: 'İlk oyununu bitir.' },
+    first_win: { name: 'Kazanan', description: 'İlk oyununu kazan.' },
+    games_10: { name: 'Müdavim', description: '10 oyun oyna.' },
+    games_50: { name: 'Adanmış', description: '50 oyun oyna.' },
+    games_100: { name: 'Yüzbaşı', description: '100 oyun oyna.' },
+    wins_10: { name: 'İddialı', description: '10 oyun kazan.' },
+    wins_50: { name: 'Şampiyon', description: '50 oyun kazan.' },
+    level_5: { name: 'Başlangıç', description: "5. seviyeye ulaş." },
+    level_10: { name: 'Tecrübeli', description: "10. seviyeye ulaş." },
+    level_25: { name: 'Kıdemli', description: "25. seviyeye ulaş." },
+    level_50: { name: 'Asalet', description: "50. seviyeye ulaş." },
+    streak_3: { name: 'Üç Gün Üst Üste', description: 'Günlük ödülü 3 gün üst üste al.' },
+    streak_7: { name: 'Güçlü Hafta', description: 'Günlük ödülü 7 gün üst üste al.' },
+    quests_10: { name: 'Görevli', description: '10 görev tamamla.' },
+    quests_50: { name: 'Usta', description: '50 görev tamamla.' },
+  },
+};

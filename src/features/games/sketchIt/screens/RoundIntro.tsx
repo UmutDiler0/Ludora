@@ -1,6 +1,7 @@
 import { View } from 'react-native';
 
 import { Button, Card, Chip, Label, Row, Screen, Text } from '@/components/ui';
+import { useI18n } from '@/i18n/I18nProvider';
 import { spacing } from '@/theme/tokens';
 import { useTheme } from '@/theme/ThemeProvider';
 import type { SketchPlayerView } from '../state';
@@ -13,12 +14,13 @@ import type { SketchPlayerView } from '../state';
  */
 export function RoundIntroScreen({ view, onStart }: { view: SketchPlayerView; onStart: () => void }) {
   const { palette } = useTheme();
+  const { t } = useI18n();
 
   return (
     <Screen>
       <Row style={{ justifyContent: 'space-between' }}>
         <Chip color={palette.tertiary} filled>
-          Round {view.round} / {view.totalRounds}
+          {t((s) => s.sketchIt.session.round)(view.round, view.totalRounds)}
         </Chip>
       </Row>
 
@@ -28,21 +30,21 @@ export function RoundIntroScreen({ view, onStart }: { view: SketchPlayerView; on
         accent={palette.tertiary}
         style={{ alignItems: 'center', gap: spacing.lg, paddingVertical: spacing.xxl, flex: 1, justifyContent: 'center' }}>
         <Text variant="hero" center color={palette.tertiary}>
-          Pass to {view.artistName}
+          {t((s) => s.sketchIt.roundIntro.passTo)(view.artistName)}
         </Text>
         <Text variant="body" color={palette.onSurfaceVariant} center style={{ paddingHorizontal: spacing.md }}>
-          Everyone else, look away — {view.artistName} is about to see the word.
+          {t((s) => s.sketchIt.roundIntro.lookAway)(view.artistName)}
         </Text>
 
         <View style={{ alignItems: 'center', gap: spacing.xs }}>
-          <Label color={palette.onSurfaceVariant}>Your word</Label>
+          <Label color={palette.onSurfaceVariant}>{t((s) => s.sketchIt.roundIntro.yourWord)}</Label>
           <Text variant="hero" center>
             {view.word}
           </Text>
         </View>
       </Card>
 
-      <Button label="Everyone ready — start drawing" size="lg" onPress={onStart} />
+      <Button label={t((s) => s.sketchIt.roundIntro.readyStart)} size="lg" onPress={onStart} />
     </Screen>
   );
 }

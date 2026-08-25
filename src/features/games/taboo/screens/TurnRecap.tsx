@@ -2,6 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { View } from 'react-native';
 
 import { Button, Card, Label, Row, Screen, Text } from '@/components/ui';
+import { useI18n } from '@/i18n/I18nProvider';
 import { spacing } from '@/theme/tokens';
 import { useTheme } from '@/theme/ThemeProvider';
 import type { TabooPlayerView, TabooCardResult } from '../state';
@@ -21,17 +22,18 @@ const RESULT_ICON: Record<TabooCardResult, React.ComponentProps<typeof Ionicons>
  */
 export function TurnRecapScreen({ view, onContinue }: { view: TabooPlayerView; onContinue: () => void }) {
   const { palette } = useTheme();
+  const { t } = useI18n();
   if (!view.lastTurn) return <Screen>{null}</Screen>;
 
   const { team, gained, events } = view.lastTurn;
   const accent = teamAccent(palette, team);
-  const teamName = view.teams.find((t) => t.id === team)?.name ?? '';
+  const teamName = t((s) => s.taboo.team);
   const gainedColor = gained > 0 ? palette.success : gained < 0 ? palette.error : palette.onSurfaceVariant;
 
   return (
     <Screen>
       <Card accent={accent} style={{ alignItems: 'center', gap: spacing.sm }}>
-        <Label color={accent}>Team {teamName}&apos;s turn</Label>
+        <Label color={accent}>{t((s) => s.taboo.turnRecap.teamsTurn)(teamName[team])}</Label>
         <Text variant="hero" color={gainedColor}>
           {gained > 0 ? '+' : ''}
           {gained}
@@ -39,19 +41,19 @@ export function TurnRecapScreen({ view, onContinue }: { view: TabooPlayerView; o
       </Card>
 
       <Row style={{ justifyContent: 'space-between' }}>
-        {view.teams.map((t) => (
-          <View key={t.id} style={{ alignItems: 'center', gap: 2 }}>
-            <Label color={teamAccent(palette, t.id)}>Team {t.name}</Label>
-            <Text variant="title">{t.score}</Text>
+        {view.teams.map((tm) => (
+          <View key={tm.id} style={{ alignItems: 'center', gap: 2 }}>
+            <Label color={teamAccent(palette, tm.id)}>{t((s) => s.taboo.teamLabel)(teamName[tm.id])}</Label>
+            <Text variant="title">{tm.score}</Text>
           </View>
         ))}
       </Row>
 
-      <Label>This turn</Label>
+      <Label>{t((s) => s.taboo.turnRecap.thisTurn)}</Label>
       <View style={{ gap: spacing.xs, flex: 1 }}>
         {events.length === 0 && (
           <Text variant="caption" color={palette.onSurfaceVariant}>
-            No cards were resolved before time ran out.
+            {t((s) => s.taboo.turnRecap.noCardsResolved)}
           </Text>
         )}
         {events.map((event, i) => (
@@ -75,7 +77,7 @@ export function TurnRecapScreen({ view, onContinue }: { view: TabooPlayerView; o
       </View>
 
       <Button
-        label={view.winner ? 'See results' : 'Pass the phone'}
+        label={view.winner ? t((s) => s.taboo.turnRecap.seeResults) : t((s) => s.taboo.turnRecap.passThePhone)}
         onPress={onContinue}
       />
     </Screen>

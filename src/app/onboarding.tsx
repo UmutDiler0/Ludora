@@ -15,6 +15,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Button, Chip, Label, ProgressBar, Row, Text } from '@/components/ui';
 import { CompeteArt, CustomizeArt, DiscoverArt } from '@/features/onboarding/illustrations';
+import { useI18n } from '@/i18n/I18nProvider';
 import { useSession } from '@/stores/session';
 import { useTheme } from '@/theme/ThemeProvider';
 import type { Palette } from '@/theme/palettes';
@@ -36,46 +37,24 @@ import { radius, spacing } from '@/theme/tokens';
  */
 
 interface SlideSpec {
-  key: string;
+  key: 'discover' | 'customize' | 'compete';
   art: ComponentType;
   /** Palette token rather than a literal, so slides follow Light / Dark. */
   accent: keyof Palette;
-  title: string;
-  body: string;
   /** Extra proof-of-value strip beneath the art, per slide. */
   garnish?: 'xp' | 'podium' | 'live';
 }
 
 const SLIDES: SlideSpec[] = [
-  {
-    key: 'discover',
-    art: DiscoverArt,
-    accent: 'secondaryContainer',
-    title: 'Discover & Play',
-    body: 'Join thousands of players in unique party games like Vampire Village and Taboo.',
-    garnish: 'live',
-  },
-  {
-    key: 'customize',
-    art: CustomizeArt,
-    accent: 'primaryContainer',
-    title: 'Customize & Earn',
-    body: 'Build your unique identity and earn XP and Gold with every match.',
-    garnish: 'xp',
-  },
-  {
-    key: 'compete',
-    art: CompeteArt,
-    accent: 'tertiaryContainer',
-    title: 'Compete & Win',
-    body: 'Climb the daily and weekly leaderboards to earn exclusive rewards.',
-    garnish: 'podium',
-  },
+  { key: 'discover', art: DiscoverArt, accent: 'secondaryContainer', garnish: 'live' },
+  { key: 'customize', art: CustomizeArt, accent: 'primaryContainer', garnish: 'xp' },
+  { key: 'compete', art: CompeteArt, accent: 'tertiaryContainer', garnish: 'podium' },
 ];
 
 export default function Onboarding() {
   const router = useRouter();
   const { palette } = useTheme();
+  const { t } = useI18n();
   const s = useMemo(() => makeStyles(palette), [palette]);
   const { width } = useWindowDimensions();
   const scroller = useRef<ScrollView>(null);
@@ -104,7 +83,7 @@ export default function Onboarding() {
       <Row style={s.topBar}>
         <View style={{ flex: 1 }} />
         <Pressable accessibilityRole="button" onPress={finish} hitSlop={12}>
-          <Label>Skip</Label>
+          <Label>{t((s) => s.onboarding.skip)}</Label>
         </Pressable>
       </Row>
 
@@ -126,7 +105,7 @@ export default function Onboarding() {
             <View key={slide.key} style={[s.dot, i === index && s.dotActive]} />
           ))}
         </Row>
-        <Button label={isLast ? 'Get started' : 'Next'} onPress={next} />
+        <Button label={isLast ? t((s) => s.onboarding.getStarted) : t((s) => s.onboarding.next)} onPress={next} />
       </View>
     </SafeAreaView>
   );
@@ -134,9 +113,11 @@ export default function Onboarding() {
 
 function Slide({ slide, width }: { slide: SlideSpec; width: number }) {
   const { palette } = useTheme();
+  const { t } = useI18n();
   const s = useMemo(() => makeStyles(palette), [palette]);
   const accent = palette[slide.accent];
   const Art = slide.art;
+  const copy = t((s) => s.onboarding.slides[slide.key]);
 
   return (
     <View style={[s.slide, { width }]}>
@@ -145,7 +126,7 @@ function Slide({ slide, width }: { slide: SlideSpec; width: number }) {
         {slide.garnish === 'live' && (
           <View style={s.liveTag}>
             <Chip color={palette.secondary} filled>
-              Live
+              {t((s) => s.onboarding.live)}
             </Chip>
           </View>
         )}
@@ -153,23 +134,23 @@ function Slide({ slide, width }: { slide: SlideSpec; width: number }) {
 
       <Animated.View entering={FadeInDown.delay(120).duration(420)} style={s.copy}>
         <Text variant="title" center>
-          {slide.title}
+          {copy.title}
         </Text>
         <Text variant="body" color={palette.onSurfaceVariant} center>
-          {slide.body}
+          {copy.body}
         </Text>
       </Animated.View>
 
       {slide.garnish === 'xp' && (
         <Animated.View entering={FadeInDown.delay(220).duration(420)} style={s.garnish}>
           <Row style={{ justifyContent: 'space-between' }}>
-            <Label color={palette.secondary}>Player XP</Label>
-            <Text variant="bodyStrong">Lvl 1</Text>
+            <Label color={palette.secondary}>{t((s) => s.onboarding.playerXp)}</Label>
+            <Text variant="bodyStrong">{t((s) => s.onboarding.level1)}</Text>
           </Row>
           <ProgressBar value={0.35} color={palette.secondary} />
           <Row gap={spacing.sm}>
-            <Chip color={palette.tertiary}>Daily rewards</Chip>
-            <Chip color={palette.tertiary}>+50 gold</Chip>
+            <Chip color={palette.tertiary}>{t((s) => s.onboarding.dailyRewards)}</Chip>
+            <Chip color={palette.tertiary}>{t((s) => s.onboarding.plusGold)}</Chip>
           </Row>
         </Animated.View>
       )}

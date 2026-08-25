@@ -1,0 +1,61 @@
+import type { avatar as en } from '../en/avatar';
+
+export const avatar: typeof en = {
+  slotLabel: {
+    background: 'Arka Plan',
+    build: 'Vücut Tipi',
+    body: 'Ten',
+    face: 'Yüz',
+    eyes: 'Gözler',
+    mouth: 'Ağız',
+    hair: 'Saç',
+    facialHair: 'Sakal',
+    clothes: 'Üst',
+    pants: 'Alt',
+    shoes: 'Ayakkabı',
+    hat: 'Şapka',
+    accessory: 'Aksesuar',
+  },
+
+  shop: {
+    title: 'Avatar Mağazası',
+    subtitle: 'Harcamadan önce her şeyi dene.',
+    nothingForSale: 'Bu kategoride henüz satılık bir şey yok.',
+    itemAccessibility: (name, status) => `${name}, ${status}`,
+    owned: 'Sende var',
+    on: 'Takılı',
+    level: (n) => `Sv ${n}`,
+    confirmPurchase: 'Satın almayı onayla',
+    itemPreview: 'Ürün önizlemesi',
+    preview: 'Önizleme',
+    wearingThis: 'Bunu şu an giyiyorsun.',
+    ownedWearWhenever: 'Sende var — istediğin zaman giyebilirsin.',
+    unlocksAtLevel: (n) => `${n}. seviyede açılır.`,
+    costsGoldKeepPlaying: (n) => `${n} altın — kazanmak için oynamaya devam et.`,
+    costsGold: (n) => `${n} altın.`,
+    close: 'Kapat',
+    alreadyOn: 'Zaten takılı',
+    wearIt: 'Giy',
+    buyFor: (n) => `Satın al · ${n}a`,
+    buyItem: (name) => `${name} satın alınsın mı?`,
+    goldAmount: (n) => `${n} altın`,
+    goldLeftAfter: (n) => `${n} altının kalır ve bu parça hemen üzerine giyilir.`,
+    back: 'Geri',
+    buyIt: 'Satın al',
+  },
+
+  customize: {
+    title: 'Avatarı Özelleştir',
+    none: 'Yok',
+    noneOwnedYet: (slot) => `Henüz sende ${slot} yok — mağazaya göz at.`,
+    shopForMore: 'Mağazadan daha fazlasına bak',
+  },
+
+  create: {
+    title: 'Sana özel yap',
+    subtitle: 'Hızlı bir ilk deneme. Her bölümünü sonra değiştirebilir, mağazadan daha fazlasını alabilirsin.',
+    buildHint: 'İstediğin zaman değiştir — hiçbir şeye bağlı değil.',
+    thisIsMe: 'Bu benim',
+    skipForNow: 'Şimdilik atla',
+  },
+};

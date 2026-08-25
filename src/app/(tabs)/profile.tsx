@@ -16,9 +16,9 @@ import {
   StatTile,
   Text,
 } from '@/components/ui';
-import { TABS } from '@/constants/app';
 import { AvatarRenderer } from '@/features/avatar/AvatarRenderer';
 import { completionOf } from '@/features/progression/achievements';
+import { useI18n } from '@/i18n/I18nProvider';
 import { useLevel, useProfile, useWinRate } from '@/stores/profile';
 import { useProgression } from '@/stores/progression';
 import { useSession } from '@/stores/session';
@@ -32,6 +32,7 @@ import { useTheme } from '@/theme/ThemeProvider';
  */
 export default function Profile() {
   const { palette } = useTheme();
+  const { t } = useI18n();
 
   const router = useRouter();
   const { displayName, handle, gold, stats, avatar } = useProfile();
@@ -48,13 +49,13 @@ export default function Profile() {
   return (
     <Screen>
       <ScreenHeader
-        title={TABS.profile}
+        title={t((s) => s.tabs.profile)}
         trailing={
           <Row gap={spacing.sm}>
             <GoldPill amount={gold} />
             <IconButton
               name="settings-outline"
-              label="Settings"
+              label={t((s) => s.profile.settings)}
               onPress={() => router.push('/settings')}
             />
           </Row>
@@ -63,11 +64,11 @@ export default function Profile() {
 
       {isGuest && (
         <Card accent={palette.primary} style={{ gap: spacing.sm }}>
-          <Text variant="bodyStrong">You&apos;re browsing as a guest</Text>
+          <Text variant="bodyStrong">{t((s) => s.profile.guestBanner)}</Text>
           <Text variant="caption" color={palette.onSurfaceVariant}>
-            Sign up to save your progress, earn Gold and XP, and climb the leaderboards.
+            {t((s) => s.profile.guestBannerBody)}
           </Text>
-          <Button label="Sign Up" onPress={() => router.push('/(auth)/register')} />
+          <Button label={t((s) => s.profile.signUp)} onPress={() => router.push('/(auth)/register')} />
         </Card>
       )}
 
@@ -75,7 +76,7 @@ export default function Profile() {
         <Row gap={spacing.lg}>
           <Pressable
             accessibilityRole="button"
-            accessibilityLabel="Customize avatar"
+            accessibilityLabel={t((s) => s.profile.customizeAvatar)}
             onPress={() => router.push('/avatar-customize')}
             style={{ width: 64, height: 64 }}>
             <AvatarRenderer config={avatar} size={64} ring={palette.primaryContainer} />
@@ -108,9 +109,9 @@ export default function Profile() {
 
         <View style={{ gap: spacing.sm }}>
           <Row style={{ justifyContent: 'space-between' }}>
-            <Label color={palette.primary}>Level {level.level}</Label>
+            <Label color={palette.primary}>{t((s) => s.profile.level)(level.level)}</Label>
             <Text variant="caption" color={palette.onSurfaceVariant}>
-              {level.xpIntoLevel.toLocaleString()} / {level.xpForLevel.toLocaleString()} XP
+              {t((s) => s.profile.xpFraction)(level.xpIntoLevel.toLocaleString(), level.xpForLevel.toLocaleString())}
             </Text>
           </Row>
           <ProgressBar value={level.fraction} />
@@ -118,21 +119,21 @@ export default function Profile() {
       </Card>
 
       <Row gap={spacing.sm} style={{ alignItems: 'stretch' }}>
-        <StatTile value={String(stats.gamesPlayed)} caption="Played" />
-        <StatTile value={String(stats.gamesWon)} caption="Won" color={palette.secondary} />
-        <StatTile value={`${winRate}%`} caption="Win rate" color={palette.tertiary} />
+        <StatTile value={String(stats.gamesPlayed)} caption={t((s) => s.profile.played)} />
+        <StatTile value={String(stats.gamesWon)} caption={t((s) => s.profile.won)} color={palette.secondary} />
+        <StatTile value={`${winRate}%`} caption={t((s) => s.profile.winRate)} color={palette.tertiary} />
       </Row>
 
       <ListRow
-        title="Achievements"
-        subtitle={`${completion.done} of ${completion.total} earned`}
+        title={t((s) => s.profile.achievements)}
+        subtitle={t((s) => s.profile.achievementsCompletion)(completion.done, completion.total)}
         accent={palette.medalGold}
         leading={<Ionicons name="trophy" size={22} color={palette.medalGold} />}
         trailing={<Ionicons name="chevron-forward" size={18} color={palette.onSurfaceVariant} />}
         onPress={() => router.push('/achievements')}
       />
 
-      <Button label="Sign out" tone="danger" onPress={leave} />
+      <Button label={t((s) => s.profile.signOut)} tone="danger" onPress={leave} />
     </Screen>
   );
 }

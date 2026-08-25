@@ -1,0 +1,33 @@
+import type { home as en } from '../en/home';
+
+export const home: typeof en = {
+  openProfile: 'Profili aç',
+  level: (n) => `Sv ${n}`,
+  welcomeBack: 'Tekrar hoş geldin',
+  xpToLevelUp: (xp, level) => `${level}. seviyeye ${xp} XP kaldı`,
+  quickPlay: 'Hızlı Oyna',
+  quickPlaySubtitle: 'Vampir Köyü · bu cihazda sırayla oynanır',
+  createGame: 'Oyun Oluştur',
+  joinGame: 'Oyuna Katıl',
+  quests: 'Görevler',
+  questsReady: (n) => `${n} hazır`,
+  champions: 'Şampiyonlar',
+  viewAll: 'Tümünü gör',
+  trendingNow: 'Şimdi trend',
+  playingNow: (n) => `${n} kişi şu an oynuyor`,
+  dailyRewardReady: 'Günlük ödül hazır',
+  dailyStreakDay: (day) => `Serinin ${day}. günü`,
+  dailyStreakStart: 'Bugün bir seri başlat',
+  plusGold: (n) => `+${n} altın`,
+  claimGold: (gold) => `${gold} altın al`,
+  tagline: {
+    vampireVillage: 'Kimseye güvenme. Bu masadakilerden biri gece besleniyor.',
+    taboo: 'Kelimeyi hiç söylemeden anlat.',
+    drawingGuess: 'Kötü çiz, hızlı tahmin et, sonra tartışın.',
+    zarta: 'Tereddüt etmenin her şeye mal olduğu hızlı turlar.',
+    story: 'Sadece bir ya da iki cümle alırsın. Gerisini ortaya çıkar.',
+    detective: 'Ortamı oku, izleri takip et, suçluyu bul.',
+    agent: 'Herkes kendini o sanıyor. Sadece bazıları doğruyu söylüyor.',
+    imposter: 'Aranıza karış, sessiz kal ve kimsenin dikkatlice bakmamasını um.',
+  },
+};

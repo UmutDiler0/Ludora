@@ -3,6 +3,7 @@ import { useMemo } from 'react';
 
 import { LobbyScreen, type LobbySeat } from '@/features/games/core/LobbyScreen';
 import type { ImposterConfig } from '@/features/games/imposter/config';
+import { useI18n } from '@/i18n/I18nProvider';
 import { HUMAN_UID, seatNames, useLocalImposter } from '@/stores/localImposter';
 
 /**
@@ -12,6 +13,7 @@ import { HUMAN_UID, seatNames, useLocalImposter } from '@/stores/localImposter';
  */
 export default function ImposterLobby() {
   const router = useRouter();
+  const { t } = useI18n();
   const params = useLocalSearchParams<{ playerCount: string; config: string }>();
   const newGame = useLocalImposter((s) => s.newGame);
 
@@ -24,7 +26,7 @@ export default function ImposterLobby() {
     isOwner: p.uid === HUMAN_UID,
   }));
 
-  const summary = [`${playerCount} players`, `${Math.round(config.discussionSeconds / 60)} min`];
+  const summary = [t((s) => s.common.players)(playerCount), t((s) => s.imposter.lobby.minutes)(Math.round(config.discussionSeconds / 60))];
 
   const start = () => {
     newGame(playerCount, config);
@@ -33,8 +35,8 @@ export default function ImposterLobby() {
 
   return (
     <LobbyScreen
-      title="Room Lobby"
-      subtitle="Imposter · everyone's seated, start when ready."
+      title={t((s) => s.gameCore.roomLobbyTitle)}
+      subtitle={t((s) => s.imposter.lobby.subtitle)}
       seats={seats}
       summary={summary}
       onBack={() => router.back()}

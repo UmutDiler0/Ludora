@@ -1,9 +1,10 @@
 import { Pressable, ScrollView } from 'react-native';
 
 import { Text } from '@/components/ui';
+import { useI18n } from '@/i18n/I18nProvider';
 import { useTheme } from '@/theme/ThemeProvider';
 import { radius, spacing, stroke } from '@/theme/tokens';
-import { EDITABLE_SLOTS, SLOT_LABELS, type AvatarSlot } from './types';
+import { EDITABLE_SLOTS, type AvatarSlot } from './types';
 
 /**
  * Horizontal scroller of slot filters — shared by the shop and customizer.
@@ -15,6 +16,8 @@ import { EDITABLE_SLOTS, SLOT_LABELS, type AvatarSlot } from './types';
  * shrinking padding would not have fixed it.
  */
 export function SlotTabRow({ value, onChange }: { value: AvatarSlot; onChange: (slot: AvatarSlot) => void }) {
+  const { t } = useI18n();
+  const labels = t((s) => s.avatar.slotLabel);
   return (
     <ScrollView
       horizontal
@@ -22,7 +25,7 @@ export function SlotTabRow({ value, onChange }: { value: AvatarSlot; onChange: (
       style={{ flexGrow: 0 }}
       contentContainerStyle={{ gap: spacing.sm, alignItems: 'center', paddingRight: spacing.xl }}>
       {EDITABLE_SLOTS.map((slot) => (
-        <SlotTab key={slot} label={SLOT_LABELS[slot]} active={slot === value} onPress={() => onChange(slot)} />
+        <SlotTab key={slot} label={labels[slot]} active={slot === value} onPress={() => onChange(slot)} />
       ))}
     </ScrollView>
   );

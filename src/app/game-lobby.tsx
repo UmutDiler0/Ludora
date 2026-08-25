@@ -3,6 +3,7 @@ import { useMemo } from 'react';
 
 import { LobbyScreen, type LobbySeat } from '@/features/games/core/LobbyScreen';
 import { autoVampireCount, type VVConfig } from '@/features/games/vampireVillage/config';
+import { useI18n } from '@/i18n/I18nProvider';
 import { BOT_NAMES, HUMAN_UID, useLocalGame } from '@/stores/localGame';
 import { useProfile } from '@/stores/profile';
 
@@ -14,6 +15,7 @@ import { useProfile } from '@/stores/profile';
  */
 export default function GameLobby() {
   const router = useRouter();
+  const { t } = useI18n();
   const params = useLocalSearchParams<{ playerCount: string; config: string }>();
   const you = useProfile((s) => s.displayName);
   const newGame = useLocalGame((s) => s.newGame);
@@ -26,8 +28,8 @@ export default function GameLobby() {
       uid: `bot${i}`,
       name,
     }));
-    return [{ uid: HUMAN_UID, name: you || 'You', isOwner: true }, ...botSeats];
-  }, [playerCount, you]);
+    return [{ uid: HUMAN_UID, name: you || t((s) => s.common.you), isOwner: true }, ...botSeats];
+  }, [playerCount, you, t]);
 
   const effectiveVampires =
     config.vampireCount > 0
@@ -35,10 +37,10 @@ export default function GameLobby() {
       : autoVampireCount(playerCount);
 
   const summary = [
-    `${playerCount} players`,
-    `${effectiveVampires} vampire${effectiveVampires === 1 ? '' : 's'}`,
-    `Seer ${config.enableSeer ? 'on' : 'off'}`,
-    `Bodyguard ${config.enableBodyguard ? 'on' : 'off'}`,
+    t((s) => s.common.players)(playerCount),
+    t((s) => s.vampireVillage.lobby.vampiresCount)(effectiveVampires),
+    t((s) => s.vampireVillage.lobby.seer)(config.enableSeer),
+    t((s) => s.vampireVillage.lobby.bodyguard)(config.enableBodyguard),
   ];
 
   const start = () => {
@@ -48,8 +50,8 @@ export default function GameLobby() {
 
   return (
     <LobbyScreen
-      title="Room Lobby"
-      subtitle="Vampire Village · everyone's seated, start when ready."
+      title={t((s) => s.gameCore.roomLobbyTitle)}
+      subtitle={t((s) => s.vampireVillage.lobby.subtitle)}
       seats={seats}
       summary={summary}
       onBack={() => router.back()}

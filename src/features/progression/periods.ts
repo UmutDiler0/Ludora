@@ -46,10 +46,20 @@ export function msUntilPeriodEnd(period: QuestPeriod, date: Date = new Date()): 
   return Math.max(0, end.getTime() - date.getTime());
 }
 
-/** "6h" / "2d" — short enough for a chip, honest enough to plan around. */
-export function formatResetIn(ms: number): string {
+/**
+ * "6h" / "2d" — short enough for a chip, honest enough to plan around.
+ *
+ * `units` defaults to the English abbreviations so every existing call site
+ * (and this file's own tests) keeps working unchanged; the quest screen
+ * passes locale-specific ones (`i18n/en(or tr)/common.ts`'s `resetUnit`) since
+ * "h"/"d"/"m" don't mean anything in Turkish.
+ */
+export function formatResetIn(
+  ms: number,
+  units: { minute: string; hour: string; day: string } = { minute: 'm', hour: 'h', day: 'd' },
+): string {
   const hours = Math.floor(ms / 3_600_000);
-  if (hours >= 24) return `${Math.floor(hours / 24)}d`;
-  if (hours >= 1) return `${hours}h`;
-  return `${Math.max(1, Math.floor(ms / 60_000))}m`;
+  if (hours >= 24) return `${Math.floor(hours / 24)}${units.day}`;
+  if (hours >= 1) return `${hours}${units.hour}`;
+  return `${Math.max(1, Math.floor(ms / 60_000))}${units.minute}`;
 }

@@ -1,6 +1,7 @@
 import { View } from 'react-native';
 
 import { Avatar, Button, Card, Chip, Label, ListRow, Row, Screen, ScreenHeader, Text } from '@/components/ui';
+import { useI18n } from '@/i18n/I18nProvider';
 import { useTheme } from '@/theme/ThemeProvider';
 import { spacing } from '@/theme/tokens';
 
@@ -41,6 +42,7 @@ export function LobbyScreen({
   starting?: boolean;
 }) {
   const { palette } = useTheme();
+  const { t } = useI18n();
 
   return (
     <Screen>
@@ -48,33 +50,32 @@ export function LobbyScreen({
 
       <Card accent={palette.primaryContainer} style={{ gap: spacing.xs }}>
         <Row style={{ justifyContent: 'space-between' }}>
-          <Label>Room</Label>
+          <Label>{t((s) => s.gameCore.room)}</Label>
           <Chip color={palette.secondary} filled>
-            Local room
+            {t((s) => s.gameCore.localRoom)}
           </Chip>
         </Row>
         <Text variant="caption" color={palette.onSurfaceVariant}>
-          Everyone below is already seated on this device. Once games are playable over the
-          network, this is where you would wait for the room to fill before the owner starts it.
+          {t((s) => s.gameCore.localRoomBody)}
         </Text>
       </Card>
 
       <Card style={{ gap: spacing.sm }}>
-        <Label>Players · {seats.length}</Label>
+        <Label>{t((s) => s.gameCore.playersCount)(seats.length)}</Label>
         <View style={{ gap: spacing.sm }}>
           {seats.map((seat) => (
             <ListRow
               key={seat.uid}
               leading={<Avatar uid={seat.uid} name={seat.name} size={40} />}
               title={seat.name}
-              subtitle={seat.meta ?? (seat.isOwner ? 'Owner · this device' : 'Ready')}
+              subtitle={seat.meta ?? (seat.isOwner ? t((s) => s.gameCore.ownerThisDevice) : t((s) => s.gameCore.ready))}
               trailing={
                 seat.isOwner ? (
                   <Chip color={palette.primary} filled>
-                    Owner
+                    {t((s) => s.gameCore.owner)}
                   </Chip>
                 ) : (
-                  <Chip color={palette.secondary}>Ready</Chip>
+                  <Chip color={palette.secondary}>{t((s) => s.gameCore.ready)}</Chip>
                 )
               }
             />
@@ -84,7 +85,7 @@ export function LobbyScreen({
 
       {summary.length > 0 && (
         <Card style={{ gap: spacing.sm }}>
-          <Label>Settings</Label>
+          <Label>{t((s) => s.gameCore.settings)}</Label>
           <Row gap={spacing.xs} style={{ flexWrap: 'wrap' }}>
             {summary.map((line) => (
               <Chip key={line}>{line}</Chip>
@@ -96,9 +97,9 @@ export function LobbyScreen({
       <View style={{ flex: 1 }} />
 
       <Text variant="caption" color={palette.onSurfaceVariant} style={{ textAlign: 'center' }}>
-        Only the room owner can start the game.
+        {t((s) => s.gameCore.onlyOwnerCanStart)}
       </Text>
-      <Button label="Start Game" size="lg" onPress={onStart} disabled={starting} />
+      <Button label={t((s) => s.gameCore.startGame)} size="lg" onPress={onStart} disabled={starting} />
     </Screen>
   );
 }

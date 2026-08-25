@@ -19,10 +19,10 @@ import {
 import { AvatarRenderer } from '@/features/avatar/AvatarRenderer';
 import { AWARDS } from '@/features/economy/levels';
 import { HowToPlayDialog } from '@/features/games/core/HowToPlayDialog';
-import { GAME_MODE_LABEL } from '@/features/games/core/registry';
 import { GameArt } from '@/features/home/GameArt';
 import { DUMMY_CHAMPIONS, trendingGames, type Champion, type TrendingGame } from '@/features/home/dummy';
 import { QuestPanel } from '@/features/progression/QuestList';
+import { useI18n } from '@/i18n/I18nProvider';
 import { useClaimableCount, useProgression } from '@/stores/progression';
 import { useDailyClaimable, useLevel, useProfile } from '@/stores/profile';
 import { useSession } from '@/stores/session';
@@ -62,6 +62,7 @@ const MIN_TRENDING_WIDTH = 168;
 export default function Home() {
   const router = useRouter();
   const { palette } = useTheme();
+  const { t } = useI18n();
   const { width } = useWindowDimensions();
 
   const { displayName, gold, dailyStreak, avatar } = useProfile();
@@ -133,7 +134,7 @@ export default function Home() {
       <Row style={{ justifyContent: 'space-between', alignItems: 'center' }}>
         <Pressable
           accessibilityRole="button"
-          accessibilityLabel="Open profile"
+          accessibilityLabel={t((s) => s.home.openProfile)}
           onPress={() => router.push('/(tabs)/profile')}
           style={{ flex: 1, marginRight: spacing.md }}>
           <Row gap={spacing.sm}>
@@ -143,7 +144,7 @@ export default function Home() {
                 {displayName}
               </Text>
               <Text variant="caption" color={palette.onSurfaceVariant}>
-                Lv {level.level}
+                {t((s) => s.home.level)(level.level)}
               </Text>
             </View>
           </Row>
@@ -157,7 +158,7 @@ export default function Home() {
           <AvatarRenderer config={avatar} size={60} ring={palette.primaryContainer} />
           <View style={{ flex: 1, gap: spacing.xs }}>
             <Text variant="caption" color={palette.onSurfaceVariant}>
-              Welcome back
+              {t((s) => s.home.welcomeBack)}
             </Text>
             <Text variant="heading" numberOfLines={1}>
               {displayName}
@@ -168,10 +169,10 @@ export default function Home() {
         <View style={{ gap: spacing.sm }}>
           <Row style={{ justifyContent: 'space-between' }}>
             <Chip color={palette.primary} filled>
-              Lv {level.level}
+              {t((s) => s.home.level)(level.level)}
             </Chip>
             <Text variant="caption" color={palette.onSurfaceVariant}>
-              {level.xpToLevelUp.toLocaleString()} XP to level {level.level + 1}
+              {t((s) => s.home.xpToLevelUp)(level.xpToLevelUp.toLocaleString(), level.level + 1)}
             </Text>
           </Row>
           <ProgressBar value={level.fraction} />
@@ -188,21 +189,21 @@ export default function Home() {
 
       {/* ----------------------------------------------------------- actions */}
       <View style={{ gap: spacing.sm }}>
-        <Button label="Quick Play" icon="play" size="lg" onPress={quickPlay} />
+        <Button label={t((s) => s.home.quickPlay)} icon="play" size="lg" onPress={quickPlay} />
         <Text variant="caption" color={palette.onSurfaceVariant} center>
-          Vampire Village · hot-seat on this device
+          {t((s) => s.home.quickPlaySubtitle)}
         </Text>
       </View>
 
       <Row gap={spacing.sm} style={{ alignItems: 'stretch' }}>
         <ActionTile
           icon="add-circle-outline"
-          label="Create Game"
+          label={t((s) => s.home.createGame)}
           onPress={() => router.push('/(tabs)/play')}
         />
         <ActionTile
           icon="people-outline"
-          label="Join Game"
+          label={t((s) => s.home.joinGame)}
           onPress={() => router.push('/(tabs)/play')}
         />
       </Row>
@@ -211,9 +212,9 @@ export default function Home() {
       <Row style={{ justifyContent: 'space-between' }}>
         <Row gap={spacing.sm}>
           <Ionicons name="clipboard" size={20} color={palette.primary} />
-          <Text variant="heading">Quests</Text>
+          <Text variant="heading">{t((s) => s.home.quests)}</Text>
         </Row>
-        {claimableQuests > 0 && <Badge color={palette.tertiary}>{claimableQuests} ready</Badge>}
+        {claimableQuests > 0 && <Badge color={palette.tertiary}>{t((s) => s.home.questsReady)(claimableQuests)}</Badge>}
       </Row>
 
       <QuestPanel />
@@ -223,14 +224,14 @@ export default function Home() {
         <Row style={{ justifyContent: 'space-between' }}>
           <Row gap={spacing.sm}>
             <Ionicons name="trophy" size={20} color={palette.medalGold} />
-            <Text variant="heading">Champions</Text>
+            <Text variant="heading">{t((s) => s.home.champions)}</Text>
           </Row>
           <Pressable
             accessibilityRole="button"
             hitSlop={10}
             onPress={() => router.push('/(tabs)/leaderboard')}>
             <Text variant="bodyStrong" color={palette.primary}>
-              View all
+              {t((s) => s.home.viewAll)}
             </Text>
           </Pressable>
         </Row>
@@ -243,7 +244,7 @@ export default function Home() {
       {/* ---------------------------------------------------------- trending */}
       <Row gap={spacing.sm}>
         <Ionicons name="flame" size={20} color={palette.error} />
-        <Text variant="heading">Trending now</Text>
+        <Text variant="heading">{t((s) => s.home.trendingNow)}</Text>
       </Row>
 
       <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm }}>
@@ -318,6 +319,7 @@ function DailyRewardBanner({
   onClaim: () => void;
 }) {
   const { palette } = useTheme();
+  const { t } = useI18n();
   // A streak of 0 means "never claimed", which is day one rather than day zero.
   const nextDay = streak + 1;
 
@@ -338,14 +340,14 @@ function DailyRewardBanner({
           <Ionicons name="gift" size={24} color={palette.onTertiary} />
         </View>
         <View style={{ flex: 1, gap: 2 }}>
-          <Text variant="bodyStrong">Daily reward ready</Text>
+          <Text variant="bodyStrong">{t((s) => s.home.dailyRewardReady)}</Text>
           <Text variant="caption" color={palette.onSurfaceVariant}>
-            {streak > 0 ? `Day ${nextDay} of your streak` : 'Start a streak today'} · +
-            {gold} gold
+            {streak > 0 ? t((s) => s.home.dailyStreakDay)(nextDay) : t((s) => s.home.dailyStreakStart)} ·{' '}
+            {t((s) => s.home.plusGold)(gold)}
           </Text>
         </View>
       </Row>
-      <Button label={`Claim ${gold} gold`} tone="secondary" onPress={onClaim} />
+      <Button label={t((s) => s.home.claimGold)(gold)} tone="secondary" onPress={onClaim} />
     </Card>
   );
 }
@@ -403,7 +405,9 @@ function TrendingCard({
   onPress?: () => void;
 }) {
   const { palette } = useTheme();
+  const { t } = useI18n();
   const [howToPlay, setHowToPlay] = useState(false);
+  const name = t((s) => s.catalogue.name)[game.id];
 
   const body = (
     <>
@@ -412,7 +416,7 @@ function TrendingCard({
         <View style={{ position: 'absolute', top: spacing.xs, right: spacing.xs }}>
           <IconButton
             name="information-circle-outline"
-            label={`How to play ${game.name}`}
+            label={t((s) => s.common.howToPlayLabel)(name)}
             onPress={() => setHowToPlay(true)}
           />
         </View>
@@ -420,23 +424,23 @@ function TrendingCard({
       <View style={{ padding: spacing.md, gap: spacing.xs }}>
         <Row style={{ justifyContent: 'space-between' }}>
           <Text variant="bodyStrong" numberOfLines={1} style={{ flex: 1 }}>
-            {game.name}
+            {name}
           </Text>
         </Row>
         <Row gap={spacing.xs} style={{ flexWrap: 'wrap' }}>
-          {game.isPremium && <Chip color={palette.tertiary}>Premium</Chip>}
-          {!game.enabled && <Chip>Soon</Chip>}
-          <Chip>{game.modes.map((m) => GAME_MODE_LABEL[m]).join(' · ')}</Chip>
+          {game.isPremium && <Chip color={palette.tertiary}>{t((s) => s.common.premium)}</Chip>}
+          {!game.enabled && <Chip>{t((s) => s.common.soon)}</Chip>}
+          <Chip>{game.modes.map((m) => t((s) => s.catalogue.mode)[m]).join(' · ')}</Chip>
         </Row>
 
         <Text variant="caption" color={palette.onSurfaceVariant} numberOfLines={2}>
-          {game.tagline}
+          {t((s) => s.home.tagline)[game.id]}
         </Text>
 
         <Row gap={spacing.xs}>
           <Ionicons name="people" size={14} color={palette.secondary} />
           <Text variant="caption" color={palette.secondary} numberOfLines={1}>
-            {game.playersNow.toLocaleString()} playing now
+            {t((s) => s.home.playingNow)(game.playersNow.toLocaleString())}
           </Text>
         </Row>
       </View>
@@ -460,7 +464,7 @@ function TrendingCard({
       {onPress ? (
         <Pressable
           accessibilityRole="button"
-          accessibilityLabel={`Play ${game.name}`}
+          accessibilityLabel={t((s) => s.common.playGame)(name)}
           onPress={onPress}
           style={({ pressed }) => [
             shell,

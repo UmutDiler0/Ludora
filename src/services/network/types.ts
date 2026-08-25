@@ -39,9 +39,8 @@ export interface PresenceGateway {
   publish(online: boolean): void;
 }
 
-/** Copy for each peer event, kept in one place so the room reads consistently. */
-export const PEER_EVENT_COPY: Record<PeerEventKind, (name: string) => string> = {
-  lost: (name) => `${name} lost connection. They have a moment to come back.`,
-  returned: (name) => `${name} is back.`,
-  left: (name) => `${name} left the game.`,
-};
+/**
+ * Copy for each peer event used to live here as English literals; it moved to
+ * `i18n/en(or tr)/connection.ts`'s `peerEvent` map once `PeerAlert.tsx` needed
+ * to follow the app's language — this file stays pure data shapes only.
+ */

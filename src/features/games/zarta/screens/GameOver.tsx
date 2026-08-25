@@ -1,6 +1,7 @@
 import { View } from 'react-native';
 
 import { Button, Card, Label, Row, Screen, StatTile, Text } from '@/components/ui';
+import { useI18n } from '@/i18n/I18nProvider';
 import { spacing } from '@/theme/tokens';
 import { useTheme } from '@/theme/ThemeProvider';
 import type { ZartaPlayerView } from '../state';
@@ -11,6 +12,7 @@ import type { ZartaPlayerView } from '../state';
  */
 export function ZartaGameOverScreen({ view, onPlayAgain }: { view: ZartaPlayerView; onPlayAgain: () => void }) {
   const { palette } = useTheme();
+  const { t } = useI18n();
   const draw = view.winner === 'draw';
   const winner = !draw ? view.leaderboard.find((p) => p.uid === view.winner) : null;
   const [first, second, third] = view.leaderboard;
@@ -19,10 +21,10 @@ export function ZartaGameOverScreen({ view, onPlayAgain }: { view: ZartaPlayerVi
     <Screen>
       <Card accent={palette.secondary} style={{ alignItems: 'center', gap: spacing.md, paddingVertical: spacing.xxl }}>
         <Label color={palette.secondary} center>
-          {draw ? 'Draw' : 'Game Over'}
+          {draw ? t((s) => s.zarta.gameOver.draw) : t((s) => s.zarta.gameOver.gameOver)}
         </Label>
         <Text variant="hero" color={palette.secondary} center>
-          {draw ? "It's a tie" : `${winner?.displayName} wins`}
+          {draw ? t((s) => s.zarta.gameOver.tie) : t((s) => s.zarta.gameOver.wins)(winner?.displayName ?? '')}
         </Text>
       </Card>
 
@@ -32,7 +34,7 @@ export function ZartaGameOverScreen({ view, onPlayAgain }: { view: ZartaPlayerVi
         {third && <StatTile value={String(third.score)} caption={third.displayName} />}
       </Row>
 
-      <Label>Final standings</Label>
+      <Label>{t((s) => s.zarta.gameOver.finalStandings)}</Label>
       <View style={{ gap: spacing.sm }}>
         {view.leaderboard.map((p, i) => (
           <Card key={p.uid} style={{ paddingVertical: spacing.md }}>
@@ -49,7 +51,7 @@ export function ZartaGameOverScreen({ view, onPlayAgain }: { view: ZartaPlayerVi
       </View>
 
       <View style={{ flex: 1 }} />
-      <Button label="Play again" onPress={onPlayAgain} />
+      <Button label={t((s) => s.zarta.gameOver.playAgain)} onPress={onPlayAgain} />
     </Screen>
   );
 }

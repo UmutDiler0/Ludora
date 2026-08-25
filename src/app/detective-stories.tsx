@@ -4,6 +4,7 @@ import { View } from 'react-native';
 import { Chip, EmptyState, ListRow, Screen, ScreenHeader } from '@/components/ui';
 import { ContentTile } from '@/features/games/core/ContentTile';
 import { DETECTIVE_STORIES } from '@/features/games/detective/stories';
+import { useI18n } from '@/i18n/I18nProvider';
 import { spacing } from '@/theme/tokens';
 import { useTheme } from '@/theme/ThemeProvider';
 
@@ -23,20 +24,21 @@ import { useTheme } from '@/theme/ThemeProvider';
 export default function DetectiveStories() {
   const router = useRouter();
   const { palette } = useTheme();
+  const { t } = useI18n();
 
   return (
     <Screen>
       <ScreenHeader
-        title="Detective Cases"
-        subtitle="Pick a case and work it with the evidence you're given."
+        title={t((s) => s.detective.title)}
+        subtitle={t((s) => s.detective.subtitle)}
         onBack={() => router.back()}
       />
 
       {DETECTIVE_STORIES.length === 0 ? (
         <EmptyState
           icon="briefcase-outline"
-          title="No cases yet"
-          body="Cases are still being written — free ones and premium ones both. Check back soon."
+          title={t((s) => s.detective.noCasesYet)}
+          body={t((s) => s.detective.noCasesBody)}
         />
       ) : (
         <View style={{ gap: spacing.sm }}>
@@ -48,7 +50,7 @@ export default function DetectiveStories() {
               subtitle={story.teaser}
               trailing={
                 <Chip color={story.isPremium ? palette.tertiary : palette.secondary} filled={!story.isPremium}>
-                  {story.isPremium ? 'Premium' : 'Free'}
+                  {story.isPremium ? t((s) => s.common.premium) : t((s) => s.common.free)}
                 </Chip>
               }
             />

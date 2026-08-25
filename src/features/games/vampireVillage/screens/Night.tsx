@@ -1,6 +1,7 @@
 import { Pressable, View } from 'react-native';
 
 import { Avatar, Button, Card, Chip, Label, Row, Screen, Text } from '@/components/ui';
+import { useI18n } from '@/i18n/I18nProvider';
 import { radius, spacing, stroke } from '@/theme/tokens';
 import { useTheme } from '@/theme/ThemeProvider';
 import { ROLES } from '../roles';
@@ -16,12 +17,6 @@ import type { VVPlayerView } from '../state';
  * kill regardless of submission order).
  */
 
-const PROMPT: Record<string, { title: string; instruction: string }> = {
-  vampire: { title: 'Choose your prey', instruction: 'Select a villager to drain tonight.' },
-  investigator: { title: 'Look into a soul', instruction: 'Select a player to reveal their alignment.' },
-  protector: { title: 'Stand watch', instruction: 'Select a player to protect until dawn. You may guard yourself.' },
-};
-
 export function NightScreen({
   view,
   onSelect,
@@ -30,10 +25,13 @@ export function NightScreen({
   onSelect: (uid: string) => void;
 }) {
   const { palette, roleColors } = useTheme();
+  const { t } = useI18n();
 
   const accent = roleColors[view.you.role];
   const ability = ROLES[view.you.role].night;
-  const prompt = ability ? PROMPT[view.you.role] : null;
+  const role = t((s) => s.vampireVillage.role)[view.you.role];
+  const prompts = t((s) => s.vampireVillage.night.prompt);
+  const prompt = ability ? (prompts as Record<string, { title: string; instruction: string }>)[view.you.role] : null;
   const submitted = view.yourNightTarget !== null;
 
   // Only ever populated for a vampire — `view.coven` is null for everyone
@@ -54,22 +52,22 @@ export function NightScreen({
   return (
     <Screen>
       <Row style={{ justifyContent: 'space-between' }}>
-        <Text variant="title">Night {view.round}</Text>
-        <Chip color={accent}>{view.you.roleName}</Chip>
+        <Text variant="title">{t((s) => s.vampireVillage.night.title)(view.round)}</Text>
+        <Chip color={accent}>{role.name}</Chip>
       </Row>
 
       {!view.you.alive ? (
         <Card accent={palette.outlineVariant}>
-          <Label>Eliminated</Label>
+          <Label>{t((s) => s.vampireVillage.night.eliminated)}</Label>
           <Text variant="body" color={palette.onSurfaceVariant} style={{ marginTop: spacing.sm }}>
-            You are out of the game, but you can still watch it play out.
+            {t((s) => s.vampireVillage.night.eliminatedBody)}
           </Text>
         </Card>
       ) : !prompt ? (
         <Card>
-          <Label>Sleep tight</Label>
+          <Label>{t((s) => s.vampireVillage.night.sleepTight)}</Label>
           <Text variant="body" color={palette.onSurfaceVariant} style={{ marginTop: spacing.sm }}>
-            Villagers have no night action. Wait for dawn and pay attention to what happens.
+            {t((s) => s.vampireVillage.night.sleepTightBody)}
           </Text>
         </Card>
       ) : (
@@ -84,7 +82,7 @@ export function NightScreen({
           {covenMates.length > 0 && (
             <Row gap={spacing.sm} style={{ flexWrap: 'wrap' }}>
               <Text variant="caption" color={palette.onSurfaceVariant}>
-                Your coven:
+                {t((s) => s.vampireVillage.night.yourCoven)}
               </Text>
               {covenMates.map((mate) => (
                 <Text key={mate.uid} variant="bodyStrong" color={roleColors.vampire}>
@@ -123,9 +121,9 @@ export function NightScreen({
                   ]}>
                   <Avatar uid={p.uid} name={p.displayName} ring={chosen ? accent : undefined} />
                   <Text variant="bodyStrong" style={{ flex: 1 }}>
-                    {p.uid === view.you.uid ? 'Yourself' : p.displayName}
+                    {p.uid === view.you.uid ? t((s) => s.vampireVillage.night.yourself) : p.displayName}
                   </Text>
-                  {chosen && <Chip color={accent}>Chosen</Chip>}
+                  {chosen && <Chip color={accent}>{t((s) => s.vampireVillage.night.chosen)}</Chip>}
                 </Pressable>
               );
             })}
@@ -136,7 +134,7 @@ export function NightScreen({
       <View style={{ flex: 1 }} />
 
       {submitted && (
-        <Button label="Waiting for the others…" disabled onPress={() => {}} tone="ghost" />
+        <Button label={t((s) => s.vampireVillage.night.waitingForOthers)} disabled onPress={() => {}} tone="ghost" />
       )}
     </Screen>
   );

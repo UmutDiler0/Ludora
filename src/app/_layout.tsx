@@ -14,6 +14,7 @@ import { View } from 'react-native';
 
 import { ConnectionDialog } from '@/features/network/ConnectionDialog';
 import { AchievementBanner } from '@/features/progression/AchievementBanner';
+import { I18nProvider } from '@/i18n/I18nProvider';
 import { useConnection } from '@/stores/connection';
 import { useSession } from '@/stores/session';
 import { useSettings } from '@/stores/settings';
@@ -60,9 +61,11 @@ export default function RootLayout() {
   }
 
   return (
-    <ThemeProvider>
-      <Shell />
-    </ThemeProvider>
+    <I18nProvider>
+      <ThemeProvider>
+        <Shell />
+      </ThemeProvider>
+    </I18nProvider>
   );
 }
 

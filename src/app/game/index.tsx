@@ -5,6 +5,7 @@ import { DayScreen } from '@/features/games/vampireVillage/screens/Day';
 import { GameOverScreen } from '@/features/games/vampireVillage/screens/GameOver';
 import { NightScreen } from '@/features/games/vampireVillage/screens/Night';
 import { RoleRevealScreen } from '@/features/games/vampireVillage/screens/RoleReveal';
+import { useI18n } from '@/i18n/I18nProvider';
 import { useLocalGame, useMyView } from '@/stores/localGame';
 import { useTheme } from '@/theme/ThemeProvider';
 
@@ -15,6 +16,7 @@ import { useTheme } from '@/theme/ThemeProvider';
  */
 export default function GameScreen() {
   const { palette } = useTheme();
+  const { t } = useI18n();
 
   const router = useRouter();
   const view = useMyView();
@@ -28,13 +30,15 @@ export default function GameScreen() {
     const dropped = endedReason === 'disconnected';
     return (
       <Screen>
-        <Text variant="title">{dropped ? 'You were disconnected' : 'No game in progress'}</Text>
+        <Text variant="title">
+          {dropped ? t((s) => s.vampireVillage.session.disconnectedTitle) : t((s) => s.vampireVillage.session.noGameInProgress)}
+        </Text>
         <Text variant="body" color={palette.onSurfaceVariant}>
           {dropped
-            ? 'The game carried on without you. Your progress up to that point was kept.'
-            : 'Start one from the home screen.'}
+            ? t((s) => s.vampireVillage.session.disconnectedBody)
+            : t((s) => s.vampireVillage.session.startFromHome)}
         </Text>
-        <Button label="Back to home" onPress={() => router.replace('/')} />
+        <Button label={t((s) => s.vampireVillage.session.backToHome)} onPress={() => router.replace('/')} />
       </Screen>
     );
   }

@@ -1,6 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 
 import { Button, Card, Chip, Label, Screen, Text } from '@/components/ui';
+import { useI18n } from '@/i18n/I18nProvider';
 import { PassCurtain } from '../../core/PassCurtain';
 import { spacing } from '@/theme/tokens';
 import { useTheme } from '@/theme/ThemeProvider';
@@ -22,6 +23,7 @@ export function ImposterRoleRevealScreen({
   view: ImposterPlayerView;
   onAck: () => void;
 }) {
+  const { t } = useI18n();
   if (!view.nextToRevealUid) return <Screen>{null}</Screen>;
 
   const name = view.players.find((p) => p.uid === view.nextToRevealUid)?.displayName ?? '';
@@ -30,8 +32,8 @@ export function ImposterRoleRevealScreen({
     <PassCurtain
       uid={view.nextToRevealUid}
       name={name}
-      subtitle="Everyone but the imposter learns the secret value. Read yours, then pass it on."
-      buttonLabel={`I'm ${name} — show me my role`}
+      subtitle={t((s) => s.imposter.roleReveal.subtitle)}
+      buttonLabel={t((s) => s.imposter.roleReveal.passButton)(name)}
       onReveal={() => {}}>
       <RoleCard name={name} view={view} onContinue={onAck} />
     </PassCurtain>
@@ -48,6 +50,7 @@ function RoleCard({
   onContinue: () => void;
 }) {
   const { palette } = useTheme();
+  const { t } = useI18n();
   const isImposter = view.you.isImposter;
   const accent = isImposter ? palette.error : palette.secondary;
 
@@ -63,7 +66,7 @@ function RoleCard({
           justifyContent: 'center',
         }}>
         <Ionicons name={isImposter ? 'help-circle' : 'eye'} size={40} color={accent} />
-        <Label color={palette.onSurfaceVariant}>Category</Label>
+        <Label color={palette.onSurfaceVariant}>{t((s) => s.imposter.roleReveal.category)}</Label>
         <Text variant="heading" center>
           {view.categoryName}
         </Text>
@@ -71,15 +74,14 @@ function RoleCard({
         {isImposter ? (
           <>
             <Chip color={palette.error} filled>
-              You are the Imposter
+              {t((s) => s.imposter.roleReveal.youAreImposter)}
             </Chip>
             <Text
               variant="body"
               color={palette.onSurfaceVariant}
               center
               style={{ paddingHorizontal: spacing.md }}>
-              You don&apos;t know the value. Listen close, blend in, and try to guess it before anyone
-              catches you.
+              {t((s) => s.imposter.roleReveal.imposterBody)}
             </Text>
           </>
         ) : (
@@ -92,12 +94,12 @@ function RoleCard({
               color={palette.onSurfaceVariant}
               center
               style={{ paddingHorizontal: spacing.md }}>
-              Don&apos;t say it outright — one player at this table doesn&apos;t know it.
+              {t((s) => s.imposter.roleReveal.crewBody)}
             </Text>
           </>
         )}
       </Card>
-      <Button label={`Got it, ${name} — pass the phone`} size="lg" onPress={onContinue} />
+      <Button label={t((s) => s.imposter.roleReveal.gotIt)(name)} size="lg" onPress={onContinue} />
     </Screen>
   );
 }

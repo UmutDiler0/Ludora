@@ -8,6 +8,7 @@ import { TabooGameOverScreen } from '@/features/games/taboo/screens/GameOver';
 import { teamAccent } from '@/features/games/taboo/screens/shared';
 import { TurnIntroScreen } from '@/features/games/taboo/screens/TurnIntro';
 import { TurnRecapScreen } from '@/features/games/taboo/screens/TurnRecap';
+import { useI18n } from '@/i18n/I18nProvider';
 import { useLocalTaboo, useTabooView } from '@/stores/localTaboo';
 import { useTheme } from '@/theme/ThemeProvider';
 import { spacing, stroke } from '@/theme/tokens';
@@ -23,6 +24,7 @@ import { spacing, stroke } from '@/theme/tokens';
  */
 export default function TabooRoute() {
   const router = useRouter();
+  const { t } = useI18n();
   const view = useTabooView();
   const startTurn = useLocalTaboo((s) => s.startTurn);
   const mark = useLocalTaboo((s) => s.mark);
@@ -33,9 +35,9 @@ export default function TabooRoute() {
   if (!view) {
     return (
       <Screen>
-        <Text variant="title">No game in progress</Text>
-        <Text variant="body">Start one from the Play tab.</Text>
-        <Button label="Back to Play" onPress={() => router.replace('/(tabs)/play')} />
+        <Text variant="title">{t((s) => s.taboo.session.noGameInProgress)}</Text>
+        <Text variant="body">{t((s) => s.taboo.session.startFromPlay)}</Text>
+        <Button label={t((s) => s.taboo.session.backToPlay)} onPress={() => router.replace('/(tabs)/play')} />
       </Screen>
     );
   }
@@ -67,6 +69,8 @@ function TabooHeader({
   teams: { id: 'A' | 'B'; name: string; score: number }[];
 }) {
   const { palette } = useTheme();
+  const { t } = useI18n();
+  const teamName = t((s) => s.taboo.team);
 
   return (
     <SafeAreaView
@@ -83,11 +87,11 @@ function TabooHeader({
           paddingHorizontal: spacing.lg,
           paddingVertical: spacing.sm,
         }}>
-        <IconButton name="chevron-back" label="Leave game" onPress={onLeave} />
+        <IconButton name="chevron-back" label={t((s) => s.taboo.session.leaveGame)} onPress={onLeave} />
         <Row gap={spacing.xs}>
           {teams.map((team) => (
             <Chip key={team.id} color={teamAccent(palette, team.id)}>
-              {team.name} {team.score}
+              {teamName[team.id as 'A' | 'B']} {team.score}
             </Chip>
           ))}
         </Row>

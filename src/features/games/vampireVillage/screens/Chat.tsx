@@ -10,6 +10,7 @@ import {
 } from 'react-native';
 
 import { Dialog, IconButton, Row, Text } from '@/components/ui';
+import { useI18n } from '@/i18n/I18nProvider';
 import { chatGateway } from '@/services/chat/mockChat';
 import { MAX_CHAT_LENGTH, type ChatMessage } from '@/services/chat/types';
 import { useChat } from '@/stores/chat';
@@ -35,6 +36,7 @@ import { chatAccess, visibleMessages, type ChatAccess } from '../chat';
  * lives exactly as long as the session does (§37).
  */
 export function ChatRoom() {
+  const { t } = useI18n();
   const view = useMyView();
   const sessionId = useLocalGame((s) => s.sessionId);
   const displayName = useProfile((s) => s.displayName);
@@ -79,6 +81,7 @@ export function ChatRoom() {
 
   const access = view ? chatAccess(view) : null;
   const shown = access ? visibleMessages(messages, access) : [];
+  const titleLabel = t((s) => s.vampireVillage.chat.title);
 
   const send = () => {
     if (!access?.canSend) return;
@@ -91,7 +94,7 @@ export function ChatRoom() {
       visible={isOpen}
       onDismiss={close}
       size="large"
-      label={access ? `${access.title} chat` : 'Chat'}>
+      label={access ? t((s) => s.vampireVillage.chat.chatSuffix)(titleLabel[access.title]) : t((s) => s.vampireVillage.chat.chatLabel)}>
       <KeyboardAvoidingView
         style={{ flex: 1 }}
         // Inside a Modal, Android's window-level `adjustResize` does not apply,
@@ -116,6 +119,7 @@ export function ChatRoom() {
 
 function ChatHeader({ access, onClose }: { access: ChatAccess | null; onClose: () => void }) {
   const { palette } = useTheme();
+  const { t } = useI18n();
   const coven = access?.channel === 'coven';
 
   return (
@@ -134,12 +138,12 @@ function ChatHeader({ access, onClose }: { access: ChatAccess | null; onClose: (
         color={coven ? palette.error : palette.primary}
       />
       <View style={{ flex: 1 }}>
-        <Text variant="bodyStrong">{access?.title ?? 'Chat'}</Text>
+        <Text variant="bodyStrong">{access ? t((s) => s.vampireVillage.chat.title)[access.title] : t((s) => s.vampireVillage.chat.chatLabel)}</Text>
         <Text variant="caption" color={palette.onSurfaceVariant}>
-          {coven ? 'Only your coven can hear this' : 'Everyone still in the game can read this'}
+          {coven ? t((s) => s.vampireVillage.chat.covenOnly) : t((s) => s.vampireVillage.chat.everyoneCanRead)}
         </Text>
       </View>
-      <IconButton name="close" label="Close chat" onPress={onClose} />
+      <IconButton name="close" label={t((s) => s.vampireVillage.chat.closeChat)} onPress={onClose} />
     </Row>
   );
 }
@@ -148,6 +152,7 @@ function ChatHeader({ access, onClose }: { access: ChatAccess | null; onClose: (
 
 function MessageList({ messages }: { messages: ChatMessage[] }) {
   const { palette } = useTheme();
+  const { t } = useI18n();
   const scroller = useRef<ScrollView>(null);
 
   return (
@@ -164,7 +169,7 @@ function MessageList({ messages }: { messages: ChatMessage[] }) {
       onContentSizeChange={() => scroller.current?.scrollToEnd({ animated: true })}>
       {messages.length === 0 ? (
         <Text variant="caption" color={palette.onSurfaceVariant} center>
-          Nobody has said anything yet.
+          {t((s) => s.vampireVillage.chat.nobodySaidAnything)}
         </Text>
       ) : (
         messages.map((message) => <Bubble key={message.id} message={message} />)
@@ -228,6 +233,7 @@ function Composer({
   onSend: () => void;
 }) {
   const { palette } = useTheme();
+  const { t } = useI18n();
 
   // Locked rooms say why rather than showing a dead input. "You cannot type
   // here" is a bug report; "the village is asleep" is a game rule.
@@ -243,7 +249,7 @@ function Composer({
         <Row gap={spacing.sm}>
           <Ionicons name="lock-closed" size={16} color={palette.onSurfaceVariant} />
           <Text variant="caption" color={palette.onSurfaceVariant} style={{ flex: 1 }}>
-            {access?.notice ?? 'Chat is closed.'}
+            {access?.notice ? t((s) => s.vampireVillage.chat.notice)[access.notice] : t((s) => s.vampireVillage.chat.chatClosed)}
           </Text>
         </Row>
       </View>
@@ -265,7 +271,7 @@ function Composer({
       <TextInput
         value={value}
         onChangeText={onChange}
-        placeholder={access.channel === 'coven' ? 'Speak to your coven…' : 'Say something…'}
+        placeholder={access.channel === 'coven' ? t((s) => s.vampireVillage.chat.speakToCoven) : t((s) => s.vampireVillage.chat.saySomething)}
         placeholderTextColor={palette.onSurfaceVariant}
         maxLength={MAX_CHAT_LENGTH}
         multiline
@@ -273,7 +279,7 @@ function Composer({
         blurOnSubmit
         returnKeyType="send"
         onSubmitEditing={onSend}
-        accessibilityLabel="Message"
+        accessibilityLabel={t((s) => s.vampireVillage.chat.message)}
         style={{
           flex: 1,
           maxHeight: 96,
@@ -290,7 +296,7 @@ function Composer({
       />
       <Pressable
         accessibilityRole="button"
-        accessibilityLabel="Send message"
+        accessibilityLabel={t((s) => s.vampireVillage.chat.sendMessage)}
         accessibilityState={{ disabled: !ready }}
         disabled={!ready}
         onPress={onSend}

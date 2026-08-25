@@ -1,0 +1,66 @@
+export const imposter = {
+  setup: {
+    title: 'Set Up Imposter',
+    subtitle: "Everyone but one player learns the value — set the table, then start the room.",
+    passPhoneBody: 'Pass the phone around for the reveal, then put it down and talk.',
+    field: {
+      discussionSeconds: 'Time to find the imposter',
+    },
+    resultSummary: (players: number) => `${players} players, one imposter.`,
+  },
+  lobby: {
+    subtitle: "Imposter · everyone's seated, start when ready.",
+    minutes: (n: number) => `${n} min`,
+  },
+  session: {
+    phase: {
+      role_reveal: 'Reveal',
+      discussion: 'Discussion',
+      voting: 'Vote',
+      game_over: 'Results',
+    },
+    leaveGame: 'Leave game',
+    noGameInProgress: 'No game in progress',
+    startFromPlay: 'Start one from the Play tab.',
+    backToPlay: 'Back to Play',
+  },
+  roleReveal: {
+    subtitle: 'Everyone but the imposter learns the secret value. Read yours, then pass it on.',
+    passButton: (name: string) => `I'm ${name} — show me my role`,
+    category: 'Category',
+    youAreImposter: 'You are the Imposter',
+    imposterBody:
+      "You don't know the value. Listen close, blend in, and try to guess it before anyone catches you.",
+    crewBody: "Don't say it outright — one player at this table doesn't know it.",
+    gotIt: (name: string) => `Got it, ${name} — pass the phone`,
+  },
+  discussion: {
+    talkItOut: 'Talk it out',
+    talkItOutBody: "Everyone but the imposter already knows the value. Ask questions, drop hints, and figure out who doesn't.",
+    atTheTable: 'At the table',
+    callVote: 'Call a Vote',
+    guessUsed: 'Guess already used',
+    guessButton: 'Imposter: Guess the Value',
+    guessHint: 'Only the imposter should use this — everyone else, focus on the vote.',
+    guessDialogTitle: (category: string) => `What's the ${category}?`,
+    guessDialogSubtitle: 'One guess only — choose carefully.',
+  },
+  voting: {
+    passButton: (name: string) => `I'm ${name} — show me the vote`,
+    subtitle: 'Who do you think is the imposter?',
+    castAccusation: (name: string) => `${name}, cast your accusation`,
+    whoIsImposter: 'Who is the imposter?',
+  },
+  gameOver: {
+    draw: 'Draw',
+    gameOver: 'Game Over',
+    fallbackName: 'The imposter',
+    caught: (name: string) => `${name} was caught`,
+    fooledEveryone: (name: string) => `${name} fooled everyone`,
+    nobodyFoundOut: 'Nobody found out',
+    category: 'Category',
+    theValue: 'The value',
+    theImposterWas: 'The imposter was',
+    playAgain: 'Play again',
+  },
+};

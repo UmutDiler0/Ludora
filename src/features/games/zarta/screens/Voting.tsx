@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Pressable, View } from 'react-native';
 
 import { Card, Chip, Label, ProgressBar, Row, Screen, Text } from '@/components/ui';
+import { useI18n } from '@/i18n/I18nProvider';
 import { radius, spacing, stroke } from '@/theme/tokens';
 import { useTheme } from '@/theme/ThemeProvider';
 import type { Palette } from '@/theme/palettes';
@@ -26,14 +27,15 @@ export function VotingScreen({
   onSubmit: (optionId: string) => void;
   onTimeUp: () => void;
 }) {
+  const { t } = useI18n();
   if (!view.currentVoterUid) return <Screen>{null}</Screen>;
 
   return (
     <PassCurtain
       uid={view.currentVoterUid}
       name={view.currentVoterName ?? ''}
-      subtitle="Which answer do you believe is true?"
-      buttonLabel={`I'm ${view.currentVoterName} — show me the answers`}
+      subtitle={t((s) => s.zarta.voting.subtitle)}
+      buttonLabel={t((s) => s.zarta.voting.passButton)(view.currentVoterName ?? '')}
       onReveal={onReady}>
       <VotingForm view={view} onSubmit={onSubmit} onTimeUp={onTimeUp} />
     </PassCurtain>
@@ -50,13 +52,14 @@ function VotingForm({
   onTimeUp: () => void;
 }) {
   const { palette } = useTheme();
+  const { t } = useI18n();
   const secondsLeft = useCountdown(view.deadlineAt, onTimeUp);
 
   return (
     <Screen>
       <Row style={{ justifyContent: 'space-between' }}>
         <Chip color={palette.secondary} filled>
-          Round {view.round} / {view.totalRounds}
+          {t((s) => s.zarta.session.round)(view.round, view.totalRounds)}
         </Chip>
         <Text variant="bodyStrong" color={secondsLeft <= 5 ? palette.error : palette.onSurface}>
           {secondsLeft}s
@@ -69,7 +72,7 @@ function VotingForm({
       />
 
       <Card style={{ alignItems: 'center', gap: spacing.sm, paddingVertical: spacing.lg }}>
-        <Label color={palette.onSurfaceVariant}>{view.currentVoterName}, which is the truth?</Label>
+        <Label color={palette.onSurfaceVariant}>{t((s) => s.zarta.voting.whichIsTrue)(view.currentVoterName ?? '')}</Label>
         <Text variant="heading" center>
           {view.question}
         </Text>

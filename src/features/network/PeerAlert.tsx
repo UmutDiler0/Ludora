@@ -3,8 +3,9 @@ import { useEffect } from 'react';
 import { View } from 'react-native';
 
 import { Button, Dialog, Row, Text } from '@/components/ui';
+import { useI18n } from '@/i18n/I18nProvider';
 import { presenceGateway } from '@/services/network/mockPresence';
-import { PEER_EVENT_COPY, type PeerEventKind } from '@/services/network/types';
+import type { PeerEventKind } from '@/services/network/types';
 import { useLocalGame } from '@/stores/localGame';
 import { useTheme } from '@/theme/ThemeProvider';
 import { spacing } from '@/theme/tokens';
@@ -23,6 +24,7 @@ import { spacing } from '@/theme/tokens';
  */
 export function PeerAlert() {
   const { palette } = useTheme();
+  const { t } = useI18n();
 
   const event = useLocalGame((s) => s.peerEvents[0] ?? null);
   const notePeerEvent = useLocalGame((s) => s.notePeerEvent);
@@ -45,7 +47,7 @@ export function PeerAlert() {
       // Keyed by the event, so a second drop re-pops instead of silently
       // swapping the name inside a dialog the user has already read.
       contentKey={event ? `${event.uid}-${event.at}` : undefined}
-      label="Player connection update">
+      label={t((s) => s.connection.playerConnectionUpdate)}>
       <Row gap={spacing.lg}>
         <View
           style={{
@@ -62,12 +64,12 @@ export function PeerAlert() {
         <View style={{ flex: 1, gap: spacing.xs }}>
           <Text variant="bodyStrong">{event?.displayName ?? ''}</Text>
           <Text variant="caption" color={palette.onSurfaceVariant}>
-            {event ? PEER_EVENT_COPY[event.kind](event.displayName) : ''}
+            {event ? t((s) => s.connection.peerEvent)[event.kind](event.displayName) : ''}
           </Text>
         </View>
       </Row>
 
-      <Button label="Got it" onPress={dismissPeerEvent} />
+      <Button label={t((s) => s.connection.gotIt)} onPress={dismissPeerEvent} />
     </Dialog>
   );
 }

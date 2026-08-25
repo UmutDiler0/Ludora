@@ -2,7 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { Tabs } from 'expo-router';
 import type { ComponentProps } from 'react';
 
-import { TABS } from '@/constants/app';
+import { useI18n } from '@/i18n/I18nProvider';
 import { fonts, stroke } from '@/theme/tokens';
 import { useTheme } from '@/theme/ThemeProvider';
 
@@ -27,6 +27,8 @@ function icon(name: IconName, active: IconName) {
 
 export default function TabsLayout() {
   const { palette } = useTheme();
+  const { t } = useI18n();
+  const labels = t((s) => s.tabs);
 
   return (
     <Tabs
@@ -47,19 +49,19 @@ export default function TabsLayout() {
       }}>
       <Tabs.Screen
         name="index"
-        options={{ title: TABS.home, tabBarIcon: icon('home-outline', 'home') }}
+        options={{ title: labels.home, tabBarIcon: icon('home-outline', 'home') }}
       />
       <Tabs.Screen
         name="leaderboard"
-        options={{ title: TABS.leaderboard, tabBarIcon: icon('trophy-outline', 'trophy') }}
+        options={{ title: labels.leaderboard, tabBarIcon: icon('trophy-outline', 'trophy') }}
       />
       <Tabs.Screen
         name="play"
-        options={{ title: TABS.play, tabBarIcon: icon('play-circle-outline', 'play-circle') }}
+        options={{ title: labels.play, tabBarIcon: icon('play-circle-outline', 'play-circle') }}
       />
       <Tabs.Screen
         name="profile"
-        options={{ title: TABS.profile, tabBarIcon: icon('person-outline', 'person') }}
+        options={{ title: labels.profile, tabBarIcon: icon('person-outline', 'person') }}
       />
     </Tabs>
   );

@@ -18,6 +18,7 @@ import { AvatarRenderer, ItemThumb } from '@/features/avatar/AvatarRenderer';
 import { isEarnedOnly, itemsForSlot, type AvatarItem } from '@/features/avatar/catalogue';
 import { SlotTabRow } from '@/features/avatar/SlotTabRow';
 import type { AvatarSlot } from '@/features/avatar/types';
+import { useI18n } from '@/i18n/I18nProvider';
 import { useLevel, useProfile } from '@/stores/profile';
 import { useTheme } from '@/theme/ThemeProvider';
 import type { Palette } from '@/theme/palettes';
@@ -47,6 +48,7 @@ type Sheet = { item: AvatarItem; step: 'preview' | 'confirm' };
 export default function AvatarShop() {
   const router = useRouter();
   const { palette } = useTheme();
+  const { t } = useI18n();
   const { width } = useWindowDimensions();
 
   const [slot, setSlot] = useState<AvatarSlot>('hair');
@@ -90,8 +92,8 @@ export default function AvatarShop() {
   return (
     <Screen>
       <ScreenHeader
-        title="Avatar Shop"
-        subtitle="Try anything on before you spend."
+        title={t((s) => s.avatar.shop.title)}
+        subtitle={t((s) => s.avatar.shop.subtitle)}
         onBack={() => router.back()}
         trailing={<GoldPill amount={gold} />}
       />
@@ -112,7 +114,7 @@ export default function AvatarShop() {
 
       {items.length === 0 && (
         <Text variant="caption" color={palette.onSurfaceVariant} center>
-          Nothing for sale in this slot yet.
+          {t((s) => s.avatar.shop.nothingForSale)}
         </Text>
       )}
 
@@ -121,7 +123,7 @@ export default function AvatarShop() {
         // Keyed by step, so advancing preview → confirm re-pops the card.
         contentKey={sheet ? `${sheet.item.id}-${sheet.step}` : undefined}
         onDismiss={() => setSheet(null)}
-        label={sheet?.step === 'confirm' ? 'Confirm purchase' : 'Item preview'}>
+        label={sheet?.step === 'confirm' ? t((s) => s.avatar.shop.confirmPurchase) : t((s) => s.avatar.shop.itemPreview)}>
         {sheet?.step === 'preview' && (
           <PreviewBody
             item={sheet.item}
@@ -167,6 +169,7 @@ function ShopTile({
   onPress,
 }: ItemStatus & { item: AvatarItem; size: number; onPress: () => void }) {
   const { palette } = useTheme();
+  const { t } = useI18n();
   // Locked and unaffordable both stay tappable — you can still try them on,
   // and a shop that hides what you are saving towards sells nothing.
   const dimmed = !owned && (locked || !affordable);
@@ -174,7 +177,10 @@ function ShopTile({
   return (
     <Pressable
       accessibilityRole="button"
-      accessibilityLabel={`${item.name}, ${owned ? 'owned' : `${item.price} gold`}`}
+      accessibilityLabel={t((s) => s.avatar.shop.itemAccessibility)(
+        item.name,
+        owned ? t((s) => s.avatar.shop.owned) : t((s) => s.avatar.shop.goldAmount)(item.price),
+      )}
       onPress={onPress}
       style={({ pressed }) => [
         {
@@ -216,15 +222,16 @@ function TilePrice({
   affordable,
 }: ItemStatus & { item: AvatarItem }) {
   const { palette } = useTheme();
+  const { t } = useI18n();
 
-  if (equipped) return <Chip color={palette.primary} filled>On</Chip>;
-  if (owned) return <Chip color={palette.secondary}>Owned</Chip>;
+  if (equipped) return <Chip color={palette.primary} filled>{t((s) => s.avatar.shop.on)}</Chip>;
+  if (owned) return <Chip color={palette.secondary}>{t((s) => s.avatar.shop.owned)}</Chip>;
   if (locked) {
     return (
       <Row gap={2}>
         <Ionicons name="lock-closed" size={11} color={palette.onSurfaceVariant} />
         <Text variant="label" color={palette.onSurfaceVariant}>
-          Lv {item.requiredLevel}
+          {t((s) => s.avatar.shop.level)(item.requiredLevel ?? 0)}
         </Text>
       </Row>
     );
@@ -259,12 +266,13 @@ function PreviewBody({
   onBuy: () => void;
 }) {
   const { palette } = useTheme();
+  const { t } = useI18n();
   const avatar = useProfile((s) => s.avatar);
 
   return (
     <>
       <View style={{ alignItems: 'center', gap: spacing.md }}>
-        <Label>Preview</Label>
+        <Label>{t((s) => s.avatar.shop.preview)}</Label>
         <AvatarRenderer
           config={{ ...avatar, [item.slot]: item.id }}
           mode="full"
@@ -277,16 +285,29 @@ function PreviewBody({
         <PreviewStatus item={item} owned={owned} equipped={equipped} locked={locked} affordable={affordable} />
       </View>
 
-      {equipped && <DialogActions cancelLabel="Close" confirmLabel="Already on" onCancel={onClose} onConfirm={onClose} confirmDisabled />}
+      {equipped && (
+        <DialogActions
+          cancelLabel={t((s) => s.avatar.shop.close)}
+          confirmLabel={t((s) => s.avatar.shop.alreadyOn)}
+          onCancel={onClose}
+          onConfirm={onClose}
+          confirmDisabled
+        />
+      )}
 
       {!equipped && owned && (
-        <DialogActions cancelLabel="Close" confirmLabel="Wear it" onCancel={onClose} onConfirm={onEquip} />
+        <DialogActions
+          cancelLabel={t((s) => s.avatar.shop.close)}
+          confirmLabel={t((s) => s.avatar.shop.wearIt)}
+          onCancel={onClose}
+          onConfirm={onEquip}
+        />
       )}
 
       {!owned && (
         <DialogActions
-          cancelLabel="Close"
-          confirmLabel={`Buy · ${item.price}g`}
+          cancelLabel={t((s) => s.avatar.shop.close)}
+          confirmLabel={t((s) => s.avatar.shop.buyFor)(item.price)}
           onCancel={onClose}
           onConfirm={onBuy}
           confirmDisabled={locked || !affordable}
@@ -298,6 +319,7 @@ function PreviewBody({
 
 function PreviewStatus({ item, owned, equipped, locked, affordable }: ItemStatus & { item: AvatarItem }) {
   const { palette } = useTheme();
+  const { t } = useI18n();
 
   const line = (color: keyof Palette, text: string) => (
     <Text variant="body" color={palette[color]} center>
@@ -305,11 +327,11 @@ function PreviewStatus({ item, owned, equipped, locked, affordable }: ItemStatus
     </Text>
   );
 
-  if (equipped) return line('primary', 'You are wearing this.');
-  if (owned) return line('secondary', 'Owned — wear it whenever you like.');
-  if (locked) return line('onSurfaceVariant', `Unlocks at level ${item.requiredLevel}.`);
-  if (!affordable) return line('onSurfaceVariant', `Costs ${item.price} gold — keep playing to earn more.`);
-  return line('onSurfaceVariant', `Costs ${item.price} gold.`);
+  if (equipped) return line('primary', t((s) => s.avatar.shop.wearingThis));
+  if (owned) return line('secondary', t((s) => s.avatar.shop.ownedWearWhenever));
+  if (locked) return line('onSurfaceVariant', t((s) => s.avatar.shop.unlocksAtLevel)(item.requiredLevel ?? 0));
+  if (!affordable) return line('onSurfaceVariant', t((s) => s.avatar.shop.costsGoldKeepPlaying)(item.price));
+  return line('onSurfaceVariant', t((s) => s.avatar.shop.costsGold)(item.price));
 }
 
 /** The deliberate second step. Names the price and what it leaves behind. */
@@ -325,6 +347,7 @@ function ConfirmBody({
   onConfirm: () => void;
 }) {
   const { palette } = useTheme();
+  const { t } = useI18n();
 
   return (
     <>
@@ -332,23 +355,27 @@ function ConfirmBody({
         <ItemThumb item={item} size={64} />
         <View style={{ flex: 1, gap: spacing.xs }}>
           <Text variant="heading" numberOfLines={2}>
-            Buy {item.name}?
+            {t((s) => s.avatar.shop.buyItem)(item.name)}
           </Text>
           <Row gap={spacing.xs}>
             <Ionicons name="diamond" size={13} color={palette.tertiary} />
             <Text variant="bodyStrong" color={palette.tertiary}>
-              {item.price} gold
+              {t((s) => s.avatar.shop.goldAmount)(item.price)}
             </Text>
           </Row>
         </View>
       </Row>
 
       <Text variant="caption" color={palette.onSurfaceVariant}>
-        You will have {goldAfter.toLocaleString()} gold left, and this piece will be put on straight
-        away.
+        {t((s) => s.avatar.shop.goldLeftAfter)(goldAfter.toLocaleString())}
       </Text>
 
-      <DialogActions cancelLabel="Back" confirmLabel="Buy it" onCancel={onCancel} onConfirm={onConfirm} />
+      <DialogActions
+        cancelLabel={t((s) => s.avatar.shop.back)}
+        confirmLabel={t((s) => s.avatar.shop.buyIt)}
+        onCancel={onCancel}
+        onConfirm={onConfirm}
+      />
     </>
   );
 }

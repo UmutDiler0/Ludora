@@ -2,7 +2,8 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { Pressable, View } from 'react-native';
 
-import { Card, Label, Row, Screen, ScreenHeader, Text } from '@/components/ui';
+import { Card, Label, Row, Screen, ScreenHeader, Select, Text } from '@/components/ui';
+import { useI18n } from '@/i18n/I18nProvider';
 import { useSettings, type ThemePref } from '@/stores/settings';
 import { useTheme } from '@/theme/ThemeProvider';
 import { lightPalette, darkPalette, type Palette } from '@/theme/palettes';
@@ -15,47 +16,50 @@ import { radius, spacing, stroke } from '@/theme/tokens';
  * Appearance offers the three states the platform itself uses: an explicit
  * Light, an explicit Dark, and System, which follows the phone and keeps
  * following it if the phone changes while the app is open.
+ *
+ * Language follows the same System / explicit-choice shape, but deliberately
+ * not the same UI: a dropdown (`Select`), not a row of tappable cards like
+ * Appearance's. Two states read naturally as "flip between them"; a language
+ * picker reads as "open a list and choose one", especially once a third
+ * language is added later — see `Select`'s own header for why.
  */
-
-interface ThemeOption {
-  value: ThemePref;
-  title: string;
-  detail: string;
-  icon: React.ComponentProps<typeof Ionicons>['name'];
-  /** Palette the swatch previews; System shows both halves. */
-  preview: 'light' | 'dark' | 'both';
-}
-
-const THEME_OPTIONS: ThemeOption[] = [
-  { value: 'light', title: 'Light', detail: 'Always the bright paper theme', icon: 'sunny', preview: 'light' },
-  { value: 'dark', title: 'Dark', detail: 'Always the night theme', icon: 'moon', preview: 'dark' },
-  {
-    value: 'system',
-    title: 'Use phone setting',
-    detail: 'Follows your device, switching automatically',
-    icon: 'phone-portrait',
-    preview: 'both',
-  },
-];
 
 export default function Settings() {
   const router = useRouter();
   const { palette, scheme } = useTheme();
+  const { t, locale } = useI18n();
   const themePref = useSettings((s) => s.themePref);
   const setThemePref = useSettings((s) => s.setThemePref);
+  const localePref = useSettings((s) => s.localePref);
+  const setLocalePref = useSettings((s) => s.setLocalePref);
+
+  const themeOptions: { value: ThemePref; title: string; detail: string; icon: React.ComponentProps<typeof Ionicons>['name']; preview: 'light' | 'dark' | 'both' }[] = [
+    { value: 'light', title: t((s) => s.settings.themeLight), detail: t((s) => s.settings.themeLightDetail), icon: 'sunny', preview: 'light' },
+    { value: 'dark', title: t((s) => s.settings.themeDark), detail: t((s) => s.settings.themeDarkDetail), icon: 'moon', preview: 'dark' },
+    {
+      value: 'system',
+      title: t((s) => s.settings.themeSystem),
+      detail: t((s) => s.settings.themeSystemDetail),
+      icon: 'phone-portrait',
+      preview: 'both',
+    },
+  ];
+
+  const schemeLabel = scheme === 'dark' ? t((s) => s.settings.themeDark) : t((s) => s.settings.themeLight);
+  const localeLabel = locale === 'tr' ? t((s) => s.settings.languageTurkish) : t((s) => s.settings.languageEnglish);
 
   return (
     <Screen>
       <ScreenHeader
-        title="Settings"
-        subtitle="Appearance and language"
+        title={t((s) => s.settings.title)}
+        subtitle={t((s) => s.settings.subtitle)}
         onBack={() => router.back()}
-        backLabel="Go back"
+        backLabel={t((s) => s.common.back)}
       />
 
-      <Label>Appearance</Label>
+      <Label>{t((s) => s.settings.appearance)}</Label>
       <View style={{ gap: spacing.sm }}>
-        {THEME_OPTIONS.map((option) => {
+        {themeOptions.map((option) => {
           const selected = themePref === option.value;
           return (
             <Pressable
@@ -99,20 +103,32 @@ export default function Settings() {
       </View>
 
       <Card accent={palette.secondary}>
-        <Label color={palette.secondary}>Currently showing</Label>
+        <Label color={palette.secondary}>{t((s) => s.settings.currentlyShowing)}</Label>
         <Text variant="body" color={palette.onSurfaceVariant} style={{ marginTop: spacing.sm }}>
           {themePref === 'system'
-            ? `System — your phone is set to ${scheme}, so Ludora is ${scheme}.`
-            : `${scheme === 'dark' ? 'Dark' : 'Light'}, regardless of your phone setting.`}
+            ? t((s) => s.settings.currentlyShowingSystem)(schemeLabel)
+            : t((s) => s.settings.currentlyShowingFixed)(schemeLabel)}
         </Text>
       </Card>
 
-      <Label>Language</Label>
-      <Card>
-        <Text variant="body" color={palette.onSurfaceVariant}>
-          Türkçe desteği geliyor — Turkish support is being added next.
-        </Text>
-      </Card>
+      <Label>{t((s) => s.settings.language)}</Label>
+      <Text variant="caption" color={palette.onSurfaceVariant}>
+        {t((s) => s.settings.languageDetail)}
+      </Text>
+      <Select
+        label={t((s) => s.settings.language)}
+        value={localePref}
+        onChange={setLocalePref}
+        options={[
+          {
+            value: 'system',
+            label: t((s) => s.settings.languageSystem),
+            detail: t((s) => s.settings.languageSystemDetail)(localeLabel),
+          },
+          { value: 'en', label: t((s) => s.settings.languageEnglish) },
+          { value: 'tr', label: t((s) => s.settings.languageTurkish) },
+        ]}
+      />
     </Screen>
   );
 }

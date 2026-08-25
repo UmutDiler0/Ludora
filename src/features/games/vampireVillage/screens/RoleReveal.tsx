@@ -1,6 +1,7 @@
 import { View } from 'react-native';
 
 import { Avatar, Button, Card, Label, Row, Screen, Text } from '@/components/ui';
+import { useI18n } from '@/i18n/I18nProvider';
 import { radius, spacing } from '@/theme/tokens';
 import { useTheme } from '@/theme/ThemeProvider';
 import type { VVPlayerView } from '../state';
@@ -14,14 +15,16 @@ import type { VVPlayerView } from '../state';
  */
 export function RoleRevealScreen({ view, onAck }: { view: VVPlayerView; onAck: () => void }) {
   const { palette, roleColors } = useTheme();
+  const { t } = useI18n();
 
   const accent = roleColors[view.you.role];
   const acked = view.phase !== 'role_reveal';
   const coven = view.coven?.filter((u) => u !== view.you.uid) ?? [];
+  const role = t((s) => s.vampireVillage.role)[view.you.role];
 
   return (
     <Screen>
-      <Label center>Your Role</Label>
+      <Label center>{t((s) => s.vampireVillage.roleReveal.yourRole)}</Label>
 
       <Card accent={accent} style={{ alignItems: 'center', gap: spacing.lg, paddingVertical: spacing.xxl }}>
         {/* Placeholder role art — decision D19. The shipped artwork contains
@@ -38,22 +41,22 @@ export function RoleRevealScreen({ view, onAck }: { view: VVPlayerView; onAck: (
             justifyContent: 'center',
           }}>
           <Text variant="hero" color={accent} style={{ fontSize: 60 }}>
-            {view.you.roleName.charAt(0)}
+            {role.name.charAt(0)}
           </Text>
         </View>
 
         <Text variant="title" color={accent} center>
-          The {view.you.roleName}
+          {t((s) => s.vampireVillage.roleReveal.theRole)(role.name)}
         </Text>
 
         <Text variant="body" color={palette.onSurfaceVariant} center style={{ paddingHorizontal: spacing.md }}>
-          {view.you.blurb}
+          {role.blurb}
         </Text>
       </Card>
 
       {coven.length > 0 && (
         <Card accent={palette.error}>
-          <Label color={palette.error}>Your coven</Label>
+          <Label color={palette.error}>{t((s) => s.vampireVillage.roleReveal.yourCoven)}</Label>
           <View style={{ gap: spacing.sm, marginTop: spacing.md }}>
             {coven.map((uid) => {
               const p = view.players.find((x) => x.uid === uid);
@@ -72,7 +75,7 @@ export function RoleRevealScreen({ view, onAck }: { view: VVPlayerView; onAck: (
       <View style={{ flex: 1 }} />
 
       <Button
-        label={acked ? 'Waiting for the others…' : 'Got it'}
+        label={acked ? t((s) => s.vampireVillage.roleReveal.waitingForOthers) : t((s) => s.vampireVillage.roleReveal.gotIt)}
         onPress={onAck}
         disabled={acked}
       />

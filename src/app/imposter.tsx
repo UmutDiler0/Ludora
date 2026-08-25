@@ -7,6 +7,7 @@ import { ImposterDiscussionScreen } from '@/features/games/imposter/screens/Disc
 import { ImposterGameOverScreen } from '@/features/games/imposter/screens/GameOver';
 import { ImposterRoleRevealScreen } from '@/features/games/imposter/screens/RoleReveal';
 import { ImposterVotingScreen } from '@/features/games/imposter/screens/Voting';
+import { useI18n } from '@/i18n/I18nProvider';
 import { useImposterView, useLocalImposter } from '@/stores/localImposter';
 import { useTheme } from '@/theme/ThemeProvider';
 import { spacing, stroke } from '@/theme/tokens';
@@ -17,6 +18,7 @@ import { spacing, stroke } from '@/theme/tokens';
  */
 export default function ImposterRoute() {
   const router = useRouter();
+  const { t } = useI18n();
   const view = useImposterView();
   const ackRole = useLocalImposter((s) => s.ackRole);
   const callVote = useLocalImposter((s) => s.callVote);
@@ -28,9 +30,9 @@ export default function ImposterRoute() {
   if (!view) {
     return (
       <Screen>
-        <Text variant="title">No game in progress</Text>
-        <Text variant="body">Start one from the Play tab.</Text>
-        <Button label="Back to Play" onPress={() => router.replace('/(tabs)/play')} />
+        <Text variant="title">{t((s) => s.imposter.session.noGameInProgress)}</Text>
+        <Text variant="body">{t((s) => s.imposter.session.startFromPlay)}</Text>
+        <Button label={t((s) => s.imposter.session.backToPlay)} onPress={() => router.replace('/(tabs)/play')} />
       </Screen>
     );
   }
@@ -51,15 +53,10 @@ export default function ImposterRoute() {
   );
 }
 
-const PHASE_LABEL: Record<string, string> = {
-  role_reveal: 'Reveal',
-  discussion: 'Discussion',
-  voting: 'Vote',
-  game_over: 'Results',
-};
-
 function ImposterHeader({ onLeave, phase }: { onLeave: () => void; phase: string }) {
   const { palette } = useTheme();
+  const { t } = useI18n();
+  const phaseLabel = t((s) => s.imposter.session.phase) as Record<string, string>;
 
   return (
     <SafeAreaView
@@ -76,9 +73,9 @@ function ImposterHeader({ onLeave, phase }: { onLeave: () => void; phase: string
           paddingHorizontal: spacing.lg,
           paddingVertical: spacing.sm,
         }}>
-        <IconButton name="chevron-back" label="Leave game" onPress={onLeave} />
+        <IconButton name="chevron-back" label={t((s) => s.imposter.session.leaveGame)} onPress={onLeave} />
         <Text variant="bodyStrong" color={palette.onSurfaceVariant}>
-          {PHASE_LABEL[phase] ?? phase}
+          {phaseLabel[phase] ?? phase}
         </Text>
       </Row>
     </SafeAreaView>

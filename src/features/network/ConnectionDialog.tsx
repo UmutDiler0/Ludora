@@ -3,6 +3,7 @@ import { useEffect } from 'react';
 import { View } from 'react-native';
 
 import { Button, Dialog, DialogActions, Label, Row, Text } from '@/components/ui';
+import { useI18n } from '@/i18n/I18nProvider';
 import { useConnection } from '@/stores/connection';
 import { useTheme } from '@/theme/ThemeProvider';
 import { spacing } from '@/theme/tokens';
@@ -24,6 +25,7 @@ import { isInterrupted } from './policy';
 export function ConnectionDialog() {
   const router = useRouter();
   const { palette } = useTheme();
+  const { t } = useI18n();
 
   const status = useConnection((s) => s.status);
   const attempt = useConnection((s) => s.attempt);
@@ -50,29 +52,29 @@ export function ConnectionDialog() {
       // Reconnecting has no dismiss; the backdrop tap must not become one.
       onDismiss={failed ? dismiss : () => {}}
       contentKey={failed ? 'failed' : 'trying'}
-      label={failed ? 'Could not connect' : 'Trying to connect'}>
+      label={failed ? t((s) => s.connection.couldNotConnectTitle) : t((s) => s.connection.tryingToConnectTitle)}>
       <View style={{ alignItems: 'center', gap: spacing.lg }}>
         <ConnectingSpinner failed={failed} />
 
         <View style={{ gap: spacing.sm, alignItems: 'center' }}>
           <Text variant="heading" center>
-            {failed ? 'Couldn’t connect to the server' : 'Trying to connect…'}
+            {failed ? t((s) => s.connection.couldNotConnectHeading) : t((s) => s.connection.tryingToConnectHeading)}
           </Text>
 
           <Text variant="body" color={palette.onSurfaceVariant} center>
             {failed
               ? droppedFromGame
-                ? 'You were dropped from your game. The other players have been told.'
-                : 'We stopped trying. Check your connection and try again.'
-              : 'You’ve gone offline. Hold on while we get you back.'}
+                ? t((s) => s.connection.droppedFromGame)
+                : t((s) => s.connection.stoppedTrying)
+              : t((s) => s.connection.wentOffline)}
           </Text>
         </View>
 
         {!failed && (
           <Row gap={spacing.sm}>
-            <Label>Attempt {attempt}</Label>
+            <Label>{t((s) => s.connection.attempt)(attempt)}</Label>
             <Text variant="caption" color={palette.onSurfaceVariant}>
-              · giving up in {countdown}s
+              {t((s) => s.connection.givingUpIn)(countdown)}
             </Text>
           </Row>
         )}
@@ -80,8 +82,8 @@ export function ConnectionDialog() {
 
       {failed ? (
         <DialogActions
-          cancelLabel="Not now"
-          confirmLabel="Try again"
+          cancelLabel={t((s) => s.connection.notNow)}
+          confirmLabel={t((s) => s.connection.tryAgain)}
           onCancel={dismiss}
           onConfirm={retry}
         />
@@ -90,7 +92,7 @@ export function ConnectionDialog() {
         // action that does not need the network to work. It ends the outage
         // for real rather than just hiding the dialog, so the consequences —
         // leaving the game, telling the room — are the same either way.
-        <Button label="Stop waiting" tone="ghost" onPress={giveUpNow} />
+        <Button label={t((s) => s.connection.stopWaiting)} tone="ghost" onPress={giveUpNow} />
       )}
     </Dialog>
   );

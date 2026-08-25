@@ -1,6 +1,7 @@
 import { View } from 'react-native';
 
 import { Button, Card, Chip, Label, Row, Screen, Text } from '@/components/ui';
+import { useI18n } from '@/i18n/I18nProvider';
 import { spacing } from '@/theme/tokens';
 import { useTheme } from '@/theme/ThemeProvider';
 import type { TabooPlayerView } from '../state';
@@ -17,8 +18,10 @@ import { teamAccent } from './shared';
  */
 export function TurnIntroScreen({ view, onStart }: { view: TabooPlayerView; onStart: () => void }) {
   const { palette } = useTheme();
+  const { t } = useI18n();
   const accent = teamAccent(palette, view.activeTeam);
-  const activeTeamName = view.teams.find((t) => t.id === view.activeTeam)?.name ?? '';
+  const teamName = t((s) => s.taboo.team);
+  const activeTeamName = teamName[view.activeTeam];
 
   return (
     <Screen>
@@ -28,31 +31,32 @@ export function TurnIntroScreen({ view, onStart }: { view: TabooPlayerView; onSt
         accent={accent}
         style={{ alignItems: 'center', gap: spacing.lg, paddingVertical: spacing.xxl, flex: 1, justifyContent: 'center' }}>
         <Chip color={accent} filled>
-          Team {activeTeamName}
+          {t((s) => s.taboo.teamLabel)(activeTeamName)}
         </Chip>
 
         <Text variant="hero" center color={accent}>
-          Pass to {view.describerName}
+          {t((s) => s.taboo.turnIntro.passTo)(view.describerName)}
         </Text>
 
         <Text variant="body" color={palette.onSurfaceVariant} center style={{ paddingHorizontal: spacing.md }}>
-          Everyone else, get ready to guess out loud. {view.describerName} will describe a word without
-          ever saying it — or any of the words below it.
+          {t((s) => s.taboo.turnIntro.everyoneElseReady)(view.describerName)}
         </Text>
       </Card>
 
-      <Button label="I'm ready — start the clock" size="lg" onPress={onStart} />
+      <Button label={t((s) => s.taboo.turnIntro.readyStart)} size="lg" onPress={onStart} />
     </Screen>
   );
 }
 
 function Scoreboard({ view }: { view: TabooPlayerView }) {
   const { palette } = useTheme();
+  const { t } = useI18n();
+  const teamName = t((s) => s.taboo.team);
   return (
     <Row style={{ justifyContent: 'space-between' }}>
       {view.teams.map((team) => (
         <View key={team.id} style={{ alignItems: 'center', gap: 2 }}>
-          <Label color={teamAccent(palette, team.id)}>Team {team.name}</Label>
+          <Label color={teamAccent(palette, team.id)}>{t((s) => s.taboo.teamLabel)(teamName[team.id])}</Label>
           <Text variant="title">{team.score}</Text>
         </View>
       ))}

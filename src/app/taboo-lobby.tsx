@@ -4,9 +4,8 @@ import { useMemo } from 'react';
 import { LobbyScreen, type LobbySeat } from '@/features/games/core/LobbyScreen';
 import type { PlayerSeat } from '@/features/games/core/types';
 import type { TabooConfig } from '@/features/games/taboo/config';
+import { useI18n } from '@/i18n/I18nProvider';
 import { useLocalTaboo } from '@/stores/localTaboo';
-
-const TEAM_NAME: Record<string, string> = { A: 'Red', B: 'Blue' };
 
 /**
  * Room lobby for Taboo — the roster is already fully named and split into
@@ -15,23 +14,25 @@ const TEAM_NAME: Record<string, string> = { A: 'Red', B: 'Blue' };
  */
 export default function TabooLobby() {
   const router = useRouter();
+  const { t } = useI18n();
   const params = useLocalSearchParams<{ seats: string; config: string }>();
   const newGameWithRoster = useLocalTaboo((s) => s.newGameWithRoster);
 
   const roster = useMemo(() => JSON.parse(params.seats) as PlayerSeat[], [params.seats]);
   const config = useMemo(() => JSON.parse(params.config) as TabooConfig, [params.config]);
+  const teamName = t((s) => s.taboo.team) as Record<string, string>;
 
   const seats: LobbySeat[] = roster.map((p, i) => ({
     uid: p.uid,
     name: p.displayName,
     isOwner: i === 0,
-    meta: p.team ? `Team ${TEAM_NAME[p.team] ?? p.team}` : undefined,
+    meta: p.team ? t((s) => s.taboo.teamLabel)(teamName[p.team] ?? p.team) : undefined,
   }));
 
   const summary = [
-    `${roster.length} players`,
-    `First to ${config.targetScore}`,
-    `${config.roundSeconds}s rounds`,
+    t((s) => s.common.players)(roster.length),
+    t((s) => s.taboo.lobby.firstTo)(config.targetScore),
+    t((s) => s.taboo.lobby.roundSeconds)(config.roundSeconds),
   ];
 
   const start = () => {
@@ -41,8 +42,8 @@ export default function TabooLobby() {
 
   return (
     <LobbyScreen
-      title="Room Lobby"
-      subtitle="Taboo · everyone's seated, start when ready."
+      title={t((s) => s.gameCore.roomLobbyTitle)}
+      subtitle={t((s) => s.taboo.lobby.subtitle)}
       seats={seats}
       summary={summary}
       onBack={() => router.back()}

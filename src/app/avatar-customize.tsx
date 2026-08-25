@@ -6,7 +6,8 @@ import { Button, Screen, ScreenHeader, Text } from '@/components/ui';
 import { AvatarRenderer, ItemThumb } from '@/features/avatar/AvatarRenderer';
 import { AVATAR_CATALOGUE, ownsItem, type AvatarItem } from '@/features/avatar/catalogue';
 import { SlotTabRow } from '@/features/avatar/SlotTabRow';
-import { OPTIONAL_SLOTS, SLOT_LABELS, type AvatarSlot } from '@/features/avatar/types';
+import { OPTIONAL_SLOTS, type AvatarSlot } from '@/features/avatar/types';
+import { useI18n } from '@/i18n/I18nProvider';
 import { useProfile } from '@/stores/profile';
 import { useTheme } from '@/theme/ThemeProvider';
 import { radius, spacing, stroke } from '@/theme/tokens';
@@ -24,6 +25,7 @@ import { radius, spacing, stroke } from '@/theme/tokens';
 export default function AvatarCustomize() {
   const router = useRouter();
   const { palette } = useTheme();
+  const { t } = useI18n();
   const [slot, setSlot] = useState<AvatarSlot>('build');
 
   const { avatar, ownedItemIds } = useProfile();
@@ -39,7 +41,7 @@ export default function AvatarCustomize() {
 
   return (
     <Screen>
-      <ScreenHeader title="Customize Avatar" onBack={() => router.back()} />
+      <ScreenHeader title={t((s) => s.avatar.customize.title)} onBack={() => router.back()} />
 
       <View style={{ alignItems: 'center' }}>
         <AvatarRenderer config={avatar} mode="full" size={180} ring={palette.primaryContainer} />
@@ -60,7 +62,7 @@ export default function AvatarCustomize() {
           alignItems: 'flex-start',
         }}>
         {OPTIONAL_SLOTS.includes(slot) && (
-          <OptionTile label="None" selected={avatar[slot] === null} onPress={() => equip(null)} />
+          <OptionTile label={t((s) => s.avatar.customize.none)} selected={avatar[slot] === null} onPress={() => equip(null)} />
         )}
         {owned.map((item) => (
           <OptionTile
@@ -74,11 +76,11 @@ export default function AvatarCustomize() {
 
       {owned.length === 0 && (
         <Text variant="caption" color={palette.onSurfaceVariant} center>
-          No {SLOT_LABELS[slot].toLowerCase()} owned yet — visit the shop.
+          {t((s) => s.avatar.customize.noneOwnedYet)(t((s) => s.avatar.slotLabel)[slot].toLowerCase())}
         </Text>
       )}
 
-      <Button label="Shop for more" tone="ghost" onPress={() => router.push('/avatar-shop')} />
+      <Button label={t((s) => s.avatar.customize.shopForMore)} tone="ghost" onPress={() => router.push('/avatar-shop')} />
     </Screen>
   );
 }
@@ -123,7 +125,7 @@ function OptionTile({
             borderColor: selected ? palette.primary : palette.ink,
           }}>
           <Text variant="caption" color={palette.onSurfaceVariant}>
-            None
+            {label}
           </Text>
         </View>
       )}

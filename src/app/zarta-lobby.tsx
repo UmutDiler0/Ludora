@@ -3,6 +3,7 @@ import { useMemo } from 'react';
 
 import { LobbyScreen, type LobbySeat } from '@/features/games/core/LobbyScreen';
 import type { ZartaConfig } from '@/features/games/zarta/config';
+import { useI18n } from '@/i18n/I18nProvider';
 import { HUMAN_UID, seatNames, useLocalZarta } from '@/stores/localZarta';
 
 /**
@@ -11,6 +12,7 @@ import { HUMAN_UID, seatNames, useLocalZarta } from '@/stores/localZarta';
  */
 export default function ZartaLobby() {
   const router = useRouter();
+  const { t } = useI18n();
   const params = useLocalSearchParams<{ playerCount: string; config: string }>();
   const newGame = useLocalZarta((s) => s.newGame);
 
@@ -23,7 +25,7 @@ export default function ZartaLobby() {
     isOwner: p.uid === HUMAN_UID,
   }));
 
-  const summary = [`${playerCount} players`, `${config.totalRounds} questions`];
+  const summary = [t((s) => s.common.players)(playerCount), t((s) => s.zarta.lobby.questions)(config.totalRounds)];
 
   const start = () => {
     newGame(playerCount, config);
@@ -32,8 +34,8 @@ export default function ZartaLobby() {
 
   return (
     <LobbyScreen
-      title="Room Lobby"
-      subtitle="Zarta · everyone's seated, start when ready."
+      title={t((s) => s.gameCore.roomLobbyTitle)}
+      subtitle={t((s) => s.zarta.lobby.subtitle)}
       seats={seats}
       summary={summary}
       onBack={() => router.back()}

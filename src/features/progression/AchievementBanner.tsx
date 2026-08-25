@@ -14,6 +14,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Text } from '@/components/ui';
 import { getAvatarItem } from '@/features/avatar/catalogue';
+import { useI18n } from '@/i18n/I18nProvider';
 import { useProgression } from '@/stores/progression';
 import { useTheme } from '@/theme/ThemeProvider';
 import type { Palette } from '@/theme/palettes';
@@ -45,6 +46,7 @@ const HOLD_MS = 3_200;
 
 export function AchievementBanner() {
   const { palette } = useTheme();
+  const { t } = useI18n();
   const insets = useSafeAreaInsets();
 
   const achievement = useProgression((s) => s.banners[0] ?? null);
@@ -82,6 +84,8 @@ export function AchievementBanner() {
 
   const tint = TIER_COLOR(palette)[achievement.tier];
   const item = achievement.itemId ? getAvatarItem(achievement.itemId) : undefined;
+  const items = t((s) => s.achievements.items) as Record<string, { name: string; description: string }>;
+  const name = items[achievement.id]?.name ?? achievement.name;
 
   return (
     <Animated.View
@@ -98,7 +102,7 @@ export function AchievementBanner() {
       ]}>
       <Pressable
         accessibilityRole="button"
-        accessibilityLabel={`Achievement unlocked: ${achievement.name}. Dismiss.`}
+        accessibilityLabel={t((s) => s.achievements.dismissLabel)(name)}
         onPress={dismissBanner}
         style={{
           flexDirection: 'row',
@@ -132,16 +136,16 @@ export function AchievementBanner() {
 
         <View style={{ flex: 1, gap: 2 }}>
           <Text variant="label" color={tint}>
-            Achievement unlocked
+            {t((s) => s.achievements.unlockedBanner)}
           </Text>
           <Text variant="bodyStrong" numberOfLines={1}>
-            {achievement.name}
+            {name}
           </Text>
           <Text variant="caption" color={palette.onSurfaceVariant} numberOfLines={1}>
             {[
-              achievement.gold > 0 ? `+${achievement.gold} gold` : null,
-              achievement.xp > 0 ? `+${achievement.xp} XP` : null,
-              item ? `${item.name} unlocked` : null,
+              achievement.gold > 0 ? t((s) => s.achievements.plusGold)(achievement.gold) : null,
+              achievement.xp > 0 ? t((s) => s.achievements.plusXp)(achievement.xp) : null,
+              item ? t((s) => s.achievements.itemUnlocked)(item.name) : null,
             ]
               .filter(Boolean)
               .join(' · ')}

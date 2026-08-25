@@ -1,33 +1,27 @@
-import type { GameId } from './types';
+import type { GameId } from '@/features/games/core/types';
 
 /**
  * "How to Play" copy for every catalogued game, keyed by `GameId` so adding
- * a game and forgetting this is a type error, not a silent gap. Content
- * only — `HowToPlayDialog` owns the rendering.
+ * a game and forgetting an entry here is a type error, not a silent gap.
  *
  * A stub game (Agent) gets an honest "not designed yet" entry rather than
- * invented rules — same restraint this codebase already applies to content
- * before a feature is actually built (Detective's and Complete the Story's
- * catalogues sat empty for exactly this reason before real content landed).
+ * invented rules — the same restraint this codebase already applies to
+ * content before a feature is actually built.
  */
-
 export interface HowToPlayEntry {
-  title: string;
   steps: string[];
 }
 
-export const HOW_TO_PLAY: Record<GameId, HowToPlayEntry> = {
+export const howToPlay = {
   vampireVillage: {
-    title: 'Vampire Village',
     steps: [
       'Everyone gets a secret role — most are Villagers, a few are Vampires, plus a Seer and a Bodyguard if enabled.',
-      'At night, the Vampires silently choose a victim, the Seer learns one player\'s true side, and the Bodyguard protects someone.',
+      "At night, the Vampires silently choose a victim, the Seer learns one player's true side, and the Bodyguard protects someone.",
       'By day, everyone discusses who they suspect, then votes to exile one player.',
       'Villagers win if every Vampire is exiled; Vampires win the moment they equal or outnumber the living.',
     ],
   },
   taboo: {
-    title: 'Taboo Words',
     steps: [
       'Split into two teams. One player describes a secret word without ever saying it or any of its forbidden words.',
       'Teammates race to guess it before time runs out.',
@@ -36,7 +30,6 @@ export const HOW_TO_PLAY: Record<GameId, HowToPlayEntry> = {
     ],
   },
   drawingGuess: {
-    title: 'Sketch It',
     steps: [
       'Each round, one player becomes the artist and gets a secret word.',
       'They draw it on the shared canvas — no letters, no numbers — while everyone else watches and calls out guesses.',
@@ -45,7 +38,6 @@ export const HOW_TO_PLAY: Record<GameId, HowToPlayEntry> = {
     ],
   },
   zarta: {
-    title: 'Zarta',
     steps: [
       'One trivia question appears. Everyone secretly writes an answer they think could fool the group — the real answer is mixed in anonymously.',
       "Everyone then votes for the answer they believe is true. You can't vote for your own.",
@@ -54,7 +46,6 @@ export const HOW_TO_PLAY: Record<GameId, HowToPlayEntry> = {
     ],
   },
   story: {
-    title: 'Complete the Story',
     steps: [
       'Pick a fragment — one or two sentences to start from.',
       'Read it together and work out where the rest of the story goes, out loud, as a group.',
@@ -63,7 +54,6 @@ export const HOW_TO_PLAY: Record<GameId, HowToPlayEntry> = {
     ],
   },
   detective: {
-    title: 'Detective',
     steps: [
       'Pick a case and read the teaser together.',
       'Work through it as a group and try to solve it before revealing the answer.',
@@ -72,11 +62,9 @@ export const HOW_TO_PLAY: Record<GameId, HowToPlayEntry> = {
     ],
   },
   agent: {
-    title: 'Agent',
     steps: ["This game's rules haven't been designed yet — check back once they land."],
   },
   imposter: {
-    title: 'Imposter',
     steps: [
       'Everyone except one player (the Imposter) is shown the same secret value from a category — Money, Place, Year, and more.',
       "Discuss out loud without saying the value outright. The Imposter has to blend in without knowing what it is.",
@@ -85,4 +73,4 @@ export const HOW_TO_PLAY: Record<GameId, HowToPlayEntry> = {
       "Nobody finds out before time runs out? It's a draw.",
     ],
   },
-};
+} satisfies Record<GameId, HowToPlayEntry>;

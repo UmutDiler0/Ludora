@@ -14,6 +14,7 @@ import {
   VV_PRESETS,
   type VVConfig,
 } from '@/features/games/vampireVillage/config';
+import { useI18n } from '@/i18n/I18nProvider';
 import { useTheme } from '@/theme/ThemeProvider';
 import type { Palette } from '@/theme/palettes';
 import { radius, spacing, stroke } from '@/theme/tokens';
@@ -60,6 +61,7 @@ const STEP: Partial<Record<FieldKey, number>> = {
 export default function GameSetup() {
   const router = useRouter();
   const { palette } = useTheme();
+  const { t } = useI18n();
 
   const [playerCount, setPlayerCount] = useState(6);
   const [config, setConfig] = useState<VVConfig>(DEFAULT_VV_CONFIG);
@@ -95,16 +97,16 @@ export default function GameSetup() {
   return (
     <Screen>
       <ScreenHeader
-        title="Set Up the Game"
-        subtitle="Vampire Village · configure it, then start the room."
+        title={t((s) => s.vampireVillage.setup.title)}
+        subtitle={t((s) => s.vampireVillage.setup.subtitle)}
         onBack={() => router.back()}
       />
 
       <Card style={{ gap: spacing.md }}>
         <Row style={{ justifyContent: 'space-between' }}>
-          <Label>Players</Label>
+          <Label>{t((s) => s.gameCore.players)}</Label>
           <Text variant="caption" color={palette.onSurfaceVariant}>
-            {VV_MIN_PLAYERS}–{VV_MAX_PLAYERS}
+            {t((s) => s.common.playersRange)(VV_MIN_PLAYERS, VV_MAX_PLAYERS)}
           </Text>
         </Row>
         <NumberStepper
@@ -112,15 +114,15 @@ export default function GameSetup() {
           min={VV_MIN_PLAYERS}
           max={VV_MAX_PLAYERS}
           onChange={setPlayerCount}
-          format={(n) => `${n} players`}
+          format={(n) => t((s) => s.common.players)(n)}
         />
         <Text variant="caption" color={palette.onSurfaceVariant}>
-          You, plus {playerCount - 1} bots filling the rest of the table.
+          {t((s) => s.vampireVillage.setup.botsNote)(playerCount - 1)}
         </Text>
       </Card>
 
       <Card style={{ gap: spacing.md }}>
-        <Label>Presets</Label>
+        <Label>{t((s) => s.gameCore.presets)}</Label>
         <Row gap={spacing.sm}>
           {(Object.keys(VV_PRESETS) as (keyof typeof VV_PRESETS)[]).map((name) => (
             <Pressable
@@ -133,11 +135,8 @@ export default function GameSetup() {
                 preset === name && { borderColor: palette.primary, backgroundColor: palette.primaryContainer },
                 pressed && { opacity: 0.85 },
               ]}>
-              <Text
-                variant="bodyStrong"
-                color={preset === name ? palette.onPrimary : palette.onSurface}
-                style={{ textTransform: 'capitalize' }}>
-                {name}
+              <Text variant="bodyStrong" color={preset === name ? palette.onPrimary : palette.onSurface}>
+                {t((s) => s.vampireVillage.setup.preset)[name as 'classic' | 'quick']}
               </Text>
             </Pressable>
           ))}
@@ -145,16 +144,17 @@ export default function GameSetup() {
       </Card>
 
       <Card style={{ gap: spacing.lg }}>
-        <Label>Rules</Label>
+        <Label>{t((s) => s.gameCore.rules)}</Label>
 
         {VV_CONFIG_FIELDS.map((field) => {
           const value = getField(config, field.key);
+          const label = t((s) => s.vampireVillage.setup.field)[field.key];
 
           if (field.type === 'bool') {
             return (
               <ToggleRow
                 key={field.key}
-                label={field.label}
+                label={label}
                 value={value as boolean}
                 onChange={(v) => set(field.key, v)}
               />
@@ -163,12 +163,12 @@ export default function GameSetup() {
 
           const numeric = value as number;
           const isVampireCount = field.key === 'vampireCount';
-          const hint = 'hint' in field ? field.hint : undefined;
+          const hint = field.key === 'vampireCount' ? t((s) => s.vampireVillage.setup.field.vampireCountHint) : undefined;
 
           return (
             <View key={field.key} style={{ gap: spacing.xs }}>
               <Row style={{ justifyContent: 'space-between' }}>
-                <Label>{field.label}</Label>
+                <Label>{label}</Label>
                 {!!hint && (
                   <Text variant="caption" color={palette.onSurfaceVariant}>
                     {hint}
@@ -182,7 +182,7 @@ export default function GameSetup() {
                 step={STEP[field.key] ?? 1}
                 onChange={(v) => set(field.key, v)}
                 format={(n) => {
-                  if (isVampireCount && n === 0) return `Auto (${effectiveVampires} tonight)`;
+                  if (isVampireCount && n === 0) return t((s) => s.vampireVillage.setup.autoVampires)(effectiveVampires);
                   return field.type === 'seconds' ? `${n}s` : `${n}`;
                 }}
               />
@@ -200,8 +200,8 @@ export default function GameSetup() {
           />
           <Text variant="bodyStrong">
             {result.ok
-              ? `${effectiveVampires} vampire${effectiveVampires === 1 ? '' : 's'} among ${playerCount}.`
-              : 'Fix the setting above before starting.'}
+              ? t((s) => s.vampireVillage.setup.vampiresAmong)(effectiveVampires, playerCount)
+              : t((s) => s.gameCore.fixSetting)}
           </Text>
         </Row>
         {!result.ok && (
@@ -211,7 +211,7 @@ export default function GameSetup() {
         )}
       </Card>
 
-      <Button label="Continue to Lobby" size="lg" onPress={start} disabled={!result.ok} />
+      <Button label={t((s) => s.gameCore.continueToLobby)} size="lg" onPress={start} disabled={!result.ok} />
     </Screen>
   );
 }
@@ -238,6 +238,7 @@ function ToggleRow({
   onChange: (value: boolean) => void;
 }) {
   const { palette } = useTheme();
+  const { t } = useI18n();
   return (
     <Pressable
       accessibilityRole="switch"
@@ -247,7 +248,7 @@ function ToggleRow({
       style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
       <Label>{label}</Label>
       <Chip color={value ? palette.secondary : palette.onSurfaceVariant} filled={value}>
-        {value ? 'On' : 'Off'}
+        {value ? t((s) => s.gameCore.on) : t((s) => s.gameCore.off)}
       </Chip>
     </Pressable>
   );

@@ -4,6 +4,7 @@ import { View } from 'react-native';
 import Animated, { LinearTransition } from 'react-native-reanimated';
 
 import { Button, Card, Chip, ProgressBar, Row, SegmentedTabs, Text } from '@/components/ui';
+import { useI18n } from '@/i18n/I18nProvider';
 import { useActiveQuests, useProgression } from '@/stores/progression';
 import { useTheme } from '@/theme/ThemeProvider';
 import { spacing } from '@/theme/tokens';
@@ -44,18 +45,19 @@ const claimableIn = (quests: QuestDef[], progress: QuestProgress): number =>
 
 export function QuestPanel() {
   const { palette } = useTheme();
+  const { t } = useI18n();
   const [period, setPeriod] = useState<QuestPeriod>('daily');
 
-  const quests = useActiveQuests();
+  const activeQuests = useActiveQuests();
   const progress = useProgression((s) => s.questProgress);
 
   // Cheap enough to redo per render (five quests, total), and a memo keyed on
   // the progress object would be a lie: the sort depends on every count in it.
-  const ordered = sortQuestsForDisplay(quests[period], progress);
+  const ordered = sortQuestsForDisplay(activeQuests[period], progress);
 
   const options = [
-    { value: 'daily' as const, label: 'Daily', badge: claimableIn(quests.daily, progress) },
-    { value: 'weekly' as const, label: 'Weekly', badge: claimableIn(quests.weekly, progress) },
+    { value: 'daily' as const, label: t((s) => s.quests.daily), badge: claimableIn(activeQuests.daily, progress) },
+    { value: 'weekly' as const, label: t((s) => s.quests.weekly), badge: claimableIn(activeQuests.weekly, progress) },
   ];
 
   return (
@@ -64,8 +66,8 @@ export function QuestPanel() {
 
       <Row style={{ justifyContent: 'flex-end' }}>
         <Text variant="caption" color={palette.onSurfaceVariant}>
-          {period === 'daily' ? 'Today' : 'This week'} · resets in{' '}
-          {formatResetIn(msUntilPeriodEnd(period))}
+          {period === 'daily' ? t((s) => s.quests.today) : t((s) => s.quests.thisWeek)} ·{' '}
+          {t((s) => s.quests.resetsIn)(formatResetIn(msUntilPeriodEnd(period), t((s) => s.common.resetUnit)))}
         </Text>
       </Row>
 
@@ -82,6 +84,7 @@ export function QuestPanel() {
 
 function QuestRow({ quest }: { quest: QuestDef }) {
   const { palette } = useTheme();
+  const { t } = useI18n();
   const progress = useProgression((s) => s.questProgress);
   const claimQuest = useProgression((s) => s.claimQuest);
 
@@ -89,6 +92,8 @@ function QuestRow({ quest }: { quest: QuestDef }) {
   const done = isQuestComplete(quest, state);
   const claimable = isClaimable(quest, state);
   const accent = state.claimed ? palette.success : done ? palette.tertiary : undefined;
+  const items = t((s) => s.quests.items) as Record<string, { name: string; description: string }>;
+  const copy = items[quest.id];
 
   return (
     <Card
@@ -112,10 +117,10 @@ function QuestRow({ quest }: { quest: QuestDef }) {
         />
         <View style={{ flex: 1, gap: 2 }}>
           <Text variant="bodyStrong" numberOfLines={1}>
-            {quest.name}
+            {copy.name}
           </Text>
           <Text variant="caption" color={palette.onSurfaceVariant} numberOfLines={1}>
-            {quest.description}
+            {copy.description}
           </Text>
         </View>
 
@@ -140,7 +145,7 @@ function QuestRow({ quest }: { quest: QuestDef }) {
             </Text>
             {claimable && (
               <Button
-                label={`Claim ${quest.gold}g`}
+                label={t((s) => s.quests.claim)(quest.gold)}
                 tone="secondary"
                 onPress={() => claimQuest(quest.id)}
                 style={{ minHeight: 40, paddingHorizontal: spacing.lg }}
@@ -150,7 +155,7 @@ function QuestRow({ quest }: { quest: QuestDef }) {
         </>
       )}
 
-      {state.claimed && <Chip color={palette.success}>Collected</Chip>}
+      {state.claimed && <Chip color={palette.success}>{t((s) => s.quests.collected)}</Chip>}
     </Card>
   );
 }

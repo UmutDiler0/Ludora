@@ -1,0 +1,25 @@
+import type { common as en } from '../en/common';
+
+export const common: typeof en = {
+  back: 'Geri dön',
+  cancel: 'Vazgeç',
+  close: 'Kapat',
+  save: 'Kaydet',
+  continue: 'Devam et',
+  gotIt: 'Anladım',
+  playAgain: 'Tekrar oyna',
+  backToPlay: "Oyna'ya dön",
+  loading: 'Yükleniyor…',
+  you: 'Sen',
+  free: 'Ücretsiz',
+  premium: 'Premium',
+  soon: 'Yakında',
+  playable: 'Oynanabilir',
+  players: (n) => `${n} oyuncu`,
+  playersRange: (min, max) => `${min}–${max}`,
+  howToPlayLabel: (game) => `${game} nasıl oynanır`,
+  playGame: (game) => `${game} oyna`,
+  resetUnit: { minute: 'dk', hour: 'sa', day: 'g' },
+  hidePassword: 'Şifreyi gizle',
+  showPassword: 'Şifreyi göster',
+};

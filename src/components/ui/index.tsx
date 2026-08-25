@@ -17,6 +17,7 @@ import {
 import Animated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { useI18n } from '@/i18n/I18nProvider';
 import { useTheme } from '@/theme/ThemeProvider';
 import type { Palette } from '@/theme/palettes';
 import { radius, spacing, stroke, type } from '@/theme/tokens';
@@ -592,6 +593,7 @@ export function Input({
   returnKeyType?: TextInputProps['returnKeyType'];
 }) {
   const { s, palette } = useStyles();
+  const { t } = useI18n();
   const [focused, setFocused] = useState(false);
   const [revealed, setRevealed] = useState(false);
   const isPassword = !!secureTextEntry;
@@ -625,7 +627,7 @@ export function Input({
         {isPassword && (
           <Pressable
             accessibilityRole="button"
-            accessibilityLabel={revealed ? 'Hide password' : 'Show password'}
+            accessibilityLabel={revealed ? t((s) => s.common.hidePassword) : t((s) => s.common.showPassword)}
             onPress={() => setRevealed((v) => !v)}
             hitSlop={10}
             style={{ position: 'absolute', right: spacing.md, top: 0, bottom: 0, justifyContent: 'center' }}>
@@ -794,20 +796,22 @@ export function ScreenHeader({
   title,
   subtitle,
   onBack,
-  backLabel = 'Go back',
+  backLabel,
   trailing,
 }: {
   title: string;
   subtitle?: string;
   onBack?: () => void;
-  /** Accessibility label for the back control; localised by callers. */
+  /** Accessibility label for the back control. Defaults to the current
+   *  language's "Go back" — only pass this to override that default. */
   backLabel?: string;
   trailing?: ReactNode;
 }) {
   const { palette } = useTheme();
+  const { t } = useI18n();
   return (
     <Row gap={spacing.md} style={{ alignItems: 'flex-start' }}>
-      {!!onBack && <IconButton name="chevron-back" onPress={onBack} label={backLabel} />}
+      {!!onBack && <IconButton name="chevron-back" onPress={onBack} label={backLabel ?? t((s) => s.common.back)} />}
       <View style={{ flex: 1, gap: spacing.xs }}>
         <Text variant="title">{title}</Text>
         {!!subtitle && (
@@ -1032,18 +1036,126 @@ const dialogLayout = StyleSheet.create({
   },
 });
 
+/* --------------------------------------------------------------- Select */
+
+export interface SelectOption<T extends string> {
+  value: T;
+  label: string;
+  detail?: string;
+}
+
+/**
+ * A dropdown, not a switch: tapping the closed field opens a `Dialog` listing
+ * every option as a single choice list. Deliberately not `SegmentedTabs` —
+ * that reads as "flip between a couple of equally-weighted states" (Light /
+ * Dark), while this is "open a menu, pick one from a list", the right shape
+ * once there are more than two options or the choice isn't binary in nature
+ * (the Settings screen's Language field is what this was built for: System /
+ * English / Türkçe).
+ */
+export function Select<T extends string>({
+  label,
+  value,
+  options,
+  onChange,
+}: {
+  /** Accessible name for the field and the dialog's own title. */
+  label: string;
+  value: T;
+  options: SelectOption<T>[];
+  onChange: (value: T) => void;
+}) {
+  const { s, palette } = useStyles();
+  const [open, setOpen] = useState(false);
+  const current = options.find((o) => o.value === value);
+
+  return (
+    <>
+      <Pressable
+        accessibilityRole="button"
+        accessibilityLabel={label}
+        accessibilityHint={current?.label}
+        onPress={() => setOpen(true)}
+        style={({ pressed }) => [
+          s.card,
+          {
+            flexDirection: 'row',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            padding: spacing.lg,
+          },
+          pressed && { opacity: 0.9 },
+        ]}>
+        <View style={{ flex: 1, gap: 2 }}>
+          <Text variant="bodyStrong">{current?.label}</Text>
+          {!!current?.detail && (
+            <Text variant="caption" color={palette.onSurfaceVariant}>
+              {current.detail}
+            </Text>
+          )}
+        </View>
+        <Ionicons name="chevron-down" size={18} color={palette.onSurfaceVariant} />
+      </Pressable>
+
+      <Dialog visible={open} onDismiss={() => setOpen(false)} label={label}>
+        <Text variant="heading">{label}</Text>
+        <View style={{ gap: spacing.sm }}>
+          {options.map((option) => {
+            const selected = option.value === value;
+            return (
+              <Pressable
+                key={option.value}
+                accessibilityRole="radio"
+                accessibilityState={{ selected }}
+                accessibilityLabel={option.label}
+                onPress={() => {
+                  onChange(option.value);
+                  setOpen(false);
+                }}
+                style={({ pressed }) => [
+                  {
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    gap: spacing.md,
+                    padding: spacing.md,
+                    borderRadius: radius.md,
+                    borderWidth: stroke.thin,
+                    borderColor: selected ? palette.primary : palette.ink,
+                    backgroundColor: selected ? palette.primaryContainer : palette.surface,
+                  },
+                  pressed && { opacity: 0.9 },
+                ]}>
+                <View style={{ flex: 1, gap: 2 }}>
+                  <Text variant="bodyStrong">{option.label}</Text>
+                  {!!option.detail && (
+                    <Text variant="caption" color={palette.onSurfaceVariant}>
+                      {option.detail}
+                    </Text>
+                  )}
+                </View>
+                {selected && <Ionicons name="checkmark-circle" size={22} color={palette.primary} />}
+              </Pressable>
+            );
+          })}
+        </View>
+      </Dialog>
+    </>
+  );
+}
+
 /**
  * The two-button footer a confirmation always ends with. Cancel is on the
  * left and never destructive-toned, so the reflex tap is the safe one.
  */
 export function DialogActions({
-  cancelLabel = 'Cancel',
+  cancelLabel,
   confirmLabel,
   tone = 'primary',
   onCancel,
   onConfirm,
   confirmDisabled,
 }: {
+  /** Defaults to the current language's "Cancel" — only pass this to override it. */
   cancelLabel?: string;
   confirmLabel: string;
   tone?: ButtonTone;
@@ -1051,9 +1163,10 @@ export function DialogActions({
   onConfirm: () => void;
   confirmDisabled?: boolean;
 }) {
+  const { t } = useI18n();
   return (
     <Row gap={spacing.sm} style={{ alignItems: 'stretch' }}>
-      <Button label={cancelLabel} tone="ghost" onPress={onCancel} style={{ flex: 1 }} />
+      <Button label={cancelLabel ?? t((s) => s.common.cancel)} tone="ghost" onPress={onCancel} style={{ flex: 1 }} />
       <Button
         label={confirmLabel}
         tone={tone}

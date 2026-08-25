@@ -10,7 +10,12 @@ import type { GameId } from '@/features/games/core/types';
  *
  *   champions     → `leaderboards/daily` (Firestore, §8 scheduled job)
  *   playersNow    → `presence/{gameId}` (RTDB counter, §12)
- *   taglines      → `game_definitions/{gameId}` (Firestore, §9.2)
+ *
+ * Taglines used to live here too, but a locale-dependent string can't be
+ * baked into a plain object at module-load time — they moved to
+ * `i18n/en(or tr)/home.ts`'s `tagline` map, read reactively by `TrendingCard`
+ * at render time instead. Once `game_definitions/{gameId}` is real, both this
+ * file's counters and that map's source change, not the screen.
  *
  * The screen imports only these functions, never literals, so nothing in the
  * UI has to change when the data becomes real.
@@ -35,28 +40,9 @@ export const DUMMY_CHAMPIONS: Champion[] = [
 ];
 
 export interface TrendingGame extends GameCatalogueEntry {
-  /** One-line hook shown under the title. */
-  tagline: string;
   /** Live player count. Real source: the RTDB presence counter. */
   playersNow: number;
 }
-
-/**
- * Taglines belong to `game_definitions` once Firestore exists; they live here
- * only so the cards are not blank in the meantime.
- */
-const TAGLINES: Record<GameId, string> = {
-  vampireVillage: 'Trust nobody. Someone at this table feeds at night.',
-  taboo: 'Describe the word without ever saying the word.',
-  drawingGuess: 'Draw badly, guess fast, argue about it afterwards.',
-  zarta: 'Quick-fire rounds where hesitating costs you everything.',
-  // Rewritten to match the redefined mechanic (a purchased fragment, not a
-  // round-robin sentence game) — see features/games/story/stories.ts.
-  story: 'One or two sentences is all you get. Uncover the rest.',
-  detective: 'Read the room, follow the evidence, name the culprit.',
-  agent: 'Everyone claims to be one. Only some of them are telling the truth.',
-  imposter: 'Blend in, stay quiet, and hope nobody looks too closely.',
-};
 
 /** Fake presence counts. Stable per game so the UI does not flicker. */
 const PLAYERS_NOW: Record<GameId, number> = {
@@ -77,7 +63,6 @@ const PLAYERS_NOW: Record<GameId, number> = {
 export function trendingGames(): TrendingGame[] {
   return GAME_CATALOGUE.map((game) => ({
     ...game,
-    tagline: TAGLINES[game.id],
     playersNow: PLAYERS_NOW[game.id],
   })).sort((a, b) => {
     if (a.enabled !== b.enabled) return a.enabled ? -1 : 1;

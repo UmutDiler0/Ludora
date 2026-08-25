@@ -2,6 +2,7 @@ import { View } from 'react-native';
 
 import { Card, Label, Screen, Text } from '@/components/ui';
 import type { LogEntry } from '@/features/games/core/types';
+import { useI18n } from '@/i18n/I18nProvider';
 import { useTheme } from '@/theme/ThemeProvider';
 import type { Palette } from '@/theme/palettes';
 import { spacing } from '@/theme/tokens';
@@ -27,6 +28,7 @@ const kindColors = (p: Palette): Record<string, string> => ({
 
 export function EventLogScreen({ view }: { view: VVPlayerView }) {
   const { palette } = useTheme();
+  const { t } = useI18n();
   const colors = kindColors(palette);
 
   // Newest round first, matching the design's Day 2 → Night 1 → Day 1 order.
@@ -34,17 +36,17 @@ export function EventLogScreen({ view }: { view: VVPlayerView }) {
 
   return (
     <Screen>
-      <Text variant="title">Game Log</Text>
+      <Text variant="title">{t((s) => s.vampireVillage.eventLog.title)}</Text>
 
       {view.log.length === 0 && (
         <Text variant="body" color={palette.onSurfaceVariant}>
-          Nothing has happened yet.
+          {t((s) => s.vampireVillage.eventLog.nothingYet)}
         </Text>
       )}
 
       {rounds.map((round) => (
         <View key={round} style={{ gap: spacing.sm }}>
-          <Label>Round {round}</Label>
+          <Label>{t((s) => s.vampireVillage.eventLog.round)(round)}</Label>
           {view.log
             .filter((l) => l.round === round)
             .slice()

@@ -1,0 +1,15 @@
+export const profile = {
+  settings: 'Settings',
+  guestBanner: "You're browsing as a guest",
+  guestBannerBody: 'Sign up to save your progress, earn Gold and XP, and climb the leaderboards.',
+  signUp: 'Sign Up',
+  customizeAvatar: 'Customize avatar',
+  level: (n: number) => `Level ${n}`,
+  xpFraction: (into: string, forLevel: string) => `${into} / ${forLevel} XP`,
+  played: 'Played',
+  won: 'Won',
+  winRate: 'Win rate',
+  achievements: 'Achievements',
+  achievementsCompletion: (done: number, total: number) => `${done} of ${total} earned`,
+  signOut: 'Sign out',
+};

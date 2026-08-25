@@ -1,6 +1,7 @@
 import { View } from 'react-native';
 
 import { Button, Card, Label, Row, Screen, Text } from '@/components/ui';
+import { useI18n } from '@/i18n/I18nProvider';
 import { spacing } from '@/theme/tokens';
 import { useTheme } from '@/theme/ThemeProvider';
 import type { SketchPlayerView } from '../state';
@@ -13,6 +14,7 @@ import type { SketchPlayerView } from '../state';
  */
 export function RoundRecapScreen({ view, onContinue }: { view: SketchPlayerView; onContinue: () => void }) {
   const { palette } = useTheme();
+  const { t } = useI18n();
   if (!view.lastRound) return <Screen>{null}</Screen>;
 
   const { artistName, word, artistPoints, guesses } = view.lastRound;
@@ -20,16 +22,16 @@ export function RoundRecapScreen({ view, onContinue }: { view: SketchPlayerView;
   return (
     <Screen>
       <Card accent={palette.tertiary} style={{ alignItems: 'center', gap: spacing.sm }}>
-        <Label color={palette.tertiary}>{artistName} was drawing</Label>
+        <Label color={palette.tertiary}>{t((s) => s.sketchIt.roundRecap.wasDrawing)(artistName)}</Label>
         <Text variant="hero" center>
           {word}
         </Text>
         <Text variant="bodyStrong" color={palette.tertiary}>
-          +{artistPoints} for the artist
+          {t((s) => s.sketchIt.roundRecap.plusForArtist)(artistPoints)}
         </Text>
       </Card>
 
-      <Label>Leaderboard</Label>
+      <Label>{t((s) => s.sketchIt.roundRecap.leaderboard)}</Label>
       <View style={{ gap: spacing.xs }}>
         {view.leaderboard.map((p, i) => (
           <Row key={p.uid} style={{ justifyContent: 'space-between' }}>
@@ -41,11 +43,11 @@ export function RoundRecapScreen({ view, onContinue }: { view: SketchPlayerView;
         ))}
       </View>
 
-      <Label>Who guessed it</Label>
+      <Label>{t((s) => s.sketchIt.roundRecap.whoGuessedIt)}</Label>
       <View style={{ gap: spacing.xs, flex: 1 }}>
         {guesses.length === 0 && (
           <Text variant="caption" color={palette.onSurfaceVariant}>
-            Nobody guessed it in time.
+            {t((s) => s.sketchIt.roundRecap.nobodyGuessed)}
           </Text>
         )}
         {guesses.map((g) => (
@@ -60,7 +62,7 @@ export function RoundRecapScreen({ view, onContinue }: { view: SketchPlayerView;
         ))}
       </View>
 
-      <Button label={view.winner ? 'See results' : 'Pass the phone'} onPress={onContinue} />
+      <Button label={view.winner ? t((s) => s.sketchIt.roundRecap.seeResults) : t((s) => s.sketchIt.roundRecap.passThePhone)} onPress={onContinue} />
     </Screen>
   );
 }

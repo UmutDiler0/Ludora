@@ -2,6 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { View } from 'react-native';
 
 import { Divider, Label, Row, Text } from '@/components/ui';
+import { useI18n } from '@/i18n/I18nProvider';
 import { radius, spacing } from '@/theme/tokens';
 import { useTheme } from '@/theme/ThemeProvider';
 
@@ -16,6 +17,7 @@ import { useTheme } from '@/theme/ThemeProvider';
  */
 export function SocialAuthRow() {
   const { palette } = useTheme();
+  const { t } = useI18n();
 
   return (
     <View style={{ gap: spacing.lg }}>
@@ -23,19 +25,19 @@ export function SocialAuthRow() {
         <View style={{ flex: 1 }}>
           <Divider />
         </View>
-        <Label>Or continue with</Label>
+        <Label>{t((s) => s.auth.social.orContinueWith)}</Label>
         <View style={{ flex: 1 }}>
           <Divider />
         </View>
       </Row>
 
       <Row gap={spacing.md}>
-        <ProviderButton icon="logo-google" name="Google" />
-        <ProviderButton icon="logo-apple" name="Apple" />
+        <ProviderButton icon="logo-google" name={t((s) => s.auth.social.google)} />
+        <ProviderButton icon="logo-apple" name={t((s) => s.auth.social.apple)} />
       </Row>
 
       <Text variant="caption" color={palette.outline} center>
-        Social sign-in activates with the backend.
+        {t((s) => s.auth.social.notAvailable)}
       </Text>
     </View>
   );
@@ -49,12 +51,13 @@ function ProviderButton({
   name: string;
 }) {
   const { palette } = useTheme();
+  const { t } = useI18n();
 
   return (
     <View
       accessibilityRole="button"
       accessibilityState={{ disabled: true }}
-      accessibilityLabel={`Continue with ${name} — not yet available`}
+      accessibilityLabel={t((s) => s.auth.social.notAvailableLabel)(name)}
       style={{
         flex: 1,
         minHeight: 52,

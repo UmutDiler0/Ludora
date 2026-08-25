@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Pressable, View } from 'react-native';
 
 import { Chip, IconButton, Label, ProgressBar, Row, Screen, Text } from '@/components/ui';
+import { useI18n } from '@/i18n/I18nProvider';
 import { useTheme } from '@/theme/ThemeProvider';
 import type { Palette } from '@/theme/palettes';
 import { radius, spacing, stroke } from '@/theme/tokens';
@@ -27,6 +28,7 @@ export function DrawingScreen({
   onTimeUp: () => void;
 }) {
   const { palette } = useTheme();
+  const { t } = useI18n();
   const secondsLeft = useCountdown(view.deadlineAt, onTimeUp);
   const [strokes, setStrokes] = useState<SketchStroke[]>([]);
   const [color, setColor] = useState(BRUSH_COLORS[0]);
@@ -45,7 +47,7 @@ export function DrawingScreen({
     <Screen scroll={false} style={{ gap: spacing.sm }}>
       <Row style={{ justifyContent: 'space-between' }}>
         <Chip color={palette.tertiary} filled>
-          Round {view.round} / {view.totalRounds}
+          {t((s) => s.sketchIt.session.round)(view.round, view.totalRounds)}
         </Chip>
         <Text variant="bodyStrong" color={secondsLeft <= 10 ? palette.error : palette.onSurface}>
           {secondsLeft}s
@@ -68,10 +70,10 @@ export function DrawingScreen({
       <Row gap={spacing.xs}>
         <IconButton
           name="arrow-undo"
-          label="Undo last stroke"
+          label={t((s) => s.sketchIt.drawing.undoLastStroke)}
           onPress={() => setStrokes((prev) => prev.slice(0, -1))}
         />
-        <IconButton name="trash" label="Clear canvas" onPress={() => setStrokes([])} />
+        <IconButton name="trash" label={t((s) => s.sketchIt.drawing.clearCanvas)} onPress={() => setStrokes([])} />
         <View style={{ flex: 1 }} />
         {BRUSH_SIZES.map((b) => (
           <BrushDot key={b.label} diameter={b.width} active={brushWidth === b.width} onPress={() => setBrushWidth(b.width)} />
@@ -85,7 +87,7 @@ export function DrawingScreen({
       </Row>
 
       <View style={{ gap: spacing.xs }}>
-        <Label>Who&apos;s got it?</Label>
+        <Label>{t((s) => s.sketchIt.drawing.whosGotIt)}</Label>
         <Row gap={spacing.xs} style={{ flexWrap: 'wrap' }}>
           {view.guessers.map((g) => (
             <Chip key={g.uid} color={palette.success} filled>
@@ -140,10 +142,11 @@ function useCountdown(deadlineAt: number, onExpire: () => void): number {
 
 function ColorSwatch({ color, active, onPress }: { color: string; active: boolean; onPress: () => void }) {
   const { palette } = useTheme();
+  const { t } = useI18n();
   return (
     <Pressable
       accessibilityRole="button"
-      accessibilityLabel={`Colour ${color}`}
+      accessibilityLabel={t((s) => s.sketchIt.drawing.color)(color)}
       accessibilityState={{ selected: active }}
       onPress={onPress}
       style={{
@@ -160,10 +163,11 @@ function ColorSwatch({ color, active, onPress }: { color: string; active: boolea
 
 function BrushDot({ diameter, active, onPress }: { diameter: number; active: boolean; onPress: () => void }) {
   const { palette } = useTheme();
+  const { t } = useI18n();
   return (
     <Pressable
       accessibilityRole="button"
-      accessibilityLabel={`Brush size ${diameter}`}
+      accessibilityLabel={t((s) => s.sketchIt.drawing.brushSize)(diameter)}
       accessibilityState={{ selected: active }}
       onPress={onPress}
       hitSlop={6}

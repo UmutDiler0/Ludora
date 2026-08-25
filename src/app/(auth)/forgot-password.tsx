@@ -6,6 +6,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Button, Card, IconButton, Input, Row, Text } from '@/components/ui';
 import { APP_NAME } from '@/constants/app';
+import { useI18n } from '@/i18n/I18nProvider';
 import { useSession } from '@/stores/session';
 import { spacing } from '@/theme/tokens';
 import { useTheme } from '@/theme/ThemeProvider';
@@ -20,6 +21,7 @@ import type { Palette } from '@/theme/palettes';
  */
 export default function ForgotPassword() {
   const { palette } = useTheme();
+  const { t } = useI18n();
   const s = useMemo(() => makeStyles(palette), [palette]);
 
   const router = useRouter();
@@ -44,7 +46,7 @@ export default function ForgotPassword() {
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}>
           <Row gap={spacing.md}>
-            <IconButton name="chevron-back" onPress={() => router.back()} label="Go back" />
+            <IconButton name="chevron-back" onPress={() => router.back()} label={t((s) => s.auth.forgotPassword.back)} />
             <Text variant="heading" color={palette.primary}>
               {APP_NAME}
             </Text>
@@ -54,30 +56,29 @@ export default function ForgotPassword() {
             <Card style={{ gap: spacing.lg }}>
               {sent ? (
                 <View style={{ gap: spacing.md }}>
-                  <Text variant="heading">Check your inbox</Text>
+                  <Text variant="heading">{t((s) => s.auth.forgotPassword.checkInbox)}</Text>
                   <Text variant="body" color={palette.onSurfaceVariant}>
-                    If an account exists for {email.trim()}, a reset link is on its way. The link
-                    expires in one hour.
+                    {t((s) => s.auth.forgotPassword.checkInboxBody)(email.trim())}
                   </Text>
-                  <Button label="Back to sign in" onPress={() => router.replace('/(auth)/login')} />
+                  <Button label={t((s) => s.auth.forgotPassword.backToSignIn)} onPress={() => router.replace('/(auth)/login')} />
                 </View>
               ) : (
                 <>
                   <View style={{ gap: spacing.sm }}>
-                    <Text variant="heading">Reset password</Text>
+                    <Text variant="heading">{t((s) => s.auth.forgotPassword.resetPassword)}</Text>
                     <Text variant="caption" color={palette.onSurfaceVariant}>
-                      Enter your email to receive a password reset link.
+                      {t((s) => s.auth.forgotPassword.subtitle)}
                     </Text>
                   </View>
 
                   <Input
-                    label="Email address"
+                    label={t((s) => s.auth.forgotPassword.emailAddress)}
                     value={email}
                     onChangeText={(v) => {
                       clearError();
                       setEmail(v);
                     }}
-                    placeholder="commander@ludora.games"
+                    placeholder={t((s) => s.auth.forgotPassword.emailPlaceholder)}
                     keyboardType="email-address"
                     autoComplete="email"
                     returnKeyType="go"
@@ -87,7 +88,7 @@ export default function ForgotPassword() {
                   />
 
                   <Button
-                    label="Send reset link"
+                    label={t((s) => s.auth.forgotPassword.sendResetLink)}
                     onPress={submit}
                     disabled={!email.trim() || busy}
                     loading={busy}

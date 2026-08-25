@@ -2,6 +2,7 @@ import { View } from 'react-native';
 
 import { Avatar, Button, Card, Chip, Label, Row, Screen, StatTile, Text } from '@/components/ui';
 import { awardForGame } from '@/features/economy/levels';
+import { useI18n } from '@/i18n/I18nProvider';
 import { spacing } from '@/theme/tokens';
 import { useTheme } from '@/theme/ThemeProvider';
 import { ROLES } from '../roles';
@@ -16,34 +17,36 @@ import type { VVPlayerView } from '../state';
  */
 export function GameOverScreen({ view, onPlayAgain }: { view: VVPlayerView; onPlayAgain: () => void }) {
   const { palette, roleColors } = useTheme();
+  const { t } = useI18n();
 
   const youWon = view.winner === view.you.alignment;
   const accent = youWon ? palette.secondary : palette.error;
   const award = awardForGame({ won: youWon, isFirstGameOfDay: false });
+  const roleNames = t((s) => s.vampireVillage.role);
 
   return (
     <Screen>
       <Card accent={accent} style={{ alignItems: 'center', gap: spacing.md, paddingVertical: spacing.xxl }}>
         <Label color={accent} center>
-          {youWon ? 'Victory' : 'Defeat'}
+          {youWon ? t((s) => s.vampireVillage.gameOver.victory) : t((s) => s.vampireVillage.gameOver.defeat)}
         </Label>
         <Text variant="hero" color={accent} center>
-          {view.winner === 'village' ? 'The village holds' : 'The village falls'}
+          {view.winner === 'village' ? t((s) => s.vampireVillage.gameOver.villageHolds) : t((s) => s.vampireVillage.gameOver.villageFalls)}
         </Text>
         <Text variant="body" color={palette.onSurfaceVariant} center>
           {view.winner === 'village'
-            ? 'Every vampire has been exiled.'
-            : 'The vampires now outnumber the living.'}
+            ? t((s) => s.vampireVillage.gameOver.everyVampireExiled)
+            : t((s) => s.vampireVillage.gameOver.vampiresOutnumber)}
         </Text>
       </Card>
 
       <Row>
-        <StatTile value={`+${award.xp}`} caption="XP earned" color={palette.primary} />
-        <StatTile value={`+${award.gold}`} caption="Gold earned" color={palette.tertiary} />
-        <StatTile value={String(view.round)} caption="Rounds" />
+        <StatTile value={`+${award.xp}`} caption={t((s) => s.vampireVillage.gameOver.xpEarned)} color={palette.primary} />
+        <StatTile value={`+${award.gold}`} caption={t((s) => s.vampireVillage.gameOver.goldEarned)} color={palette.tertiary} />
+        <StatTile value={String(view.round)} caption={t((s) => s.vampireVillage.gameOver.rounds)} />
       </Row>
 
-      <Label>Final roster</Label>
+      <Label>{t((s) => s.vampireVillage.gameOver.finalRoster)}</Label>
       <View style={{ gap: spacing.sm }}>
         {view.players.map((p) => {
           const role = p.role;
@@ -54,12 +57,12 @@ export function GameOverScreen({ view, onPlayAgain }: { view: VVPlayerView; onPl
               <Row>
                 <Avatar uid={p.uid} name={p.displayName} dimmed={!p.alive} ring={won ? color : undefined} />
                 <View style={{ flex: 1 }}>
-                  <Text variant="bodyStrong">{p.uid === view.you.uid ? 'You' : p.displayName}</Text>
+                  <Text variant="bodyStrong">{p.uid === view.you.uid ? t((s) => s.vampireVillage.gameOver.you) : p.displayName}</Text>
                   <Text variant="caption" color={palette.onSurfaceVariant}>
-                    {p.alive ? 'Survived' : 'Eliminated'}
+                    {p.alive ? t((s) => s.vampireVillage.gameOver.survived) : t((s) => s.vampireVillage.gameOver.eliminated)}
                   </Text>
                 </View>
-                {role && <Chip color={color}>{ROLES[role].name}</Chip>}
+                {role && <Chip color={color}>{roleNames[role].name}</Chip>}
               </Row>
             </Card>
           );
@@ -67,7 +70,7 @@ export function GameOverScreen({ view, onPlayAgain }: { view: VVPlayerView; onPl
       </View>
 
       <View style={{ flex: 1 }} />
-      <Button label="Play again" onPress={onPlayAgain} />
+      <Button label={t((s) => s.vampireVillage.gameOver.playAgain)} onPress={onPlayAgain} />
     </Screen>
   );
 }

@@ -2,6 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { View } from 'react-native';
 
 import { Avatar, Button, Card, Label, Row, Screen, Text } from '@/components/ui';
+import { useI18n } from '@/i18n/I18nProvider';
 import { spacing } from '@/theme/tokens';
 import { useTheme } from '@/theme/ThemeProvider';
 import type { ImposterPlayerView } from '../state';
@@ -14,16 +15,18 @@ export function ImposterGameOverScreen({
   onPlayAgain: () => void;
 }) {
   const { palette } = useTheme();
+  const { t } = useI18n();
   const winner = view.winner ?? 'draw';
   const imposter = view.players.find((p) => p.uid === view.imposterUidIfOver);
+  const fallbackName = t((s) => s.imposter.gameOver.fallbackName);
 
   const accent = winner === 'crew' ? palette.secondary : winner === 'imposter' ? palette.error : palette.onSurfaceVariant;
   const headline =
     winner === 'crew'
-      ? `${imposter?.displayName ?? 'The imposter'} was caught`
+      ? t((s) => s.imposter.gameOver.caught)(imposter?.displayName ?? fallbackName)
       : winner === 'imposter'
-        ? `${imposter?.displayName ?? 'The imposter'} fooled everyone`
-        : "Nobody found out";
+        ? t((s) => s.imposter.gameOver.fooledEveryone)(imposter?.displayName ?? fallbackName)
+        : t((s) => s.imposter.gameOver.nobodyFoundOut);
 
   return (
     <Screen>
@@ -34,7 +37,7 @@ export function ImposterGameOverScreen({
           color={accent}
         />
         <Label color={accent} center>
-          {winner === 'draw' ? 'Draw' : 'Game Over'}
+          {winner === 'draw' ? t((s) => s.imposter.gameOver.draw) : t((s) => s.imposter.gameOver.gameOver)}
         </Label>
         <Text variant="hero" color={accent} center>
           {headline}
@@ -43,16 +46,16 @@ export function ImposterGameOverScreen({
 
       <Card style={{ gap: spacing.sm }}>
         <Row style={{ justifyContent: 'space-between' }}>
-          <Label>Category</Label>
+          <Label>{t((s) => s.imposter.gameOver.category)}</Label>
           <Text variant="bodyStrong">{view.categoryName}</Text>
         </Row>
         <Row style={{ justifyContent: 'space-between' }}>
-          <Label>The value</Label>
+          <Label>{t((s) => s.imposter.gameOver.theValue)}</Label>
           <Text variant="bodyStrong">{view.valueIfOver}</Text>
         </Row>
       </Card>
 
-      <Label>The imposter was</Label>
+      <Label>{t((s) => s.imposter.gameOver.theImposterWas)}</Label>
       <View style={{ gap: spacing.sm }}>
         {imposter && (
           <Row gap={spacing.md}>
@@ -63,7 +66,7 @@ export function ImposterGameOverScreen({
       </View>
 
       <View style={{ flex: 1 }} />
-      <Button label="Play again" onPress={onPlayAgain} />
+      <Button label={t((s) => s.imposter.gameOver.playAgain)} onPress={onPlayAgain} />
     </Screen>
   );
 }

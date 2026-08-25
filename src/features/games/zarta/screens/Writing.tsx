@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { TextInput } from 'react-native';
 
 import { Button, Card, Chip, Label, ProgressBar, Row, Screen, Text } from '@/components/ui';
+import { useI18n } from '@/i18n/I18nProvider';
 import { radius, spacing, stroke } from '@/theme/tokens';
 import { useTheme } from '@/theme/ThemeProvider';
 import { PassCurtain } from '../../core/PassCurtain';
@@ -25,14 +26,15 @@ export function WritingScreen({
   onSubmit: (text: string) => void;
   onTimeUp: () => void;
 }) {
+  const { t } = useI18n();
   if (!view.currentWriterUid) return <Screen>{null}</Screen>;
 
   return (
     <PassCurtain
       uid={view.currentWriterUid}
       name={view.currentWriterName ?? ''}
-      subtitle="Write a believable lie. If someone falls for it, you score."
-      buttonLabel={`I'm ${view.currentWriterName} — show me the question`}
+      subtitle={t((s) => s.zarta.writing.subtitle)}
+      buttonLabel={t((s) => s.zarta.writing.passButton)(view.currentWriterName ?? '')}
       onReveal={onReady}>
       <WritingForm view={view} onSubmit={onSubmit} onTimeUp={onTimeUp} />
     </PassCurtain>
@@ -49,6 +51,7 @@ function WritingForm({
   onTimeUp: () => void;
 }) {
   const { palette } = useTheme();
+  const { t } = useI18n();
   const [text, setText] = useState('');
   const secondsLeft = useCountdown(view.deadlineAt, onTimeUp);
 
@@ -61,7 +64,7 @@ function WritingForm({
     <Screen>
       <Row style={{ justifyContent: 'space-between' }}>
         <Chip color={palette.secondary} filled>
-          Round {view.round} / {view.totalRounds}
+          {t((s) => s.zarta.session.round)(view.round, view.totalRounds)}
         </Chip>
         <Text variant="bodyStrong" color={secondsLeft <= 5 ? palette.error : palette.onSurface}>
           {secondsLeft}s
@@ -74,17 +77,17 @@ function WritingForm({
       />
 
       <Card style={{ alignItems: 'center', gap: spacing.sm, paddingVertical: spacing.xl }}>
-        <Label color={palette.onSurfaceVariant}>{view.currentWriterName}, answer this</Label>
+        <Label color={palette.onSurfaceVariant}>{t((s) => s.zarta.writing.answerThis)(view.currentWriterName ?? '')}</Label>
         <Text variant="heading" center>
           {view.question}
         </Text>
       </Card>
 
-      <Label>Your bluff</Label>
+      <Label>{t((s) => s.zarta.writing.yourBluff)}</Label>
       <TextInput
         value={text}
         onChangeText={setText}
-        placeholder="Write something believable…"
+        placeholder={t((s) => s.zarta.writing.placeholder)}
         placeholderTextColor={palette.onSurfaceVariant}
         maxLength={60}
         autoFocus
@@ -101,7 +104,7 @@ function WritingForm({
         }}
       />
 
-      <Button label="Lock in my answer" size="lg" onPress={submit} disabled={!text.trim()} />
+      <Button label={t((s) => s.zarta.writing.lockIn)} size="lg" onPress={submit} disabled={!text.trim()} />
     </Screen>
   );
 }

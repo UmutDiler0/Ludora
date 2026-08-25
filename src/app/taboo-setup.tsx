@@ -25,6 +25,7 @@ import {
   type TabooConfig,
 } from '@/features/games/taboo/config';
 import type { TabooTeamId } from '@/features/games/taboo/state';
+import { useI18n } from '@/i18n/I18nProvider';
 import { useProfile } from '@/stores/profile';
 import { useTheme } from '@/theme/ThemeProvider';
 import type { Palette } from '@/theme/palettes';
@@ -51,12 +52,13 @@ interface RosterEntry {
   team: TabooTeamId;
 }
 
-const TEAM_NAME: Record<TabooTeamId, string> = { A: 'Red', B: 'Blue' };
 const teamAccent = (p: Palette, id: TabooTeamId) => (id === 'A' ? p.error : p.secondary);
 
 export default function TabooSetup() {
   const router = useRouter();
   const { palette } = useTheme();
+  const { t } = useI18n();
+  const teamName = t((s) => s.taboo.team);
 
   const you = useProfile((s) => s.displayName);
 
@@ -129,14 +131,14 @@ export default function TabooSetup() {
   return (
     <Screen>
       <ScreenHeader
-        title="Set Up Taboo"
-        subtitle="Build the roster, split the teams, then start the room."
+        title={t((s) => s.taboo.setup.title)}
+        subtitle={t((s) => s.taboo.setup.subtitle)}
         onBack={() => router.back()}
       />
 
       <Card style={{ gap: spacing.md }}>
         <Row style={{ justifyContent: 'space-between' }}>
-          <Label>Players</Label>
+          <Label>{t((s) => s.gameCore.players)}</Label>
           <Text variant="caption" color={palette.onSurfaceVariant}>
             {roster.length} / {TABOO_MAX_PLAYERS}
           </Text>
@@ -157,7 +159,7 @@ export default function TabooSetup() {
         </View>
 
         <Button
-          label="Add player"
+          label={t((s) => s.taboo.setup.addPlayer)}
           icon="person-add"
           tone="ghost"
           onPress={addPlayer}
@@ -166,16 +168,16 @@ export default function TabooSetup() {
 
         <Row style={{ justifyContent: 'center' }} gap={spacing.lg}>
           <Text variant="caption" color={teamAccent(palette, 'A')}>
-            Team Red · {counts.A}
+            {t((s) => s.taboo.setup.teamCount)(teamName.A, counts.A)}
           </Text>
           <Text variant="caption" color={teamAccent(palette, 'B')}>
-            Team Blue · {counts.B}
+            {t((s) => s.taboo.setup.teamCount)(teamName.B, counts.B)}
           </Text>
         </Row>
       </Card>
 
       <Card style={{ gap: spacing.md }}>
-        <Label>Presets</Label>
+        <Label>{t((s) => s.gameCore.presets)}</Label>
         <Row gap={spacing.sm}>
           {(Object.keys(TABOO_PRESETS) as (keyof typeof TABOO_PRESETS)[]).map((name) => (
             <Pressable
@@ -188,11 +190,8 @@ export default function TabooSetup() {
                 preset === name && { borderColor: palette.primary, backgroundColor: palette.primaryContainer },
                 pressed && { opacity: 0.85 },
               ]}>
-              <Text
-                variant="bodyStrong"
-                color={preset === name ? palette.onPrimary : palette.onSurface}
-                style={{ textTransform: 'capitalize' }}>
-                {name}
+              <Text variant="bodyStrong" color={preset === name ? palette.onPrimary : palette.onSurface}>
+                {t((s) => s.gameCore.presetName)[name as 'classic' | 'quick']}
               </Text>
             </Pressable>
           ))}
@@ -200,10 +199,10 @@ export default function TabooSetup() {
       </Card>
 
       <Card style={{ gap: spacing.lg }}>
-        <Label>Rules</Label>
+        <Label>{t((s) => s.gameCore.rules)}</Label>
         {TABOO_CONFIG_FIELDS.map((field) => (
           <View key={field.key} style={{ gap: spacing.xs }}>
-            <Label>{field.label}</Label>
+            <Label>{t((s) => s.taboo.setup.field)[field.key]}</Label>
             <NumberStepper
               value={config[field.key]}
               min={field.min}
@@ -225,15 +224,15 @@ export default function TabooSetup() {
           />
           <Text variant="bodyStrong">
             {!rosterOk
-              ? 'Every team needs at least one player.'
+              ? t((s) => s.taboo.setup.everyTeamNeedsPlayer)
               : configResult.ok
-                ? `${roster.length} players, first to ${configResult.value.targetScore} wins.`
-                : 'Fix the setting above before starting.'}
+                ? t((s) => s.taboo.setup.resultSummary)(roster.length, configResult.value.targetScore)
+                : t((s) => s.gameCore.fixSetting)}
           </Text>
         </Row>
       </Card>
 
-      <Button label="Continue to Lobby" size="lg" onPress={start} disabled={!canStart} />
+      <Button label={t((s) => s.gameCore.continueToLobby)} size="lg" onPress={start} disabled={!canStart} />
     </Screen>
   );
 }
@@ -254,13 +253,15 @@ function RosterRow({
   onRemove: () => void;
 }) {
   const { palette } = useTheme();
+  const { t } = useI18n();
+  const teamName = t((s) => s.taboo.team);
 
   return (
     <Row gap={spacing.sm} style={{ alignItems: 'center' }}>
       <TextInput
         value={entry.name}
         onChangeText={onRename}
-        placeholder="Player name"
+        placeholder={t((s) => s.taboo.setup.playerNamePlaceholder)}
         placeholderTextColor={palette.onSurfaceVariant}
         maxLength={20}
         style={{
@@ -283,7 +284,7 @@ function RosterRow({
             <Pressable
               key={team}
               accessibilityRole="button"
-              accessibilityLabel={`Team ${TEAM_NAME[team]}${isYou ? ', you' : ''}`}
+              accessibilityLabel={t((s) => s.taboo.setup.teamOptionLabel)(teamName[team], isYou)}
               accessibilityState={{ selected: active }}
               onPress={() => onSetTeam(team)}
               style={{
@@ -297,7 +298,7 @@ function RosterRow({
                 backgroundColor: active ? accent : palette.surface,
               }}>
               <Text variant="label" color={active ? palette.onPrimary : palette.onSurfaceVariant}>
-                {TEAM_NAME[team].charAt(0)}
+                {teamName[team].charAt(0)}
               </Text>
             </Pressable>
           );
@@ -309,7 +310,7 @@ function RosterRow({
           rather than disabled once the table hits the minimum, so there is no
           dead control sitting in a row that still looks tappable. */}
       {!isYou && canRemove && (
-        <IconButton name="close" label={`Remove ${entry.name}`} onPress={onRemove} color={palette.error} />
+        <IconButton name="close" label={t((s) => s.taboo.setup.removePlayer)(entry.name)} onPress={onRemove} color={palette.error} />
       )}
     </Row>
   );

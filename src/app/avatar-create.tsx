@@ -5,9 +5,10 @@ import { Pressable, ScrollView, View } from 'react-native';
 import { Button, Label, Row, Screen, Text } from '@/components/ui';
 import { AvatarRenderer } from '@/features/avatar/AvatarRenderer';
 import { itemsForSlot, ownsItem, type AvatarItem } from '@/features/avatar/catalogue';
+import { DEFAULT_AVATAR, type AvatarConfig, type AvatarSlot } from '@/features/avatar/types';
+import { useI18n } from '@/i18n/I18nProvider';
 import { useProfile } from '@/stores/profile';
 import { useTheme } from '@/theme/ThemeProvider';
-import { DEFAULT_AVATAR, type AvatarConfig, type AvatarSlot } from '@/features/avatar/types';
 import { radius, spacing, stroke } from '@/theme/tokens';
 
 /**
@@ -24,16 +25,18 @@ import { radius, spacing, stroke } from '@/theme/tokens';
  */
 
 /** The slots worth asking about at sign-up, in the order they read on the body. */
-const STEPS: { slot: AvatarSlot; title: string; hint: string }[] = [
-  { slot: 'build', title: 'Build', hint: 'Change this whenever you like — nothing is locked to it.' },
-  { slot: 'body', title: 'Skin', hint: '' },
-  { slot: 'hair', title: 'Hair', hint: '' },
-  { slot: 'clothes', title: 'Top', hint: '' },
-];
+const STEP_SLOTS: AvatarSlot[] = ['build', 'body', 'hair', 'clothes'];
 
 export default function AvatarCreate() {
   const router = useRouter();
   const { palette } = useTheme();
+  const { t } = useI18n();
+  const slotLabel = t((s) => s.avatar.slotLabel);
+  const steps = STEP_SLOTS.map((slot) => ({
+    slot,
+    title: slotLabel[slot],
+    hint: slot === 'build' ? t((s) => s.avatar.create.buildHint) : '',
+  }));
 
   const saved = useProfile((s) => s.avatar);
   const ownedItemIds = useProfile((s) => s.ownedItemIds);
@@ -51,9 +54,9 @@ export default function AvatarCreate() {
   return (
     <Screen>
       <View style={{ gap: spacing.xs }}>
-        <Text variant="title">Make it yours</Text>
+        <Text variant="title">{t((s) => s.avatar.create.title)}</Text>
         <Text variant="body" color={palette.onSurfaceVariant}>
-          A quick first pass. You can change every part of this later, and buy more in the shop.
+          {t((s) => s.avatar.create.subtitle)}
         </Text>
       </View>
 
@@ -61,7 +64,7 @@ export default function AvatarCreate() {
         <AvatarRenderer config={draft} mode="full" size={190} ring={palette.primaryContainer} />
       </View>
 
-      {STEPS.map((step) => (
+      {steps.map((step) => (
         <View key={step.slot} style={{ gap: spacing.sm }}>
           <Row style={{ justifyContent: 'space-between' }}>
             <Label>{step.title}</Label>
@@ -84,8 +87,8 @@ export default function AvatarCreate() {
         </View>
       ))}
 
-      <Button label="This is me" onPress={done} />
-      <Button label="Skip for now" tone="ghost" onPress={() => router.replace('/(tabs)')} />
+      <Button label={t((s) => s.avatar.create.thisIsMe)} onPress={done} />
+      <Button label={t((s) => s.avatar.create.skipForNow)} tone="ghost" onPress={() => router.replace('/(tabs)')} />
     </Screen>
   );
 }

@@ -7,6 +7,7 @@ import { DrawingScreen } from '@/features/games/sketchIt/screens/Drawing';
 import { SketchGameOverScreen } from '@/features/games/sketchIt/screens/GameOver';
 import { RoundIntroScreen } from '@/features/games/sketchIt/screens/RoundIntro';
 import { RoundRecapScreen } from '@/features/games/sketchIt/screens/RoundRecap';
+import { useI18n } from '@/i18n/I18nProvider';
 import { useLocalSketch, useSketchView } from '@/stores/localSketch';
 import { useTheme } from '@/theme/ThemeProvider';
 import { spacing, stroke } from '@/theme/tokens';
@@ -22,6 +23,7 @@ import { spacing, stroke } from '@/theme/tokens';
  */
 export default function SketchRoute() {
   const router = useRouter();
+  const { t } = useI18n();
   const view = useSketchView();
   const startRound = useLocalSketch((s) => s.startRound);
   const markGuess = useLocalSketch((s) => s.markGuess);
@@ -32,9 +34,9 @@ export default function SketchRoute() {
   if (!view) {
     return (
       <Screen>
-        <Text variant="title">No game in progress</Text>
-        <Text variant="body">Start one from the Play tab.</Text>
-        <Button label="Back to Play" onPress={() => router.replace('/(tabs)/play')} />
+        <Text variant="title">{t((s) => s.sketchIt.session.noGameInProgress)}</Text>
+        <Text variant="body">{t((s) => s.sketchIt.session.startFromPlay)}</Text>
+        <Button label={t((s) => s.sketchIt.session.backToPlay)} onPress={() => router.replace('/(tabs)/play')} />
       </Screen>
     );
   }
@@ -65,6 +67,7 @@ function SketchHeader({
   totalRounds: number;
 }) {
   const { palette } = useTheme();
+  const { t } = useI18n();
 
   return (
     <SafeAreaView
@@ -81,10 +84,8 @@ function SketchHeader({
           paddingHorizontal: spacing.lg,
           paddingVertical: spacing.sm,
         }}>
-        <IconButton name="chevron-back" label="Leave game" onPress={onLeave} />
-        <Chip color={palette.tertiary}>
-          Round {round} / {totalRounds}
-        </Chip>
+        <IconButton name="chevron-back" label={t((s) => s.sketchIt.session.leaveGame)} onPress={onLeave} />
+        <Chip color={palette.tertiary}>{t((s) => s.sketchIt.session.round)(round, totalRounds)}</Chip>
       </Row>
     </SafeAreaView>
   );

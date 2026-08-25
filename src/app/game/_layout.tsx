@@ -6,6 +6,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { IconButton, Text } from '@/components/ui';
 import { ChatRoom } from '@/features/games/vampireVillage/screens/Chat';
 import { PeerAlert } from '@/features/network/PeerAlert';
+import { useI18n } from '@/i18n/I18nProvider';
 import { presenceGateway } from '@/services/network/mockPresence';
 import { useChat, useUnreadCount } from '@/stores/chat';
 import { useLocalGame, useMyView } from '@/stores/localGame';
@@ -54,6 +55,7 @@ export default function GameLayout() {
 }
 
 function GameTabs({ palette }: { palette: ReturnType<typeof useTheme>['palette'] }) {
+  const { t } = useI18n();
   return (
     <Tabs
       screenOptions={{
@@ -78,7 +80,7 @@ function GameTabs({ palette }: { palette: ReturnType<typeof useTheme>['palette']
       <Tabs.Screen
         name="index"
         options={{
-          title: 'Game',
+          title: t((s) => s.vampireVillage.session.tabGame),
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="game-controller" size={size} color={color} />
           ),
@@ -87,14 +89,14 @@ function GameTabs({ palette }: { palette: ReturnType<typeof useTheme>['palette']
       <Tabs.Screen
         name="roles"
         options={{
-          title: 'Roles',
+          title: t((s) => s.vampireVillage.session.tabRoles),
           tabBarIcon: ({ color, size }) => <Ionicons name="people" size={size} color={color} />,
         }}
       />
       <Tabs.Screen
         name="log"
         options={{
-          title: 'Log',
+          title: t((s) => s.vampireVillage.session.tabLog),
           tabBarIcon: ({ color, size }) => <Ionicons name="receipt" size={size} color={color} />,
         }}
       />
@@ -104,6 +106,7 @@ function GameTabs({ palette }: { palette: ReturnType<typeof useTheme>['palette']
 
 function GameHeader() {
   const { palette } = useTheme();
+  const { t } = useI18n();
   const router = useRouter();
 
   const leave = () => {
@@ -127,7 +130,7 @@ function GameHeader() {
           paddingHorizontal: spacing.lg,
           paddingVertical: spacing.sm,
         }}>
-        <IconButton name="chevron-back" label="Leave game" onPress={leave} />
+        <IconButton name="chevron-back" label={t((s) => s.vampireVillage.session.leaveGame)} onPress={leave} />
         {/* Long-press the title in a dev build to fire a peer drop. The real
             events come from the presence gateway, which is silent until §18's
             transport exists — without this there is no way to see the pop-up
@@ -136,7 +139,7 @@ function GameHeader() {
           onLongPress={__DEV__ ? simulatePeerDrop : undefined}
           delayLongPress={600}
           style={{ flex: 1 }}>
-          <Text variant="bodyStrong">Vampire Village</Text>
+          <Text variant="bodyStrong">{t((s) => s.vampireVillage.session.title)}</Text>
         </Pressable>
 
         <ChatButton />
@@ -153,6 +156,7 @@ function GameHeader() {
  */
 function ChatButton() {
   const { palette } = useTheme();
+  const { t } = useI18n();
   const view = useMyView();
   const open = useChat((s) => s.open);
   const unread = useUnreadCount(view);
@@ -161,7 +165,7 @@ function ChatButton() {
     <View>
       <IconButton
         name="chatbubbles"
-        label={unread > 0 ? `Open chat, ${unread} unread` : 'Open chat'}
+        label={unread > 0 ? t((s) => s.vampireVillage.session.openChatUnread)(unread) : t((s) => s.vampireVillage.session.openChat)}
         onPress={open}
       />
       {unread > 0 && (

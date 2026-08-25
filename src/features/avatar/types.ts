@@ -78,21 +78,11 @@ export const EDITABLE_SLOTS: AvatarSlot[] = [
   'background',
 ];
 
-export const SLOT_LABELS: Record<AvatarSlot, string> = {
-  background: 'Background',
-  build: 'Build',
-  body: 'Skin',
-  face: 'Face',
-  eyes: 'Eyes',
-  mouth: 'Mouth',
-  hair: 'Hair',
-  facialHair: 'Beard',
-  clothes: 'Top',
-  pants: 'Bottoms',
-  shoes: 'Shoes',
-  hat: 'Hat',
-  accessory: 'Accessory',
-};
+/**
+ * `SLOT_LABELS` used to live here as plain English strings; it moved to
+ * `i18n/en(or tr)/avatar.ts`'s `slotLabel` once the shop/customizer/creation
+ * tab rows needed to follow the app's language.
+ */
 
 /** Slots where wearing nothing is a real choice rather than a missing piece. */
 export const OPTIONAL_SLOTS: AvatarSlot[] = ['hat', 'accessory', 'face', 'facialHair'];

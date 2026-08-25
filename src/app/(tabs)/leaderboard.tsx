@@ -14,9 +14,9 @@ import {
   SegmentedTabs,
   Text,
 } from '@/components/ui';
-import { TABS } from '@/constants/app';
 import { AvatarRenderer } from '@/features/avatar/AvatarRenderer';
 import { leaderboard, type LeaderboardEntry, type LeaderboardPeriod } from '@/features/leaderboard/dummy';
+import { useI18n } from '@/i18n/I18nProvider';
 import { useProfile } from '@/stores/profile';
 import { useSession } from '@/stores/session';
 import { useTheme } from '@/theme/ThemeProvider';
@@ -34,18 +34,13 @@ import { radius, spacing, stroke } from '@/theme/tokens';
  * reset countdown, and gold prizes on the top three tiers.
  */
 
-const PERIOD_OPTIONS = [
-  { value: 'weekly', label: 'Weekly' },
-  { value: 'monthly', label: 'Monthly' },
-] as const;
-
 /** Flavor only — no backend pays these out yet. Scaled against AWARDS in economy/levels.ts. */
 const PRIZES: Record<LeaderboardPeriod, [number, number, number]> = {
   weekly: [250, 150, 80],
   monthly: [800, 500, 250],
 };
 
-function resetsIn(period: LeaderboardPeriod): string {
+function resetsIn(period: LeaderboardPeriod, t: ReturnType<typeof useI18n>['t']): string {
   const now = new Date();
   const target =
     period === 'weekly'
@@ -61,14 +56,19 @@ function resetsIn(period: LeaderboardPeriod): string {
   const ms = target.getTime() - now.getTime();
   const days = Math.floor(ms / 86_400_000);
   const hours = Math.floor((ms % 86_400_000) / 3_600_000);
-  return days > 0 ? `Resets in ${days}d ${hours}h` : `Resets in ${hours}h`;
+  return days > 0 ? t((s) => s.leaderboard.resetsInDays)(days, hours) : t((s) => s.leaderboard.resetsInHours)(hours);
 }
 
 export default function Leaderboard() {
   const { palette } = useTheme();
+  const { t } = useI18n();
   const s = useMemo(() => makeStyles(palette), [palette]);
   const router = useRouter();
   const [period, setPeriod] = useState<LeaderboardPeriod>('weekly');
+  const periodOptions = [
+    { value: 'weekly' as const, label: t((s) => s.leaderboard.weekly) },
+    { value: 'monthly' as const, label: t((s) => s.leaderboard.monthly) },
+  ];
 
   const { handle, gold, stats, avatar } = useProfile();
   const isGuest = useSession((state) => state.isGuest);
@@ -89,11 +89,11 @@ export default function Leaderboard() {
 
   return (
     <Screen scroll={false}>
-      <ScreenHeader title={TABS.leaderboard} />
+      <ScreenHeader title={t((s) => s.tabs.leaderboard)} />
 
-      <SegmentedTabs options={PERIOD_OPTIONS} value={period} onChange={setPeriod} />
+      <SegmentedTabs options={periodOptions} value={period} onChange={setPeriod} />
       <Label center color={palette.onSurfaceVariant}>
-        {resetsIn(period)}
+        {resetsIn(period, t)}
       </Label>
 
       <ScrollView
@@ -120,7 +120,7 @@ export default function Leaderboard() {
                   <AvatarRenderer config={entry.avatar} size={38} background={false} border={false} />
                 </Row>
               }
-              title={entry.isYou ? 'You' : entry.displayName}
+              title={entry.isYou ? t((s) => s.leaderboard.you) : entry.displayName}
               trailing={
                 <Text variant="bodyStrong" color={palette.tertiary}>
                   {entry.score.toLocaleString()}
@@ -133,11 +133,13 @@ export default function Leaderboard() {
 
       {isGuest ? (
         <Card accent={palette.primary} style={{ gap: spacing.sm }}>
-          <Text variant="bodyStrong">Guests aren&apos;t ranked</Text>
+          <Text variant="bodyStrong">{t((s) => s.leaderboard.guestsNotRanked)}</Text>
           <Text variant="caption" color={palette.onSurfaceVariant}>
-            Sign up to post a score and climb the {period} board.
+            {t((s) => s.leaderboard.guestsNotRankedBody)(
+              (period === 'weekly' ? t((s) => s.leaderboard.weekly) : t((s) => s.leaderboard.monthly)),
+            )}
           </Text>
-          <Button label="Sign Up" onPress={() => router.push('/(auth)/register')} />
+          <Button label={t((s) => s.leaderboard.signUp)} onPress={() => router.push('/(auth)/register')} />
         </Card>
       ) : (
         you && (
@@ -148,9 +150,9 @@ export default function Leaderboard() {
                   #{you.rank}
                 </Text>
                 <View>
-                  <Text variant="bodyStrong">Your rank</Text>
+                  <Text variant="bodyStrong">{t((s) => s.leaderboard.yourRank)}</Text>
                   <Text variant="caption" color={palette.onSurfaceVariant}>
-                    {period === 'weekly' ? 'This week' : 'This month'}
+                    {period === 'weekly' ? t((s) => s.leaderboard.thisWeek) : t((s) => s.leaderboard.thisMonth)}
                   </Text>
                 </View>
               </Row>
@@ -190,6 +192,7 @@ function Podium({
   palette: Palette;
   s: Styles;
 }) {
+  const { t } = useI18n();
   const medals = MEDALS(palette);
 
   return (
@@ -223,7 +226,7 @@ function Podium({
 
             <View style={{ alignItems: 'center', gap: 2, paddingTop: spacing.xs }}>
               <Text variant="bodyStrong" numberOfLines={1} style={{ maxWidth: '100%' }}>
-                {entry.isYou ? 'You' : entry.displayName}
+                {entry.isYou ? t((s) => s.leaderboard.you) : entry.displayName}
               </Text>
               <Text variant="caption" color={palette.onSurfaceVariant}>
                 {entry.score.toLocaleString()}

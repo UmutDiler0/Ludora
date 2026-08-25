@@ -7,6 +7,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Button, Card, Input, Row, Text } from '@/components/ui';
 import { APP_NAME } from '@/constants/app';
 import { SocialAuthRow } from '@/features/auth/components/SocialAuthRow';
+import { useI18n } from '@/i18n/I18nProvider';
 import { useProfile } from '@/stores/profile';
 import { useSession } from '@/stores/session';
 import { spacing, type } from '@/theme/tokens';
@@ -16,6 +17,7 @@ import type { Palette } from '@/theme/palettes';
 /** Login (spec §6). Email/password against the auth gateway. */
 export default function Login() {
   const { palette } = useTheme();
+  const { t } = useI18n();
   const s = useMemo(() => makeStyles(palette), [palette]);
 
   const router = useRouter();
@@ -57,27 +59,27 @@ export default function Login() {
               {APP_NAME}
             </Text>
             <Text variant="body" color={palette.onSurfaceVariant} center>
-              Enter the arena. Connect with friends.
+              {t((s) => s.auth.login.tagline)}
             </Text>
           </Animated.View>
 
           <Animated.View entering={FadeInDown.delay(120).duration(420)}>
             <Card style={{ gap: spacing.sm }}>
               <Input
-                label="Email"
+                label={t((s) => s.auth.login.email)}
                 value={email}
                 onChangeText={(v) => {
                   clearError();
                   setEmail(v);
                 }}
-                placeholder="player@ludora.games"
+                placeholder={t((s) => s.auth.login.emailPlaceholder)}
                 keyboardType="email-address"
                 autoComplete="email"
                 returnKeyType="next"
               />
 
               <Input
-                label="Password"
+                label={t((s) => s.auth.login.password)}
                 value={password}
                 onChangeText={(v) => {
                   clearError();
@@ -93,12 +95,12 @@ export default function Login() {
 
               <Row style={{ justifyContent: 'flex-end', marginTop: -spacing.sm }}>
                 <Link href="/(auth)/forgot-password" style={[type.caption, s.link]}>
-                  Forgot password?
+                  {t((s) => s.auth.login.forgotPassword)}
                 </Link>
               </Row>
 
               <Button
-                label="Sign in"
+                label={t((s) => s.auth.login.signIn)}
                 onPress={submit}
                 disabled={!canSubmit}
                 loading={busy}
@@ -112,16 +114,16 @@ export default function Login() {
           </Animated.View>
 
           <Animated.View entering={FadeInDown.delay(260).duration(420)}>
-            <Button label="Play as Guest" tone="ghost" icon="person-outline" onPress={continueAsGuest} />
+            <Button label={t((s) => s.auth.login.playAsGuest)} tone="ghost" icon="person-outline" onPress={continueAsGuest} />
           </Animated.View>
 
           <View style={{ marginTop: 'auto', paddingTop: spacing.xl }}>
             <Row gap={spacing.xs} style={{ justifyContent: 'center' }}>
               <Text variant="caption" color={palette.onSurfaceVariant}>
-                Don&apos;t have an account?
+                {t((s) => s.auth.login.noAccount)}
               </Text>
               <Link href="/(auth)/register" style={[type.caption, s.linkPrimary]}>
-                Sign up
+                {t((s) => s.auth.login.signUp)}
               </Link>
             </Row>
           </View>

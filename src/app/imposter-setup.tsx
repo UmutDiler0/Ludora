@@ -13,6 +13,7 @@ import {
   validateImposterConfig,
   type ImposterConfig,
 } from '@/features/games/imposter/config';
+import { useI18n } from '@/i18n/I18nProvider';
 import { useTheme } from '@/theme/ThemeProvider';
 import type { Palette } from '@/theme/palettes';
 import { radius, spacing, stroke } from '@/theme/tokens';
@@ -28,6 +29,7 @@ type FieldKey = (typeof IMPOSTER_CONFIG_FIELDS)[number]['key'];
 export default function ImposterSetup() {
   const router = useRouter();
   const { palette } = useTheme();
+  const { t } = useI18n();
 
   const [playerCount, setPlayerCount] = useState(5);
   const [config, setConfig] = useState<ImposterConfig>(DEFAULT_IMPOSTER_CONFIG);
@@ -56,16 +58,16 @@ export default function ImposterSetup() {
   return (
     <Screen>
       <ScreenHeader
-        title="Set Up Imposter"
-        subtitle="Everyone but one player learns the value — set the table, then start the room."
+        title={t((s) => s.imposter.setup.title)}
+        subtitle={t((s) => s.imposter.setup.subtitle)}
         onBack={() => router.back()}
       />
 
       <Card style={{ gap: spacing.md }}>
         <Row style={{ justifyContent: 'space-between' }}>
-          <Label>Players</Label>
+          <Label>{t((s) => s.gameCore.players)}</Label>
           <Text variant="caption" color={palette.onSurfaceVariant}>
-            {IMPOSTER_MIN_PLAYERS}–{IMPOSTER_MAX_PLAYERS}
+            {t((s) => s.common.playersRange)(IMPOSTER_MIN_PLAYERS, IMPOSTER_MAX_PLAYERS)}
           </Text>
         </Row>
         <NumberStepper
@@ -73,15 +75,15 @@ export default function ImposterSetup() {
           min={IMPOSTER_MIN_PLAYERS}
           max={IMPOSTER_MAX_PLAYERS}
           onChange={setPlayerCount}
-          format={(n) => `${n} players`}
+          format={(n) => t((s) => s.common.players)(n)}
         />
         <Text variant="caption" color={palette.onSurfaceVariant}>
-          Pass the phone around for the reveal, then put it down and talk.
+          {t((s) => s.imposter.setup.passPhoneBody)}
         </Text>
       </Card>
 
       <Card style={{ gap: spacing.md }}>
-        <Label>Presets</Label>
+        <Label>{t((s) => s.gameCore.presets)}</Label>
         <Row gap={spacing.sm}>
           {(Object.keys(IMPOSTER_PRESETS) as (keyof typeof IMPOSTER_PRESETS)[]).map((name) => (
             <Pressable
@@ -94,11 +96,8 @@ export default function ImposterSetup() {
                 preset === name && { borderColor: palette.primary, backgroundColor: palette.primaryContainer },
                 pressed && { opacity: 0.85 },
               ]}>
-              <Text
-                variant="bodyStrong"
-                color={preset === name ? palette.onPrimary : palette.onSurface}
-                style={{ textTransform: 'capitalize' }}>
-                {name}
+              <Text variant="bodyStrong" color={preset === name ? palette.onPrimary : palette.onSurface}>
+                {t((s) => s.gameCore.presetName)[name as 'classic' | 'quick' | 'extended']}
               </Text>
             </Pressable>
           ))}
@@ -106,10 +105,10 @@ export default function ImposterSetup() {
       </Card>
 
       <Card style={{ gap: spacing.lg }}>
-        <Label>Rules</Label>
+        <Label>{t((s) => s.gameCore.rules)}</Label>
         {IMPOSTER_CONFIG_FIELDS.map((field) => (
           <View key={field.key} style={{ gap: spacing.xs }}>
-            <Label>{field.label}</Label>
+            <Label>{t((s) => s.imposter.setup.field)[field.key]}</Label>
             <NumberStepper
               value={config[field.key]}
               min={field.min}
@@ -131,13 +130,13 @@ export default function ImposterSetup() {
           />
           <Text variant="bodyStrong">
             {result.ok
-              ? `${playerCount} players, one imposter.`
-              : 'Fix the setting above before starting.'}
+              ? t((s) => s.imposter.setup.resultSummary)(playerCount)
+              : t((s) => s.gameCore.fixSetting)}
           </Text>
         </Row>
       </Card>
 
-      <Button label="Continue to Lobby" size="lg" onPress={start} disabled={!result.ok} />
+      <Button label={t((s) => s.gameCore.continueToLobby)} size="lg" onPress={start} disabled={!result.ok} />
     </Screen>
   );
 }

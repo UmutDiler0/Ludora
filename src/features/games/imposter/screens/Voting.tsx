@@ -1,6 +1,7 @@
 import { Pressable, View } from 'react-native';
 
 import { Card, Label, Row, Screen, Text } from '@/components/ui';
+import { useI18n } from '@/i18n/I18nProvider';
 import { PassCurtain } from '../../core/PassCurtain';
 import { radius, spacing, stroke } from '@/theme/tokens';
 import { useTheme } from '@/theme/ThemeProvider';
@@ -21,14 +22,15 @@ export function ImposterVotingScreen({
   view: ImposterPlayerView;
   onSubmit: (target: string) => void;
 }) {
+  const { t } = useI18n();
   if (!view.currentVoterUid) return <Screen>{null}</Screen>;
 
   return (
     <PassCurtain
       uid={view.currentVoterUid}
       name={view.currentVoterName ?? ''}
-      subtitle="Who do you think is the imposter?"
-      buttonLabel={`I'm ${view.currentVoterName} — show me the vote`}
+      subtitle={t((s) => s.imposter.voting.subtitle)}
+      buttonLabel={t((s) => s.imposter.voting.passButton)(view.currentVoterName ?? '')}
       onReveal={() => {}}>
       <VotingForm view={view} onSubmit={onSubmit} />
     </PassCurtain>
@@ -43,13 +45,14 @@ function VotingForm({
   onSubmit: (target: string) => void;
 }) {
   const { palette } = useTheme();
+  const { t } = useI18n();
 
   return (
     <Screen>
       <Card style={{ alignItems: 'center', gap: spacing.xs, paddingVertical: spacing.lg }}>
-        <Label color={palette.onSurfaceVariant}>{view.currentVoterName}, cast your accusation</Label>
+        <Label color={palette.onSurfaceVariant}>{t((s) => s.imposter.voting.castAccusation)(view.currentVoterName ?? '')}</Label>
         <Text variant="heading" center>
-          Who is the imposter?
+          {t((s) => s.imposter.voting.whoIsImposter)}
         </Text>
       </Card>
 

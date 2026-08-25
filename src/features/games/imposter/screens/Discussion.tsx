@@ -13,6 +13,7 @@ import {
   Screen,
   Text,
 } from '@/components/ui';
+import { useI18n } from '@/i18n/I18nProvider';
 import { radius, spacing, stroke } from '@/theme/tokens';
 import { useTheme } from '@/theme/ThemeProvider';
 import type { Palette } from '@/theme/palettes';
@@ -41,6 +42,7 @@ export function ImposterDiscussionScreen({
   onTimeUp: () => void;
 }) {
   const { palette } = useTheme();
+  const { t } = useI18n();
   const [guessOpen, setGuessOpen] = useState(false);
   const secondsLeft = useCountdown(view.deadlineAt, onTimeUp);
   const category = IMPOSTER_CATEGORIES.find((c) => c.id === view.categoryId);
@@ -67,14 +69,13 @@ export function ImposterDiscussionScreen({
       />
 
       <Card style={{ alignItems: 'center', gap: spacing.sm, paddingVertical: spacing.lg }}>
-        <Label color={palette.onSurfaceVariant}>Talk it out</Label>
+        <Label color={palette.onSurfaceVariant}>{t((s) => s.imposter.discussion.talkItOut)}</Label>
         <Text variant="body" center>
-          Everyone but the imposter already knows the value. Ask questions, drop hints, and figure out who
-          doesn&apos;t.
+          {t((s) => s.imposter.discussion.talkItOutBody)}
         </Text>
       </Card>
 
-      <Label>At the table</Label>
+      <Label>{t((s) => s.imposter.discussion.atTheTable)}</Label>
       <View style={{ gap: spacing.sm }}>
         {view.players.map((p) => (
           <Row key={p.uid} gap={spacing.md}>
@@ -86,24 +87,24 @@ export function ImposterDiscussionScreen({
 
       <View style={{ flex: 1 }} />
 
-      <Button label="Call a Vote" icon="hand-left" size="lg" onPress={onCallVote} />
+      <Button label={t((s) => s.imposter.discussion.callVote)} icon="hand-left" size="lg" onPress={onCallVote} />
 
       <View style={{ gap: spacing.xs }}>
         <Button
-          label={view.imposterGuessedWrong ? 'Guess already used' : 'Imposter: Guess the Value'}
+          label={view.imposterGuessedWrong ? t((s) => s.imposter.discussion.guessUsed) : t((s) => s.imposter.discussion.guessButton)}
           tone="danger"
           onPress={() => setGuessOpen(true)}
           disabled={view.imposterGuessedWrong}
         />
         <Text variant="caption" color={palette.onSurfaceVariant} center>
-          Only the imposter should use this — everyone else, focus on the vote.
+          {t((s) => s.imposter.discussion.guessHint)}
         </Text>
       </View>
 
-      <Dialog visible={guessOpen} onDismiss={() => setGuessOpen(false)} label="Guess the value">
-        <Text variant="heading">What&apos;s the {view.categoryName.toLowerCase()}?</Text>
+      <Dialog visible={guessOpen} onDismiss={() => setGuessOpen(false)} label={t((s) => s.imposter.discussion.guessDialogTitle)(view.categoryName.toLowerCase())}>
+        <Text variant="heading">{t((s) => s.imposter.discussion.guessDialogTitle)(view.categoryName.toLowerCase())}</Text>
         <Text variant="caption" color={palette.onSurfaceVariant}>
-          One guess only — choose carefully.
+          {t((s) => s.imposter.discussion.guessDialogSubtitle)}
         </Text>
         <View style={{ gap: spacing.sm }}>
           {category?.values.map((v) => (

@@ -1,0 +1,25 @@
+/** Strings reused across more than one screen — buttons, generic labels, formatters. */
+export const common = {
+  back: 'Go back',
+  cancel: 'Cancel',
+  close: 'Close',
+  save: 'Save',
+  continue: 'Continue',
+  gotIt: 'Got it',
+  playAgain: 'Play again',
+  backToPlay: 'Back to Play',
+  loading: 'Loading…',
+  you: 'You',
+  free: 'Free',
+  premium: 'Premium',
+  soon: 'Soon',
+  playable: 'Playable',
+  players: (n: number) => `${n} players`,
+  playersRange: (min: number, max: number) => `${min}–${max}`,
+  howToPlayLabel: (game: string) => `How to play ${game}`,
+  playGame: (game: string) => `Play ${game}`,
+  /** Abbreviations for `formatResetIn` (progression/periods.ts) — "6h", "2d". */
+  resetUnit: { minute: 'm', hour: 'h', day: 'd' },
+  hidePassword: 'Hide password',
+  showPassword: 'Show password',
+};

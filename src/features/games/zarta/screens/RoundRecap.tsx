@@ -2,6 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { View } from 'react-native';
 
 import { Button, Card, Label, Row, Screen, Text } from '@/components/ui';
+import { useI18n } from '@/i18n/I18nProvider';
 import { spacing } from '@/theme/tokens';
 import { useTheme } from '@/theme/ThemeProvider';
 import type { ZartaPlayerView } from '../state';
@@ -14,6 +15,7 @@ import type { ZartaPlayerView } from '../state';
  */
 export function ZartaRoundRecapScreen({ view, onContinue }: { view: ZartaPlayerView; onContinue: () => void }) {
   const { palette } = useTheme();
+  const { t } = useI18n();
   if (!view.lastRound) return <Screen>{null}</Screen>;
 
   const { question, correctAnswer, options, pointsThisRound } = view.lastRound;
@@ -27,7 +29,7 @@ export function ZartaRoundRecapScreen({ view, onContinue }: { view: ZartaPlayerV
         </Text>
       </Card>
 
-      <Label>The table</Label>
+      <Label>{t((s) => s.zarta.roundRecap.theTable)}</Label>
       <View style={{ gap: spacing.sm }}>
         {options.map((option) => (
           <Card key={option.id} accent={option.isCorrect ? palette.secondary : undefined} style={{ gap: spacing.xs }}>
@@ -43,23 +45,23 @@ export function ZartaRoundRecapScreen({ view, onContinue }: { view: ZartaPlayerV
             </Row>
             {!option.isCorrect && option.authorNames.length > 0 && (
               <Text variant="caption" color={palette.onSurfaceVariant}>
-                Written by {option.authorNames.join(', ')}
+                {t((s) => s.zarta.roundRecap.writtenBy)(option.authorNames.join(', '))}
               </Text>
             )}
             {option.voterNames.length > 0 && (
               <Text variant="caption" color={palette.onSurfaceVariant}>
-                Picked by {option.voterNames.join(', ')}
+                {t((s) => s.zarta.roundRecap.pickedBy)(option.voterNames.join(', '))}
               </Text>
             )}
           </Card>
         ))}
       </View>
 
-      <Label>Points this round</Label>
+      <Label>{t((s) => s.zarta.roundRecap.pointsThisRound)}</Label>
       <View style={{ gap: spacing.xs }}>
         {pointsThisRound.length === 0 && (
           <Text variant="caption" color={palette.onSurfaceVariant}>
-            Nobody scored — everyone was fooled or ran out of time.
+            {t((s) => s.zarta.roundRecap.nobodyScored)}
           </Text>
         )}
         {pointsThisRound.map((p) => (
@@ -72,7 +74,7 @@ export function ZartaRoundRecapScreen({ view, onContinue }: { view: ZartaPlayerV
         ))}
       </View>
 
-      <Button label={view.winner ? 'See results' : 'Pass the phone'} onPress={onContinue} />
+      <Button label={view.winner ? t((s) => s.zarta.roundRecap.seeResults) : t((s) => s.zarta.roundRecap.passThePhone)} onPress={onContinue} />
     </Screen>
   );
 }

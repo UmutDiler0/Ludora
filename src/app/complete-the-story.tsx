@@ -4,6 +4,7 @@ import { View } from 'react-native';
 import { Chip, EmptyState, ListRow, Screen, ScreenHeader } from '@/components/ui';
 import { ContentTile } from '@/features/games/core/ContentTile';
 import { COMPLETE_STORY_ENTRIES } from '@/features/games/story/stories';
+import { useI18n } from '@/i18n/I18nProvider';
 import { spacing } from '@/theme/tokens';
 import { useTheme } from '@/theme/ThemeProvider';
 
@@ -21,32 +22,33 @@ import { useTheme } from '@/theme/ThemeProvider';
 export default function CompleteTheStory() {
   const router = useRouter();
   const { palette } = useTheme();
+  const { t } = useI18n();
 
   return (
     <Screen>
       <ScreenHeader
-        title="Complete the Story"
-        subtitle="One or two sentences is all you get. Work out the rest."
+        title={t((s) => s.story.title)}
+        subtitle={t((s) => s.story.subtitle)}
         onBack={() => router.back()}
       />
 
       {COMPLETE_STORY_ENTRIES.length === 0 ? (
         <EmptyState
           icon="book-outline"
-          title="No stories yet"
-          body="Fragments are still being written — free ones and premium ones both. Check back soon."
+          title={t((s) => s.story.noStoriesYet)}
+          body={t((s) => s.story.noStoriesBody)}
         />
       ) : (
         <View style={{ gap: spacing.sm }}>
-          {COMPLETE_STORY_ENTRIES.map((story) => (
+          {COMPLETE_STORY_ENTRIES.map((entry) => (
             <ListRow
-              key={story.id}
-              leading={<ContentTile id={story.id} icon={story.icon} />}
-              title={story.title}
-              subtitle={story.opening}
+              key={entry.id}
+              leading={<ContentTile id={entry.id} icon={entry.icon} />}
+              title={entry.title}
+              subtitle={entry.opening}
               trailing={
-                <Chip color={story.isPremium ? palette.tertiary : palette.secondary} filled={!story.isPremium}>
-                  {story.isPremium ? 'Premium' : 'Free'}
+                <Chip color={entry.isPremium ? palette.tertiary : palette.secondary} filled={!entry.isPremium}>
+                  {entry.isPremium ? t((s) => s.common.premium) : t((s) => s.common.free)}
                 </Chip>
               }
             />

@@ -41,12 +41,15 @@ export const isRegistered = (id: string): id is RegisteredGameId => id in GAME_R
  */
 export type GameMode = 'local' | 'online';
 
-export const GAME_MODE_LABEL: Record<GameMode, string> = { local: 'Local', online: 'Online' };
-
+/**
+ * `name` and `category` used to live here as plain strings; they moved to
+ * `i18n/en/catalogue.ts` (and its `tr` counterpart) once the app needed more
+ * than one language, keyed by `id` the same way `GAME_MODE_LABEL` used to key
+ * mode labels before that moved too. This interface stays the single source
+ * of truth for everything that isn't locale-dependent.
+ */
 export interface GameCatalogueEntry {
   id: GameId;
-  name: string;
-  category: string;
   isPremium: boolean;
   enabled: boolean;
   minPlayers: number;
@@ -57,8 +60,6 @@ export interface GameCatalogueEntry {
 export const GAME_CATALOGUE: GameCatalogueEntry[] = [
   {
     id: 'vampireVillage',
-    name: 'Vampire Village',
-    category: 'Social Deduction',
     isPremium: false,
     enabled: true,
     minPlayers: 4,
@@ -67,8 +68,6 @@ export const GAME_CATALOGUE: GameCatalogueEntry[] = [
   },
   {
     id: 'taboo',
-    name: 'Taboo Words',
-    category: 'Word Game',
     isPremium: false,
     enabled: true,
     minPlayers: 4,
@@ -77,8 +76,6 @@ export const GAME_CATALOGUE: GameCatalogueEntry[] = [
   },
   {
     id: 'drawingGuess',
-    name: 'Sketch It',
-    category: 'Drawing',
     isPremium: true,
     enabled: true,
     minPlayers: 3,
@@ -87,8 +84,6 @@ export const GAME_CATALOGUE: GameCatalogueEntry[] = [
   },
   {
     id: 'zarta',
-    name: 'Zarta',
-    category: 'Party',
     isPremium: false,
     enabled: true,
     minPlayers: 3,
@@ -100,8 +95,6 @@ export const GAME_CATALOGUE: GameCatalogueEntry[] = [
     // (a fragment to read, not a stateful engine), so it routes straight to
     // /complete-the-story instead of a setup screen.
     id: 'story',
-    name: 'Complete the Story',
-    category: 'Creative',
     isPremium: false,
     enabled: true,
     minPlayers: 1,
@@ -117,8 +110,6 @@ export const GAME_CATALOGUE: GameCatalogueEntry[] = [
     // because opening the game is free; individual cases carry their own
     // free/paid flag instead (features/games/detective/stories.ts).
     id: 'detective',
-    name: 'Detective',
-    category: 'Mystery',
     isPremium: false,
     enabled: true,
     minPlayers: 1,
@@ -132,8 +123,6 @@ export const GAME_CATALOGUE: GameCatalogueEntry[] = [
     // GAME_REGISTRY entry — only the catalogue entry and key art exist so
     // far. Category/headcount/modes are placeholders until real rules land.
     id: 'agent',
-    name: 'Agent',
-    category: 'Social Deduction',
     isPremium: false,
     enabled: false,
     minPlayers: 5,
@@ -146,8 +135,6 @@ export const GAME_CATALOGUE: GameCatalogueEntry[] = [
     // one device the same way Taboo and Zarta are, hence `local` only —
     // there's no networked lobby for it yet.
     id: 'imposter',
-    name: 'Imposter',
-    category: 'Social Deduction',
     isPremium: false,
     enabled: true,
     minPlayers: 4,

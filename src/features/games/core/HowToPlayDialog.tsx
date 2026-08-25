@@ -1,16 +1,16 @@
 import { View } from 'react-native';
 
 import { Button, Dialog, Row, Text } from '@/components/ui';
+import { useI18n } from '@/i18n/I18nProvider';
 import { spacing } from '@/theme/tokens';
 import { useTheme } from '@/theme/ThemeProvider';
-import { HOW_TO_PLAY } from './howToPlay';
 import type { GameId } from './types';
 
 /**
  * "How to play" popover for a catalogue entry — reached from the small info
  * button every game card carries (see `play.tsx`'s `GameCard` and
- * `index.tsx`'s `TrendingCard`). Content lives in `howToPlay.ts`; this
- * component only renders it.
+ * `index.tsx`'s `TrendingCard`). Content lives in `i18n/en(or tr)/howToPlay.ts`,
+ * keyed the same way `catalogue.name` is — this component only renders it.
  */
 export function HowToPlayDialog({
   gameId,
@@ -22,13 +22,15 @@ export function HowToPlayDialog({
   onDismiss: () => void;
 }) {
   const { palette } = useTheme();
-  const entry = HOW_TO_PLAY[gameId];
+  const { t } = useI18n();
+  const title = t((s) => s.catalogue.name)[gameId];
+  const steps = t((s) => s.howToPlay)[gameId].steps;
 
   return (
-    <Dialog visible={visible} onDismiss={onDismiss} label={`How to play ${entry.title}`}>
-      <Text variant="heading">{entry.title}</Text>
+    <Dialog visible={visible} onDismiss={onDismiss} label={t((s) => s.common.howToPlayLabel)(title)}>
+      <Text variant="heading">{title}</Text>
       <View style={{ gap: spacing.md }}>
-        {entry.steps.map((step, i) => (
+        {steps.map((step, i) => (
           <Row key={i} gap={spacing.md} style={{ alignItems: 'flex-start' }}>
             <View
               style={{
@@ -49,7 +51,7 @@ export function HowToPlayDialog({
           </Row>
         ))}
       </View>
-      <Button label="Got it" onPress={onDismiss} />
+      <Button label={t((s) => s.common.gotIt)} onPress={onDismiss} />
     </Dialog>
   );
 }

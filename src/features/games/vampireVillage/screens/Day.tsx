@@ -11,11 +11,11 @@ import Animated, {
 } from 'react-native-reanimated';
 
 import { Avatar, Button, Card, Chip, Label, ProgressBar, Row, Screen, Text } from '@/components/ui';
+import { useI18n } from '@/i18n/I18nProvider';
 import { useChat } from '@/stores/chat';
 import { useTheme } from '@/theme/ThemeProvider';
 import type { Palette } from '@/theme/palettes';
 import { radius, spacing, stroke } from '@/theme/tokens';
-import { ROLES } from '../roles';
 import type { VVPlayerView } from '../state';
 
 const DISCUSSION_SECONDS = 10;
@@ -57,6 +57,7 @@ export function DayScreen({
   onOpenVoting: () => void;
 }) {
   const { palette, roleColors } = useTheme();
+  const { t } = useI18n();
   const s = makeStyles(palette);
   const openChat = useChat((state) => state.open);
 
@@ -67,22 +68,22 @@ export function DayScreen({
   return (
     <Screen>
       <View style={{ gap: spacing.xs }}>
-        <Text variant="title">Town Square</Text>
+        <Text variant="title">{t((s) => s.vampireVillage.day.townSquare)}</Text>
         <Text variant="body" color={palette.onSurfaceVariant}>
-          Discuss and vote to exile suspected vampires. Choose wisely.
+          {t((s) => s.vampireVillage.day.subtitle)}
         </Text>
       </View>
 
       {!voting && <DiscussionClock secondsLeft={secondsLeft} />}
 
       <Card accent={palette.secondary}>
-        <Label color={palette.secondary}>Current phase</Label>
+        <Label color={palette.secondary}>{t((s) => s.vampireVillage.day.currentPhase)}</Label>
         <Text variant="heading" style={{ marginTop: spacing.xs }}>
-          {voting ? 'Voting' : 'Discussion'}
+          {voting ? t((s) => s.vampireVillage.day.voting) : t((s) => s.vampireVillage.day.discussion)}
         </Text>
         {!view.you.alive && (
           <Text variant="caption" color={palette.onSurfaceVariant} style={{ marginTop: spacing.sm }}>
-            You have been eliminated. You can watch, but not vote.
+            {t((s) => s.vampireVillage.day.eliminatedNotice)}
           </Text>
         )}
       </Card>
@@ -107,7 +108,7 @@ export function DayScreen({
                     {p.displayName}
                   </Text>
                   <Text variant="caption" color={palette.outline}>
-                    Eliminated{p.role ? ` · ${ROLES[p.role].name}` : ''}
+                    {t((s) => s.vampireVillage.day.eliminated)(p.role ? t((s) => s.vampireVillage.role)[p.role].name : undefined)}
                   </Text>
                 </View>
               </Row>
@@ -139,7 +140,7 @@ export function DayScreen({
               <View style={{ flex: 1 }}>
                 <Row gap={spacing.xs}>
                   <Text variant="bodyStrong" color={coven ? roleColors.vampire : undefined}>
-                    {isMe ? 'You' : p.displayName}
+                    {isMe ? t((s) => s.vampireVillage.day.you) : p.displayName}
                   </Text>
                   {/* A vampire's own tell, visible only to their coven — the game's
                       one piece of secret shared knowledge rendered in the UI
@@ -149,16 +150,16 @@ export function DayScreen({
                   )}
                 </Row>
                 <Text variant="caption" color={palette.onSurfaceVariant}>
-                  Alive
+                  {t((s) => s.vampireVillage.day.alive)}
                 </Text>
               </View>
 
               {voting && votes > 0 && (
                 <Chip color={palette.secondary} filled={chosen}>
-                  {`${votes} ${votes === 1 ? 'vote' : 'votes'}`}
+                  {t((s) => s.vampireVillage.day.votesCount)(votes)}
                 </Chip>
               )}
-              {canVote && !isMe && !chosen && <Chip color={palette.secondary}>Vote</Chip>}
+              {canVote && !isMe && !chosen && <Chip color={palette.secondary}>{t((s) => s.vampireVillage.day.vote)}</Chip>}
             </Pressable>
           );
         })}
@@ -168,9 +169,9 @@ export function DayScreen({
 
       {/* The chat control moved to the session header, where it is reachable
           from every phase rather than only from this one. */}
-      <Button label="Open chat" icon="chatbubbles" tone="ghost" onPress={openChat} />
+      <Button label={t((s) => s.vampireVillage.day.openChat)} icon="chatbubbles" tone="ghost" onPress={openChat} />
 
-      {!voting && <Button label="Open voting" onPress={onOpenVoting} />}
+      {!voting && <Button label={t((s) => s.vampireVillage.day.openVoting)} onPress={onOpenVoting} />}
     </Screen>
   );
 }

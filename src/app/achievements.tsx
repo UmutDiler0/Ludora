@@ -16,6 +16,7 @@ import {
   type AchievementTier,
   type ProgressSnapshot,
 } from '@/features/progression/achievements';
+import { useI18n } from '@/i18n/I18nProvider';
 import { useProgression, useProgressSnapshot } from '@/stores/progression';
 import { useTheme } from '@/theme/ThemeProvider';
 import type { Palette } from '@/theme/palettes';
@@ -42,6 +43,7 @@ const TIER_COLOR = (p: Palette): Record<AchievementTier, string> => ({
 export default function Achievements() {
   const router = useRouter();
   const { palette } = useTheme();
+  const { t } = useI18n();
 
   const unlocked = useProgression((s) => s.unlocked);
   const snapshot = useProgressSnapshot();
@@ -62,14 +64,14 @@ export default function Achievements() {
   return (
     <Screen>
       <ScreenHeader
-        title="Achievements"
-        subtitle="Every one of them, earned or not."
+        title={t((s) => s.achievements.title)}
+        subtitle={t((s) => s.achievements.subtitle)}
         onBack={() => router.back()}
       />
 
       <Card accent={palette.medalGold} style={{ gap: spacing.md }}>
         <Row style={{ justifyContent: 'space-between' }}>
-          <Label color={palette.medalGold}>Completed</Label>
+          <Label color={palette.medalGold}>{t((s) => s.achievements.completed)}</Label>
           <Text variant="bodyStrong">
             {completion.done} / {completion.total}
           </Text>
@@ -101,9 +103,12 @@ function AchievementRow({
   earned: boolean;
 }) {
   const { palette } = useTheme();
+  const { t } = useI18n();
   const tint = TIER_COLOR(palette)[def.tier];
   const item = def.itemId ? getAvatarItem(def.itemId) : undefined;
   const complete = earned || isComplete(def, snapshot);
+  const items = t((s) => s.achievements.items) as Record<string, { name: string; description: string }>;
+  const copy = items[def.id];
 
   return (
     <Card accent={complete ? tint : undefined} style={{ gap: spacing.md }}>
@@ -133,15 +138,15 @@ function AchievementRow({
         <View style={{ flex: 1, gap: spacing.xs }}>
           <Row style={{ justifyContent: 'space-between' }}>
             <Text variant="bodyStrong" numberOfLines={1} style={{ flex: 1 }}>
-              {def.name}
+              {copy.name}
             </Text>
             <Chip color={tint} filled={complete}>
-              {def.tier}
+              {t((s) => s.achievements.tier)[def.tier]}
             </Chip>
           </Row>
 
           <Text variant="caption" color={palette.onSurfaceVariant}>
-            {def.description}
+            {copy.description}
           </Text>
 
           <Row gap={spacing.md}>
@@ -155,7 +160,7 @@ function AchievementRow({
             )}
             {def.xp > 0 && (
               <Text variant="label" color={palette.primary}>
-                +{def.xp} XP
+                {t((s) => s.achievements.plusXp)(def.xp)}
               </Text>
             )}
           </Row>
@@ -181,7 +186,7 @@ function AchievementRow({
               {item.name}
             </Text>
             <Text variant="caption" color={palette.onSurfaceVariant}>
-              {earned ? 'Unlocked — wear it from the customizer.' : 'Cannot be bought with gold.'}
+              {earned ? t((s) => s.achievements.unlockedFromCustomizer) : t((s) => s.achievements.cannotBeBought)}
             </Text>
           </View>
         </Row>

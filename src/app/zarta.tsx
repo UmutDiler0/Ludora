@@ -7,6 +7,7 @@ import { ZartaGameOverScreen } from '@/features/games/zarta/screens/GameOver';
 import { ZartaRoundRecapScreen } from '@/features/games/zarta/screens/RoundRecap';
 import { VotingScreen } from '@/features/games/zarta/screens/Voting';
 import { WritingScreen } from '@/features/games/zarta/screens/Writing';
+import { useI18n } from '@/i18n/I18nProvider';
 import { useLocalZarta, useZartaView } from '@/stores/localZarta';
 import { useTheme } from '@/theme/ThemeProvider';
 import { spacing, stroke } from '@/theme/tokens';
@@ -20,6 +21,7 @@ import { spacing, stroke } from '@/theme/tokens';
  */
 export default function ZartaRoute() {
   const router = useRouter();
+  const { t } = useI18n();
   const view = useZartaView();
   const ready = useLocalZarta((s) => s.ready);
   const submitAnswer = useLocalZarta((s) => s.submitAnswer);
@@ -31,9 +33,9 @@ export default function ZartaRoute() {
   if (!view) {
     return (
       <Screen>
-        <Text variant="title">No game in progress</Text>
-        <Text variant="body">Start one from the Play tab.</Text>
-        <Button label="Back to Play" onPress={() => router.replace('/(tabs)/play')} />
+        <Text variant="title">{t((s) => s.zarta.session.noGameInProgress)}</Text>
+        <Text variant="body">{t((s) => s.zarta.session.startFromPlay)}</Text>
+        <Button label={t((s) => s.zarta.session.backToPlay)} onPress={() => router.replace('/(tabs)/play')} />
       </Screen>
     );
   }
@@ -66,6 +68,7 @@ function ZartaHeader({
   totalRounds: number;
 }) {
   const { palette } = useTheme();
+  const { t } = useI18n();
 
   return (
     <SafeAreaView
@@ -82,10 +85,8 @@ function ZartaHeader({
           paddingHorizontal: spacing.lg,
           paddingVertical: spacing.sm,
         }}>
-        <IconButton name="chevron-back" label="Leave game" onPress={onLeave} />
-        <Chip color={palette.secondary}>
-          Round {round} / {totalRounds}
-        </Chip>
+        <IconButton name="chevron-back" label={t((s) => s.zarta.session.leaveGame)} onPress={onLeave} />
+        <Chip color={palette.secondary}>{t((s) => s.zarta.session.round)(round, totalRounds)}</Chip>
       </Row>
     </SafeAreaView>
   );

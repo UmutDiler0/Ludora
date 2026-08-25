@@ -20,16 +20,24 @@ import type { VVPlayerView } from './state';
  *     and the post-mortem is half the fun.
  */
 
+/** Label for the room a player is looking at — mapped to display text by
+ *  `Chat.tsx` via `i18n/en(or tr)/vampireVillage.ts`'s `chat.title`, so this
+ *  pure rule module (server-run, per the file header) never carries UI text. */
+export type ChatRoomTitle = 'afterGame' | 'village' | 'coven' | 'townSquare';
+
+/** Why a player cannot speak, as a reason code rather than a rendered
+ *  sentence — same reasoning as `ChatRoomTitle`. Mapped by `chat.notice`. */
+export type ChatNoticeReason = 'eliminated' | 'notStarted' | 'asleep';
+
 export interface ChatAccess {
   /** The channel this player writes into right now. */
   channel: ChatChannel;
   /** Every channel they may read. */
   readable: ChatChannel[];
   canSend: boolean;
-  /** Why they cannot speak, in words they can act on. Null when they can. */
-  notice: string | null;
-  /** Label for the room they are looking at. */
-  title: string;
+  /** Why they cannot speak. Null when they can. */
+  notice: ChatNoticeReason | null;
+  title: ChatRoomTitle;
 }
 
 const VILLAGE: ChatChannel[] = ['village'];
@@ -46,7 +54,7 @@ export function chatAccess(view: VVPlayerView): ChatAccess {
       readable: BOTH,
       canSend: true,
       notice: null,
-      title: 'After the game',
+      title: 'afterGame',
     };
   }
 
@@ -55,8 +63,8 @@ export function chatAccess(view: VVPlayerView): ChatAccess {
       channel: 'village',
       readable: isVampire ? BOTH : VILLAGE,
       canSend: false,
-      notice: 'You were eliminated. You can follow the room, but not speak.',
-      title: 'Village',
+      notice: 'eliminated',
+      title: 'village',
     };
   }
 
@@ -65,8 +73,8 @@ export function chatAccess(view: VVPlayerView): ChatAccess {
       channel: 'village',
       readable: isVampire ? BOTH : VILLAGE,
       canSend: false,
-      notice: 'The room opens once the first night has passed.',
-      title: 'Village',
+      notice: 'notStarted',
+      title: 'village',
     };
   }
 
@@ -77,15 +85,15 @@ export function chatAccess(view: VVPlayerView): ChatAccess {
         readable: BOTH,
         canSend: true,
         notice: null,
-        title: 'The Coven',
+        title: 'coven',
       };
     }
     return {
       channel: 'village',
       readable: VILLAGE,
       canSend: false,
-      notice: 'The village is asleep. You can talk again at dawn.',
-      title: 'Village',
+      notice: 'asleep',
+      title: 'village',
     };
   }
 
@@ -95,7 +103,7 @@ export function chatAccess(view: VVPlayerView): ChatAccess {
     readable: isVampire ? BOTH : VILLAGE,
     canSend: true,
     notice: null,
-    title: 'Town Square',
+    title: 'townSquare',
   };
 }
 

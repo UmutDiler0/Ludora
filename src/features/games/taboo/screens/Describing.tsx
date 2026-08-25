@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { Pressable, View } from 'react-native';
 
 import { Card, Chip, Label, ProgressBar, Row, Screen, Text } from '@/components/ui';
+import { useI18n } from '@/i18n/I18nProvider';
 import { useTheme } from '@/theme/ThemeProvider';
 import type { Palette } from '@/theme/palettes';
 import { radius, spacing, stroke } from '@/theme/tokens';
@@ -31,9 +32,11 @@ export function DescribingScreen({
   onTimeUp: () => void;
 }) {
   const { palette } = useTheme();
+  const { t } = useI18n();
   const accent = teamAccent(palette, view.activeTeam);
   const secondsLeft = useCountdown(view.deadlineAt, onTimeUp);
   const skipsLeft = view.skipLimit - view.skipsUsed;
+  const teamName = t((s) => s.taboo.team);
 
   if (!view.card) {
     // Only reachable for a moment between the deadline firing and the store
@@ -45,7 +48,7 @@ export function DescribingScreen({
     <Screen>
       <Row style={{ justifyContent: 'space-between' }}>
         <Chip color={accent} filled>
-          Team {view.teams.find((t) => t.id === view.activeTeam)?.name}
+          {t((s) => s.taboo.teamLabel)(teamName[view.activeTeam])}
         </Chip>
         <Text variant="bodyStrong" color={secondsLeft <= 10 ? palette.error : palette.onSurface}>
           {secondsLeft}s
@@ -60,14 +63,14 @@ export function DescribingScreen({
       <Card
         accent={accent}
         style={{ alignItems: 'center', gap: spacing.md, paddingVertical: spacing.xxl, flex: 1, justifyContent: 'center' }}>
-        <Label color={palette.onSurfaceVariant}>Describe this word</Label>
+        <Label color={palette.onSurfaceVariant}>{t((s) => s.taboo.describing.describeThisWord)}</Label>
         <Text variant="hero" center>
           {view.card.word}
         </Text>
 
         <View style={{ height: stroke.base, alignSelf: 'stretch', backgroundColor: palette.outlineVariant, marginVertical: spacing.md }} />
 
-        <Label color={palette.error}>Forbidden words</Label>
+        <Label color={palette.error}>{t((s) => s.taboo.describing.forbiddenWords)}</Label>
         <View style={{ gap: spacing.sm, alignItems: 'center' }}>
           {view.card.forbidden.map((word) => (
             <Text key={word} variant="body" color={palette.onSurfaceVariant}>
@@ -78,20 +81,20 @@ export function DescribingScreen({
       </Card>
 
       <Text variant="caption" color={palette.onSurfaceVariant} center>
-        {skipsLeft} skip{skipsLeft === 1 ? '' : 's'} left this turn
+        {t((s) => s.taboo.describing.skipsLeft)(skipsLeft)}
       </Text>
 
       <Row gap={spacing.sm} style={{ alignItems: 'stretch' }}>
         <ActionButton
-          label="Skip"
+          label={t((s) => s.taboo.describing.skip)}
           icon="play-skip-forward"
           color={palette.onSurfaceVariant}
           disabled={skipsLeft <= 0}
           onPress={() => onMark('skip')}
         />
-        <ActionButton label="Taboo" icon="close-circle" color={palette.error} onPress={() => onMark('tabu')} />
+        <ActionButton label={t((s) => s.taboo.describing.tabu)} icon="close-circle" color={palette.error} onPress={() => onMark('tabu')} />
         <ActionButton
-          label="Correct"
+          label={t((s) => s.taboo.describing.correct)}
           icon="checkmark-circle"
           color={palette.success}
           onPress={() => onMark('correct')}
