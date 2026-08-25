@@ -85,12 +85,19 @@ export const GAME_CATALOGUE: GameCatalogueEntry[] = [
     maxPlayers: 10,
   },
   {
+    // Not in GAME_REGISTRY on purpose — Detective is cooperative, not a
+    // competitive engine like the other four: no rounds, no scoring, no
+    // config screen, just a case to read and solve together. It routes
+    // straight to /detective-stories instead of a setup screen (see
+    // Play.tsx's and Home's routing). `isPremium` is false at this level
+    // because opening the game is free; individual cases carry their own
+    // free/paid flag instead (features/games/detective/stories.ts).
     id: 'detective',
     name: 'Detective',
-    category: 'Social Deduction',
-    isPremium: true,
-    enabled: false,
-    minPlayers: 4,
-    maxPlayers: 10,
+    category: 'Mystery',
+    isPremium: false,
+    enabled: true,
+    minPlayers: 1,
+    maxPlayers: 6,
   },
 ];

@@ -36,6 +36,9 @@ export default function Play() {
     if (id === 'taboo') return router.push('/taboo-setup');
     if (id === 'drawingGuess') return router.push('/sketch-setup');
     if (id === 'zarta') return router.push('/zarta-setup');
+    // Detective has no rules to configure — it goes straight to picking a
+    // case instead of a setup screen (see registry.ts's own note on why).
+    if (id === 'detective') return router.push('/detective-stories');
     return router.push('/game-setup');
   };
 

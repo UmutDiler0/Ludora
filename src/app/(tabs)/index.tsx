@@ -110,6 +110,10 @@ export default function Home() {
       router.push('/zarta-setup');
       return;
     }
+    if (id === 'detective') {
+      router.push('/detective-stories');
+      return;
+    }
     router.push('/game-setup');
   };
 
