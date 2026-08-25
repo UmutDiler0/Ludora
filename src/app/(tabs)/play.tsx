@@ -2,7 +2,7 @@ import { useRouter } from 'expo-router';
 import { Pressable, useWindowDimensions, View } from 'react-native';
 
 import { Button, Card, Chip, Label, ListRow, Row, Screen, ScreenHeader, Text } from '@/components/ui';
-import { GAME_CATALOGUE, type GameCatalogueEntry } from '@/features/games/core/registry';
+import { GAME_CATALOGUE, GAME_MODE_LABEL, type GameCatalogueEntry } from '@/features/games/core/registry';
 import type { GameId } from '@/features/games/core/types';
 import { GameArt } from '@/features/home/GameArt';
 import { radius, spacing, stroke } from '@/theme/tokens';
@@ -153,6 +153,7 @@ function GameCard({
               <Chip>Soon</Chip>
             </>
           )}
+          <Chip>{game.modes.map((m) => GAME_MODE_LABEL[m]).join(' · ')}</Chip>
         </Row>
       </View>
     </>

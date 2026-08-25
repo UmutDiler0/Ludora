@@ -17,6 +17,7 @@ import {
 } from '@/components/ui';
 import { AvatarRenderer } from '@/features/avatar/AvatarRenderer';
 import { AWARDS } from '@/features/economy/levels';
+import { GAME_MODE_LABEL } from '@/features/games/core/registry';
 import { GameArt } from '@/features/home/GameArt';
 import { DUMMY_CHAMPIONS, trendingGames, type Champion, type TrendingGame } from '@/features/home/dummy';
 import { QuestPanel } from '@/features/progression/QuestList';
@@ -405,6 +406,7 @@ function TrendingCard({
         <Row gap={spacing.xs} style={{ flexWrap: 'wrap' }}>
           {game.isPremium && <Chip color={palette.tertiary}>Premium</Chip>}
           {!game.enabled && <Chip>Soon</Chip>}
+          <Chip>{game.modes.map((m) => GAME_MODE_LABEL[m]).join(' · ')}</Chip>
         </Row>
 
         <Text variant="caption" color={palette.onSurfaceVariant} numberOfLines={2}>

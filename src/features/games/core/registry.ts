@@ -28,6 +28,20 @@ export const isRegistered = (id: string): id is RegisteredGameId => id in GAME_R
  * Premium flags follow decisions D7–D9 (§21):
  *   Vampire Village free · Sketch It premium · Trivia Blitz registered but off.
  */
+
+/**
+ * Which way a game is actually played. Independent of `enabled` — a game can
+ * be built and still only ever local (Taboo's forbidden list only stays
+ * secret because it's one shared device), the same way a game can be
+ * designed online-only before any online infrastructure exists (Sketch It,
+ * Zarta): the label states intent, not what's shipped, matching every other
+ * catalogue field here (`isPremium` predates a paywall, `minPlayers` predates
+ * a lobby).
+ */
+export type GameMode = 'local' | 'online';
+
+export const GAME_MODE_LABEL: Record<GameMode, string> = { local: 'Local', online: 'Online' };
+
 export interface GameCatalogueEntry {
   id: GameId;
   name: string;
@@ -36,6 +50,7 @@ export interface GameCatalogueEntry {
   enabled: boolean;
   minPlayers: number;
   maxPlayers: number;
+  modes: GameMode[];
 }
 
 export const GAME_CATALOGUE: GameCatalogueEntry[] = [
@@ -47,6 +62,7 @@ export const GAME_CATALOGUE: GameCatalogueEntry[] = [
     enabled: true,
     minPlayers: 4,
     maxPlayers: 12,
+    modes: ['local', 'online'],
   },
   {
     id: 'taboo',
@@ -56,6 +72,7 @@ export const GAME_CATALOGUE: GameCatalogueEntry[] = [
     enabled: true,
     minPlayers: 4,
     maxPlayers: 8,
+    modes: ['local'],
   },
   {
     id: 'drawingGuess',
@@ -65,6 +82,7 @@ export const GAME_CATALOGUE: GameCatalogueEntry[] = [
     enabled: true,
     minPlayers: 3,
     maxPlayers: 8,
+    modes: ['online'],
   },
   {
     id: 'zarta',
@@ -74,6 +92,7 @@ export const GAME_CATALOGUE: GameCatalogueEntry[] = [
     enabled: true,
     minPlayers: 3,
     maxPlayers: 10,
+    modes: ['online'],
   },
   {
     id: 'story',
@@ -83,6 +102,7 @@ export const GAME_CATALOGUE: GameCatalogueEntry[] = [
     enabled: false,
     minPlayers: 3,
     maxPlayers: 10,
+    modes: ['local'],
   },
   {
     // Not in GAME_REGISTRY on purpose — Detective is cooperative, not a
@@ -99,5 +119,6 @@ export const GAME_CATALOGUE: GameCatalogueEntry[] = [
     enabled: true,
     minPlayers: 1,
     maxPlayers: 6,
+    modes: ['local'],
   },
 ];
