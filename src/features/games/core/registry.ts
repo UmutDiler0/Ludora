@@ -125,12 +125,23 @@ export const GAME_CATALOGUE: GameCatalogueEntry[] = [
     modes: ['local'],
   },
   {
-    // Not in GAME_REGISTRY yet — only the catalogue entry and key art exist
-    // so far, no rules. Category/headcount/modes follow Vampire Village's
-    // lead (same genre: hidden-role social deduction) until real rules are
-    // decided; adjust freely once they are.
-    id: 'agentImposter',
-    name: 'Agent & Imposter',
+    // Two separate catalogue entries, not one game with two roles — Agent
+    // and Imposter are different games (corrected from an earlier combined
+    // "Agent & Imposter" entry). Neither is in GAME_REGISTRY yet — only the
+    // catalogue entries and key art exist so far, no rules for either.
+    // Category/headcount/modes are placeholders until real rules land.
+    id: 'agent',
+    name: 'Agent',
+    category: 'Social Deduction',
+    isPremium: false,
+    enabled: false,
+    minPlayers: 5,
+    maxPlayers: 10,
+    modes: ['local', 'online'],
+  },
+  {
+    id: 'imposter',
+    name: 'Imposter',
     category: 'Social Deduction',
     isPremium: false,
     enabled: false,

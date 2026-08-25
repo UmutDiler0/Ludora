@@ -1,20 +1,22 @@
 /**
  * Complete the Story catalogue.
  *
- * Deliberately empty, same restraint as `features/games/detective/stories.ts`
- * and for the same reason: this is written content, not a rule an engine can
- * run, and none has been written yet.
+ * Real content — the same status `words.ts`/`prompts.ts`/`questions.ts` have
+ * for Taboo, Sketch It and Zarta: a starter set, not placeholder text,
+ * standing in for the eventual `game_content/story/fragments` (Firestore)
+ * source. Five free, ten paid, matching the ratio discussed for the
+ * catalogue when this feature was first scoped.
  *
  * The mechanic this shape commits to: a player gets `opening` — one or two
  * sentences, nothing more — and has to work out the whole story from that
  * fragment. That's a genuinely different premise from what this game used to
  * be (the round-robin "everyone adds one sentence" party game the old
  * tagline described); the catalogue and tagline were updated to match this
- * redefinition when this file was added. Free/paid follows the same
- * per-story model Detective uses (five free, ten paid was the example, not a
- * constant worth hard-coding against an empty array). The real source will
- * eventually be `game_content/story/fragments` (Firestore), mirroring the
- * other three games' content banks — see docs/firebase.md §3.9.
+ * redefinition when this file was first added. Still no "find the whole
+ * story" screen behind any of these — that's a separate build this file
+ * deliberately doesn't get ahead of. What exists here is the browsable
+ * catalogue: enough for `/complete-the-story` to be a real screen instead of
+ * an empty state.
  */
 
 export interface CompleteStoryEntry {
@@ -25,4 +27,98 @@ export interface CompleteStoryEntry {
   isPremium: boolean;
 }
 
-export const COMPLETE_STORY_ENTRIES: CompleteStoryEntry[] = [];
+export const COMPLETE_STORY_ENTRIES: CompleteStoryEntry[] = [
+  // free
+  {
+    id: 's01',
+    title: 'The Last Light',
+    opening: 'She left the porch light on for eleven years after he stopped coming home.',
+    isPremium: false,
+  },
+  {
+    id: 's02',
+    title: 'Paper Boats',
+    opening: 'Every summer the boy folded one more boat than the year before, and never once explained why.',
+    isPremium: false,
+  },
+  {
+    id: 's03',
+    title: 'The Uninvited Guest',
+    opening: 'Nobody remembers inviting him, and yet there he is in every photo from that night.',
+    isPremium: false,
+  },
+  {
+    id: 's04',
+    title: 'Borrowed Time',
+    opening: "The hallway clock had been stopped at 3:14 for as long as anyone could remember — until this morning.",
+    isPremium: false,
+  },
+  {
+    id: 's05',
+    title: 'The Empty Chair',
+    opening: "They set a place for her at every dinner, though she'd been gone for three years.",
+    isPremium: false,
+  },
+
+  // premium
+  {
+    id: 's06',
+    title: 'The Last Postcard',
+    opening: 'It arrived a week after the funeral, postmarked from a town that no longer exists.',
+    isPremium: true,
+  },
+  {
+    id: 's07',
+    title: 'Nine Doors',
+    opening: 'The house had eight doors when they bought it. There have always been nine since.',
+    isPremium: true,
+  },
+  {
+    id: 's08',
+    title: "The Understudy's Diary",
+    opening: 'She found the diary in the dressing room, three entries ahead of the day she read it.',
+    isPremium: true,
+  },
+  {
+    id: 's09',
+    title: 'The Cartwright Debt',
+    opening: "Nobody in town would say what the family owed — only that it was finally being collected.",
+    isPremium: true,
+  },
+  {
+    id: 's10',
+    title: 'Salt and Silence',
+    opening: 'The fishermen stopped going out past the old buoy the year the singing started.',
+    isPremium: true,
+  },
+  {
+    id: 's11',
+    title: 'The Understory',
+    opening: 'The forest grew back overnight, exactly where the house used to stand.',
+    isPremium: true,
+  },
+  {
+    id: 's12',
+    title: 'Second Names',
+    opening: 'Everyone in the village had two names — one for the day, and one nobody said out loud.',
+    isPremium: true,
+  },
+  {
+    id: 's13',
+    title: 'The Weight of It',
+    opening: 'The letter was one page, but it took both of them to carry it to the fire.',
+    isPremium: true,
+  },
+  {
+    id: 's14',
+    title: 'What the Tide Returned',
+    opening: 'The ring came back on the same beach, thirty years and one storm later.',
+    isPremium: true,
+  },
+  {
+    id: 's15',
+    title: 'The Quiet Roommate',
+    opening: 'Three people lived in that apartment. The lease only ever had two names on it.',
+    isPremium: true,
+  },
+];

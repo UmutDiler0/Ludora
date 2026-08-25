@@ -54,7 +54,8 @@ const TAGLINES: Record<GameId, string> = {
   // round-robin sentence game) — see features/games/story/stories.ts.
   story: 'One or two sentences is all you get. Uncover the rest.',
   detective: 'Read the room, follow the evidence, name the culprit.',
-  agentImposter: 'Everyone claims to be an agent. Not everyone is telling the truth.',
+  agent: 'Everyone claims to be one. Only some of them are telling the truth.',
+  imposter: 'Blend in, stay quiet, and hope nobody looks too closely.',
 };
 
 /** Fake presence counts. Stable per game so the UI does not flicker. */
@@ -65,7 +66,8 @@ const PLAYERS_NOW: Record<GameId, number> = {
   zarta: 64,
   story: 41,
   detective: 96,
-  agentImposter: 19,
+  agent: 12,
+  imposter: 9,
 };
 
 /**

@@ -39,48 +39,53 @@ import { normalizeAvatar, SLOT_ORDER, type AvatarConfig, type AvatarSlot } from 
 
 export type AvatarMode = 'bust' | 'full';
 
-function renderSlot(slot: AvatarSlot, itemId: string | null, ink: string, build: BuildMetrics) {
+/** `darkColor` only overrides in dark mode, and only where an item sets one
+ *  (see catalogue.ts's field doc for which items that is and why). */
+const colorFor = (item: AvatarItem, isDark: boolean): string => (isDark && item.darkColor ? item.darkColor : item.color);
+
+function renderSlot(slot: AvatarSlot, itemId: string | null, ink: string, build: BuildMetrics, isDark: boolean) {
   // `build` is a silhouette modifier every other piece reads, not a layer.
   if (slot === 'build') return null;
 
   const item = getAvatarItem(itemId);
   if (!item) return null;
+  const color = colorFor(item, isDark);
 
   switch (slot) {
     case 'background':
-      return <BackgroundPiece color={item.color} />;
+      return <BackgroundPiece color={color} />;
     case 'body':
-      return <BodyPiece color={item.color} ink={ink} build={build} />;
+      return <BodyPiece color={color} ink={ink} build={build} />;
     case 'pants':
-      return <PantsPiece variant={item.variant} color={item.color} ink={ink} build={build} />;
+      return <PantsPiece variant={item.variant} color={color} ink={ink} build={build} />;
     case 'shoes':
-      return <ShoesPiece variant={item.variant} color={item.color} ink={ink} build={build} />;
+      return <ShoesPiece variant={item.variant} color={color} ink={ink} build={build} />;
     case 'clothes':
-      return <ClothesPiece variant={item.variant} color={item.color} ink={ink} build={build} />;
+      return <ClothesPiece variant={item.variant} color={color} ink={ink} build={build} />;
     case 'face':
-      return <FacePiece variant={item.variant} color={item.color} />;
+      return <FacePiece variant={item.variant} color={color} />;
     case 'eyes':
       return <EyesPiece variant={item.variant} ink={ink} />;
     case 'facialHair':
-      return <FacialHairPiece variant={item.variant} color={item.color} ink={ink} />;
+      return <FacialHairPiece variant={item.variant} color={color} ink={ink} />;
     case 'mouth':
       return <MouthPiece variant={item.variant} ink={ink} />;
     case 'hair':
-      return <HairPiece variant={item.variant} color={item.color} ink={ink} />;
+      return <HairPiece variant={item.variant} color={color} ink={ink} />;
     case 'hat':
-      return <HatPiece variant={item.variant} color={item.color} ink={ink} />;
+      return <HatPiece variant={item.variant} color={color} ink={ink} />;
     case 'accessory':
-      return <AccessoryPiece variant={item.variant} color={item.color} ink={ink} />;
+      return <AccessoryPiece variant={item.variant} color={color} ink={ink} />;
   }
 }
 
 /** The layered figure, without any framing. Shared by every consumer below. */
-function Figure({ config, ink }: { config: AvatarConfig; ink: string }) {
+function Figure({ config, ink, isDark }: { config: AvatarConfig; ink: string; isDark: boolean }) {
   const build = buildMetrics(getAvatarItem(config.build)?.variant);
   return (
     <>
       {SLOT_ORDER.map((slot) => (
-        <G key={slot}>{renderSlot(slot, config[slot], ink, build)}</G>
+        <G key={slot}>{renderSlot(slot, config[slot], ink, build, isDark)}</G>
       ))}
     </>
   );
@@ -109,7 +114,7 @@ export function AvatarRenderer({
   /** False drops the ink outline frame — pairs with `background={false}` for a bare cutout. */
   border?: boolean;
 }) {
-  const { palette } = useTheme();
+  const { palette, isDark } = useTheme();
   const full = normalizeAvatar(config);
   const displayConfig = background ? full : { ...full, background: null };
   const isFull = mode === 'full';
@@ -138,7 +143,7 @@ export function AvatarRenderer({
         borderColor: ring ?? palette.ink,
       }}>
       <Svg width="100%" height="100%" viewBox={isFull ? VIEWBOX.full : VIEWBOX.bust}>
-        <Figure config={displayConfig} ink={palette.ink} />
+        <Figure config={displayConfig} ink={palette.ink} isDark={isDark} />
       </Svg>
     </View>
   );
@@ -175,7 +180,7 @@ const THUMB_VIEWBOX: Record<AvatarSlot, string> = {
  * are compared against an identical baseline.
  */
 export function ItemThumb({ item, size = 56 }: { item: AvatarItem; size?: number }) {
-  const { palette } = useTheme();
+  const { palette, isDark } = useTheme();
 
   // Everything default except the slot being sold, so nothing else competes.
   // The pinned background must come FIRST: spread the other way round and a
@@ -195,7 +200,7 @@ export function ItemThumb({ item, size = 56 }: { item: AvatarItem; size?: number
         borderColor: palette.ink,
       }}>
       <Svg width="100%" height="100%" viewBox={THUMB_VIEWBOX[item.slot]} preserveAspectRatio="xMidYMid slice">
-        <Figure config={config} ink={palette.ink} />
+        <Figure config={config} ink={palette.ink} isDark={isDark} />
       </Svg>
     </View>
   );

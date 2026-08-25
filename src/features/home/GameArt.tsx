@@ -4,7 +4,7 @@ import { Image, View, type ImageSourcePropType } from 'react-native';
 import type { GameId } from '@/features/games/core/types';
 import { useTheme } from '@/theme/ThemeProvider';
 import { radius, stroke } from '@/theme/tokens';
-import { AgentImposterArt } from './gameArtIllustrations';
+import { AgentArt, ImposterArt } from './gameArtIllustrations';
 
 /**
  * Cartoon key art for the game cards.
@@ -32,8 +32,9 @@ const ART: Partial<Record<GameId, ImageSourcePropType>> = {
   detective: require('../../../assets/images/games/detective.png'),
 };
 
-const SVG_ART: Partial<Record<GameId, typeof AgentImposterArt>> = {
-  agentImposter: AgentImposterArt,
+const SVG_ART: Partial<Record<GameId, typeof AgentArt>> = {
+  agent: AgentArt,
+  imposter: ImposterArt,
 };
 
 export function GameArt({ id, height = 132 }: { id: GameId; height?: number }) {

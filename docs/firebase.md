@@ -68,6 +68,7 @@ No Firestore document yet holds anything beyond what Auth itself carries (`uid`,
 
 - **Local mirror:** [features/avatar/catalogue.ts](../src/features/avatar/catalogue.ts) — 80 items; `variant`+`color` are render hints standing in for real Storage art (the Skia/SVG placeholder tier ARCHITECTURE §22.4 describes).
 - **Schema addition beyond ARCHITECTURE §22.5:** `unlockedBy?: string` (an achievement id). §22.5 already added `requiredLevel`/`setId` to `items/{itemId}`; `unlockedBy` needs to join them — it is what lets an item be earned-only and excluded from `isFreeStarter`'s "price 0 means owned" shortcut. Equip validation is still server-side per §12 either way.
+- **Second schema addition:** `darkColor?: string`, set on the eight `background` items only. Dark mode isn't a colour inversion here (palettes.ts's own header) — a background disc tuned pastel-light for the light palette read as a glaring mismatched patch against the dark palette's deep surfaces, the actual bug behind "avatar colours look bad in dark mode". `AvatarRenderer.tsx` picks `darkColor` over `color` when `useTheme().isDark`, the same per-viewer resolution `roleColorsFor`/`avatarHuesFor` already do for role accents and initials. Skin, hair and clothing colours were deliberately left alone — a person's own colouring isn't a UI surface that should repaint itself when the viewer's phone switches themes.
 
 ### 3.4 Progression — quests and achievements
 
@@ -89,7 +90,10 @@ No Firestore document yet holds anything beyond what Auth itself carries (`uid`,
 ### 3.7 Firestore `game_definitions/{gameId}` — game registry
 
 - **Local mirror:** [features/games/core/registry.ts](../src/features/games/core/registry.ts) `GAME_CATALOGUE` — "mirrored from `game_definitions`... kept here so the client can render before Firestore exists; Firestore is authoritative once it does" (its own header).
-- Six `GameId`s registered; `vampireVillage`, `taboo`, `drawingGuess` (Sketch It), and `zarta` have engines (`GAME_REGISTRY`). Adding a game is still exactly the one-line-per-file recipe ARCHITECTURE §9.2 describes.
+- Eight `GameId`s registered; `vampireVillage`, `taboo`, `drawingGuess` (Sketch It), and `zarta` have engines (`GAME_REGISTRY`). Adding a game is still exactly the one-line-per-file recipe ARCHITECTURE §9.2 describes.
+- `detective` and `story` (Complete the Story) are catalogue-and-content only, no engine — both are written-content games (a case, a fragment), not stateful multiplayer ones, so they route straight to a browse screen instead of `GAME_REGISTRY`; see §3.9.
+- `agent` and `imposter` are two separate catalogue entries, not one game with two roles — an earlier pass combined them into a single `agentImposter` entry, corrected once it was clear they're different games. Neither has an engine yet.
+- `modes: ('local' | 'online')[]` was added to `GameCatalogueEntry` — which way each game is actually meant to be played, independent of `enabled`. Not itself a `game_definitions` field ARCHITECTURE §9.2 names; worth adding there once real content for that collection is being scoped.
 
 ### 3.8 RTDB `state` node — live session sync (Vampire Village, Taboo, Sketch It, Zarta)
 
@@ -99,10 +103,11 @@ No Firestore document yet holds anything beyond what Auth itself carries (`uid`,
 - **Sketch It's drawing itself is deliberately not part of this node.** Strokes are ephemeral, local-only UI state ([features/games/sketchIt/screens/Canvas.tsx](../src/features/games/sketchIt/screens/Canvas.tsx)) — the engine's own `state.ts` header explains why: the game's outcome never depends on the pixels, only on who guessed and in what order. A real multiplayer build needs its own realtime path for the live strokes (something like `rooms/{roomId}/sketch/strokes`), streamed separately the same way chat got its own path instead of living on this state node — not designed yet, since local hot-seat play has no second device to stream to.
 - **Zarta has no single active seat, unlike every other engine here.** `pendingWriters`/`pendingVoters` queues (drained one uid at a time) stand in for what a real multiplayer room would instead model as N simultaneous per-player writes/votes, gated by security rules rather than a client-side queue — pass-and-play on one device makes the queue the honest shape today, but it is a local-only simplification, not the eventual server design. Worth flagging before this game gets a real room: the security-rules shape for "every player submits privately, nobody can read anyone else's submission until everyone's in" doesn't have a precedent yet in ARCHITECTURE §10.
 
-### 3.9 Firestore `game_content/taboo/cards`, `game_content/sketchIt/prompts`, `game_content/zarta/questions` — content decks
+### 3.9 Firestore `game_content/{gameId}/...` — content decks
 
-- **Local mirrors:** [features/games/taboo/words.ts](../src/features/games/taboo/words.ts) (30 cards, `id`/`word`/`forbidden[]`), [features/games/sketchIt/prompts.ts](../src/features/games/sketchIt/prompts.ts) (40 prompts, `id`/`word`), and [features/games/zarta/questions.ts](../src/features/games/zarta/questions.ts) (30 trivia questions, `id`/`question`/`answer`). Taboo's header names its real path directly and calls out that the file becomes the **offline fallback**, not the only deck, once that collection exists — Sketch It's and Zarta's are the same idea, one collection per game under `game_content/`.
-- **New collections, not in ARCHITECTURE §6.2.** Structurally the same idea as `items/{itemId}` — a small content catalogue read-only to clients — so they likely want the same rules shape (§10.2's `match /items/{id}`).
+- **Local mirrors, round-based games:** [features/games/taboo/words.ts](../src/features/games/taboo/words.ts) (30 cards, `id`/`word`/`forbidden[]`), [features/games/sketchIt/prompts.ts](../src/features/games/sketchIt/prompts.ts) (40 prompts, `id`/`word`), and [features/games/zarta/questions.ts](../src/features/games/zarta/questions.ts) (30 trivia questions, `id`/`question`/`answer`). Taboo's header names its real path directly and calls out that the file becomes the **offline fallback**, not the only deck, once that collection exists — Sketch It's and Zarta's are the same idea, one collection per game under `game_content/`.
+- **Local mirrors, story-driven games:** [features/games/detective/stories.ts](../src/features/games/detective/stories.ts) (15 cases, `id`/`title`/`teaser`/`isPremium`) and [features/games/story/stories.ts](../src/features/games/story/stories.ts) (15 fragments, `id`/`title`/`opening`/`isPremium`) — five free and ten paid each, matching the ratio discussed when these games were scoped. Unlike the round-based decks above, these back a **browse screen**, not an engine: `/detective-stories` and `/complete-the-story` render this list directly. Still missing, and out of scope until the solving flow itself is designed: a case's actual evidence/solution, a fragment's actual "whole story", and anything that tracks which paid entries a given `uid` has bought (would need its own field on `users/{uid}`, analogous to `ownedItemIds` — see §3.3 — once purchasing exists).
+- **New collections, not in ARCHITECTURE §6.2.** Structurally the same idea as `items/{itemId}` — a small content catalogue read-only to clients — so they likely want the same rules shape (§10.2's `match /items/{id}`), with the story-driven pair additionally needing a purchase check once buying a case/fragment is real (not yet — see above).
 
 ### 3.10 RTDB `rooms/{roomId}/chat/{channel}` — chat
 
@@ -124,6 +129,9 @@ Collected here so they don't quietly rot in twelve separate comments. None of th
 7. **`/rooms/{roomId}/players/{uid}.team`** is needed for Taboo's manual team assignment; §6.4 only modelled `.role?` (Vampire Village).
 8. **Sketch It's live drawing has no RTDB path at all yet** — strokes are local-only for now (see §3.8); a real multiplayer build needs a new realtime path for them, not modelled anywhere in ARCHITECTURE.md because the game didn't exist when it was written.
 9. **Zarta's simultaneous-submission shape has no security-rules precedent.** Every other engine here has one active seat writing at a time, which §10's per-game write rules were written against; Zarta needs every seat to submit a private bluff and a private vote with nobody able to read another seat's in-progress submission until the room moves on — a genuinely different rules shape ARCHITECTURE §10 doesn't cover yet (see §3.8).
+10. **`items/{itemId}.darkColor`** is a new field alongside `unlockedBy`/`requiredLevel`/`setId` — see §3.3.
+11. **`game_content/detective/stories`** and **`game_content/story/fragments`** are two more new collections, not in §6.2 — see §3.9.
+12. **`game_definitions/{gameId}.modes`** (`('local' | 'online')[]`) has no counterpart in §9.2's catalogue fields yet — see §3.7.
 
 ### 4.1 Why the chat path changed
 

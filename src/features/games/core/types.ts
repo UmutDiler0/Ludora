@@ -17,7 +17,8 @@ export type GameId =
   | 'story'
   | 'detective'
   | 'drawingGuess'
-  | 'agentImposter';
+  | 'agent'
+  | 'imposter';
 
 /** Deterministic random source. Injected — never Math.random(). */
 export interface Rng {
