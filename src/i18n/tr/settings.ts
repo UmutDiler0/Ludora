@@ -2,17 +2,7 @@ import type { settings as en } from '../en/settings';
 
 export const settings: typeof en = {
   title: 'Ayarlar',
-  subtitle: 'Görünüm ve dil',
-  appearance: 'Görünüm',
-  themeLight: 'Açık',
-  themeLightDetail: 'Her zaman açık, kağıt temalı görünüm',
-  themeDark: 'Koyu',
-  themeDarkDetail: 'Her zaman gece teması',
-  themeSystem: 'Telefon ayarını kullan',
-  themeSystemDetail: 'Cihazını takip eder, otomatik değişir',
-  currentlyShowing: 'Şu an gösterilen',
-  currentlyShowingSystem: (scheme) => `Sistem — telefonun ${scheme} olarak ayarlı, o yüzden Ludora da ${scheme}.`,
-  currentlyShowingFixed: (scheme) => `${scheme}, telefonundaki ayardan bağımsız olarak.`,
+  subtitle: 'Dil ve hesap',
   language: 'Dil',
   languageDetail: "Ludora'nın hangi dilde görüneceğini seç.",
   languageSystem: 'Telefon ayarını kullan',
@@ -25,11 +15,13 @@ export const settings: typeof en = {
   changePasswordDetail: 'Giriş yaparken kullandığın şifreyi güncelle.',
   deleteAccount: 'Hesabı sil',
   deleteAccountDetail: 'Bu cihazdaki hesabını ve verilerini kalıcı olarak kaldır.',
+  guestAccountNotice: 'Şifre ve hesap ayarlarını yönetmek için gerçek bir hesapla giriş yap.',
+
+  support: 'Destek',
   privacyPolicy: 'Gizlilik politikası',
   privacyPolicyDetail: "Ludora verilerini nasıl kullanıyor.",
   help: 'Yardım ve destek',
   helpDetail: 'Sık sorulan soruların cevapları.',
-  guestAccountNotice: 'Şifre ve hesap ayarlarını yönetmek için gerçek bir hesapla giriş yap.',
 
   deleteAccountDialog: {
     title: 'Hesap silinsin mi?',

@@ -34,18 +34,6 @@ export interface AvatarItem {
   unlockedBy?: string;
   variant: string;
   color: string;
-  /**
-   * Dark-mode override for `color`. Explicit here only where a hand-picked
-   * value beats the automatic fallback — the background slot's discs are
-   * deepened by name (Sunset, Lagoon, ...) rather than generically muted, so
-   * each keeps reading as the color it's named after instead of just going
-   * darker. Every other slot (skin, hair, clothing, ...) has no entry here
-   * and instead falls through to `AvatarRenderer`'s `colorFor`, which mutes
-   * `color` toward the dark background automatically — full light-mode
-   * saturation on a dark ground read as glaring, not as "a person's own
-   * coloring."
-   */
-  darkColor?: string;
 }
 
 export const AVATAR_CATALOGUE: AvatarItem[] = [
@@ -54,19 +42,15 @@ export const AVATAR_CATALOGUE: AvatarItem[] = [
   { id: 'build_fem', slot: 'build', name: 'Feminine', price: 0, variant: 'feminine', color: 'transparent' },
   { id: 'build_masc', slot: 'build', name: 'Masculine', price: 0, variant: 'masculine', color: 'transparent' },
 
-  // background — always one equipped, never null. `darkColor` deepens each
-  // hue for a dark ground rather than brightening it (contrast with
-  // `darkAvatarHues` in palettes.ts, which brightens small accent circles) —
-  // a background this large stays a backdrop instead of overpowering the
-  // figure standing on it.
-  { id: 'bg_01', slot: 'background', name: 'Paper', price: 0, variant: 'solid', color: '#FFE9C7', darkColor: '#4A3D2E' },
-  { id: 'bg_02', slot: 'background', name: 'Sunset', price: 150, variant: 'solid', color: '#FF9F6B', darkColor: '#B85C34' },
-  { id: 'bg_03', slot: 'background', name: 'Lagoon', price: 150, variant: 'solid', color: '#7FE3E8', darkColor: '#1F7A82' },
-  { id: 'bg_04', slot: 'background', name: 'Grape', price: 200, variant: 'solid', color: '#C9A6FF', darkColor: '#5B3FA0' },
-  { id: 'bg_05', slot: 'background', name: 'Mint', price: 150, variant: 'solid', color: '#A6E9C1', darkColor: '#2E7D52' },
-  { id: 'bg_06', slot: 'background', name: 'Bubblegum', price: 180, variant: 'solid', color: '#FFB3D1', darkColor: '#B3527D' },
-  { id: 'bg_07', slot: 'background', name: 'Midnight', price: 250, variant: 'solid', color: '#3B3170', darkColor: '#4A3D75' },
-  { id: 'bg_08', slot: 'background', name: 'Sand', price: 150, variant: 'solid', color: '#EBD3A5', darkColor: '#8A6B42' },
+  // background — always one equipped, never null.
+  { id: 'bg_01', slot: 'background', name: 'Paper', price: 0, variant: 'solid', color: '#FFE9C7' },
+  { id: 'bg_02', slot: 'background', name: 'Sunset', price: 150, variant: 'solid', color: '#FF9F6B' },
+  { id: 'bg_03', slot: 'background', name: 'Lagoon', price: 150, variant: 'solid', color: '#7FE3E8' },
+  { id: 'bg_04', slot: 'background', name: 'Grape', price: 200, variant: 'solid', color: '#C9A6FF' },
+  { id: 'bg_05', slot: 'background', name: 'Mint', price: 150, variant: 'solid', color: '#A6E9C1' },
+  { id: 'bg_06', slot: 'background', name: 'Bubblegum', price: 180, variant: 'solid', color: '#FFB3D1' },
+  { id: 'bg_07', slot: 'background', name: 'Midnight', price: 250, variant: 'solid', color: '#3B3170' },
+  { id: 'bg_08', slot: 'background', name: 'Sand', price: 150, variant: 'solid', color: '#EBD3A5' },
 
   // body — skin tone
   { id: 'body_01', slot: 'body', name: 'Classic', price: 0, variant: 'round', color: '#F2C39B' },

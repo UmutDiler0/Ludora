@@ -1,10 +1,9 @@
 /**
- * Mode-independent design tokens.
+ * Design tokens outside the color palette.
  *
- * Colour lives in `palettes.ts` and is served through `ThemeProvider`, because
- * it changes at runtime when the user switches Light / Dark / System. Anything
- * that does *not* change with mode — geometry, weights, type — stays here and
- * can be imported directly.
+ * Colour lives in `palettes.ts` and is served through `ThemeProvider`.
+ * Everything here — geometry, weights, type — is unrelated to color and can
+ * be imported directly.
  *
  * The cartoon look comes from three devices, applied in components/ui:
  *   1. thick `ink` outlines on every surface
@@ -12,7 +11,7 @@
  *   3. generous corner radii and chunky rounded type
  */
 
-export { type Palette, type ResolvedScheme, type RoleColors } from './palettes';
+export { type Palette, type RoleColors } from './palettes';
 
 /** Chunky and rounded. Cartoon UI has no tight corners. */
 export const radius = {

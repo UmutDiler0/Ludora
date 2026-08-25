@@ -1,5 +1,6 @@
+import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { useState } from 'react';
+import { useState, type ReactNode } from 'react';
 import { View } from 'react-native';
 
 import { Dialog, DialogActions, Input, Label, ListRow, Screen, ScreenHeader, Select, Text } from '@/components/ui';
@@ -14,25 +15,23 @@ import { spacing } from '@/theme/tokens';
  * Settings (spec §34). Undesigned route, built from the primitive kit per
  * decision D20.
  *
- * Appearance and Language both use `Select` now — the same "open a menu, pick
- * one" shape, since both are exactly a System / explicit-choice picker over a
- * short, named list. They used to look different on purpose (a row of
- * tappable preview cards for Appearance), but a consistent look between two
- * adjacent, structurally identical settings won out.
+ * Ludora ships one visual theme, not a Light/Dark choice, so there is no
+ * Appearance section here — only Language, and Account grouped separately
+ * from Support, since "manage my account" and "read about the app" are not
+ * the same kind of settings row even though both ended up here first.
  */
 
 export default function Settings() {
   const router = useRouter();
-  const { palette, scheme } = useTheme();
+  const { palette } = useTheme();
   const { t, locale } = useI18n();
-  const themePref = useSettings((s) => s.themePref);
-  const setThemePref = useSettings((s) => s.setThemePref);
   const localePref = useSettings((s) => s.localePref);
   const setLocalePref = useSettings((s) => s.setLocalePref);
   const isGuest = useSession((s) => s.isGuest);
 
-  const schemeLabel = scheme === 'dark' ? t((s) => s.settings.themeDark) : t((s) => s.settings.themeLight);
   const localeLabel = locale === 'tr' ? t((s) => s.settings.languageTurkish) : t((s) => s.settings.languageEnglish);
+
+  const chevron = <Ionicons name="chevron-forward" size={18} color={palette.onSurfaceVariant} />;
 
   return (
     <Screen>
@@ -41,22 +40,6 @@ export default function Settings() {
         subtitle={t((s) => s.settings.subtitle)}
         onBack={() => router.back()}
         backLabel={t((s) => s.common.back)}
-      />
-
-      <Label>{t((s) => s.settings.appearance)}</Label>
-      <Select
-        label={t((s) => s.settings.appearance)}
-        value={themePref}
-        onChange={setThemePref}
-        options={[
-          {
-            value: 'system',
-            label: t((s) => s.settings.themeSystem),
-            detail: t((s) => s.settings.currentlyShowingSystem)(schemeLabel),
-          },
-          { value: 'light', label: t((s) => s.settings.themeLight), detail: t((s) => s.settings.themeLightDetail) },
-          { value: 'dark', label: t((s) => s.settings.themeDark), detail: t((s) => s.settings.themeDarkDetail) },
-        ]}
       />
 
       <Label>{t((s) => s.settings.language)}</Label>
@@ -79,28 +62,37 @@ export default function Settings() {
       />
 
       <Label>{t((s) => s.settings.account)}</Label>
-      {isGuest && (
+      {isGuest ? (
         <Text variant="caption" color={palette.onSurfaceVariant}>
           {t((s) => s.settings.guestAccountNotice)}
         </Text>
-      )}
-      <View style={{ gap: spacing.sm }}>
-        {!isGuest && (
+      ) : (
+        <View style={{ gap: spacing.sm }}>
           <ListRow
+            leading={<Ionicons name="key-outline" size={22} color={palette.primary} />}
             title={t((s) => s.settings.changePassword)}
             subtitle={t((s) => s.settings.changePasswordDetail)}
+            trailing={chevron}
             onPress={() => router.push('/change-password')}
           />
-        )}
-        {!isGuest && <DeleteAccountRow />}
+          <DeleteAccountRow chevron={chevron} />
+        </View>
+      )}
+
+      <Label>{t((s) => s.settings.support)}</Label>
+      <View style={{ gap: spacing.sm }}>
         <ListRow
+          leading={<Ionicons name="shield-checkmark-outline" size={22} color={palette.secondary} />}
           title={t((s) => s.settings.privacyPolicy)}
           subtitle={t((s) => s.settings.privacyPolicyDetail)}
+          trailing={chevron}
           onPress={() => router.push('/privacy-policy')}
         />
         <ListRow
+          leading={<Ionicons name="help-circle-outline" size={22} color={palette.tertiary} />}
           title={t((s) => s.settings.help)}
           subtitle={t((s) => s.settings.helpDetail)}
+          trailing={chevron}
           onPress={() => router.push('/help')}
         />
       </View>
@@ -113,7 +105,7 @@ export default function Settings() {
  * itself (a fresh `useState`) every time the dialog re-opens, instead of
  * carrying over whatever was typed and abandoned last time.
  */
-function DeleteAccountRow() {
+function DeleteAccountRow({ chevron }: { chevron: ReactNode }) {
   const { palette } = useTheme();
   const { t } = useI18n();
   const router = useRouter();
@@ -141,8 +133,10 @@ function DeleteAccountRow() {
   return (
     <>
       <ListRow
+        leading={<Ionicons name="trash-outline" size={22} color={palette.error} />}
         title={t((s) => s.settings.deleteAccount)}
         subtitle={t((s) => s.settings.deleteAccountDetail)}
+        trailing={chevron}
         onPress={() => setOpen(true)}
       />
       <Dialog visible={open} onDismiss={close} label={t((s) => s.settings.deleteAccountDialog.title)}>

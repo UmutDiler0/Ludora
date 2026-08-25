@@ -1,22 +1,15 @@
 /**
- * Light and dark cartoon palettes.
+ * The cartoon palette. Ludora ships one look, not a light/dark pair — every
+ * shape has a drawn `ink` outline, deep plum on cream paper, the "sticker"
+ * reading the whole design language is built around.
  *
- * Dark mode is not an inversion. The cartoon look depends on every shape
- * having a drawn outline, so the `ink` token flips role: in light it is a deep
- * plum drawn on cream paper, in dark it becomes warm cream drawn on a night
- * ground — the same "sticker" reading, chalk instead of pen.
- *
- * Both palettes expose identical keys, so a component never branches on mode.
- * Semantic mapping is constant across both (docs/ARCHITECTURE.md §20):
- * grape = identity, lagoon = realtime, sunshine = economy, tomato = danger.
+ * Semantic mapping (docs/ARCHITECTURE.md §20): grape = identity, lagoon =
+ * realtime, sunshine = economy, tomato = danger.
  */
 
-import { mutedForDark } from './color';
+const INK = '#2E2545';
 
-const LIGHT_INK = '#2E2545';
-const DARK_INK = '#FFF1DA';
-
-export const lightPalette = {
+export const palette = {
   background: '#FFF6E5',
   surface: '#FFFFFF',
   surfaceLowest: '#FFFCF5',
@@ -26,9 +19,9 @@ export const lightPalette = {
   surfaceHighest: '#FFDFAF',
   surfaceBright: '#FFFFFF',
 
-  onSurface: LIGHT_INK,
+  onSurface: INK,
   onSurfaceVariant: '#6B5F86',
-  outline: LIGHT_INK,
+  outline: INK,
   outlineVariant: '#CFC5E4',
 
   primary: '#7C4DFF',
@@ -59,54 +52,10 @@ export const lightPalette = {
   medalSilver: '#A9A6C0',
   medalBronze: '#C57B45',
 
-  ink: LIGHT_INK,
+  ink: INK,
 } as const;
 
-export type Palette = { -readonly [K in keyof typeof lightPalette]: string };
-
-export const darkPalette: Palette = {
-  background: '#191233',
-  surface: '#251C46',
-  surfaceLowest: '#120D26',
-  surfaceLow: '#1F1739',
-  surfaceContainer: '#251C46',
-  surfaceHigh: '#322557',
-  surfaceHighest: '#3F2F6B',
-  surfaceBright: '#4A387D',
-
-  onSurface: DARK_INK,
-  onSurfaceVariant: '#C3B3E6',
-  outline: DARK_INK,
-  outlineVariant: '#4A3D75',
-
-  primary: '#A98BFF',
-  primaryContainer: '#9B7BFF',
-  onPrimary: '#1A1033',
-  brand: '#A98BFF',
-
-  secondary: '#4FDCF7',
-  secondaryContainer: '#22C6E8',
-  onSecondary: '#04262E',
-
-  tertiary: '#FFCE5A',
-  tertiaryContainer: '#F0A81E',
-  onTertiary: '#3B2600',
-
-  error: '#FF7A6B',
-  errorContainer: '#FF5B4A',
-  onError: '#3B0A03',
-
-  success: '#4CE08C',
-
-  night: '#120D26',
-  onNight: DARK_INK,
-
-  medalGold: '#FFCE5A',
-  medalSilver: '#C9C5E0',
-  medalBronze: '#E0925A',
-
-  ink: DARK_INK,
-};
+export type Palette = { -readonly [K in keyof typeof palette]: string };
 
 export type RoleColors = {
   vampire: string;
@@ -115,39 +64,12 @@ export type RoleColors = {
   villager: string;
 };
 
-/** Role accents, brightened in dark so they hold against a night ground. */
-export const lightRoleColors: RoleColors = {
+export const roleColors: RoleColors = {
   vampire: '#FF3B5C',
   investigator: '#7C4DFF',
   protector: '#16C4E8',
   villager: '#FF9F1C',
 };
 
-export const darkRoleColors: RoleColors = {
-  vampire: '#FF6B82',
-  investigator: '#A98BFF',
-  protector: '#4FDCF7',
-  villager: '#FFB454',
-};
-
-/**
- * Avatar placeholder hues (decision D19), tuned per mode.
- *
- * These are large flat fills (the round avatar bubble), not small text/icon
- * accents, so dark mode mutes them toward the dark background instead of
- * brightening them the way `darkRoleColors` does above — the same light-mode
- * hue at full saturation on a dark surface read as glaring, not legible.
- */
-export const lightAvatarHues = ['#7C4DFF', '#16C4E8', '#FFC93C', '#FF5B4A', '#2FCB74', '#FF9F1C'];
-export const darkAvatarHues = lightAvatarHues.map((hue) => mutedForDark(hue));
-
-export type ResolvedScheme = 'light' | 'dark';
-
-export const paletteFor = (scheme: ResolvedScheme): Palette =>
-  scheme === 'dark' ? darkPalette : (lightPalette as unknown as Palette);
-
-export const roleColorsFor = (scheme: ResolvedScheme): RoleColors =>
-  scheme === 'dark' ? darkRoleColors : lightRoleColors;
-
-export const avatarHuesFor = (scheme: ResolvedScheme): string[] =>
-  scheme === 'dark' ? darkAvatarHues : lightAvatarHues;
+/** Avatar placeholder hues (decision D19) — the round avatar bubble's background color. */
+export const avatarHues = ['#7C4DFF', '#16C4E8', '#FFC93C', '#FF5B4A', '#2FCB74', '#FF9F1C'];

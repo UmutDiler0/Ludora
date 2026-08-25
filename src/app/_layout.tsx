@@ -19,16 +19,15 @@ import { useConnection } from '@/stores/connection';
 import { useSession } from '@/stores/session';
 import { useSettings } from '@/stores/settings';
 import { ThemeProvider, useTheme } from '@/theme/ThemeProvider';
-import { lightPalette } from '@/theme/palettes';
+import { palette as staticPalette } from '@/theme/palettes';
 
 SplashScreen.preventAutoHideAsync();
 
 /**
  * Root layout. Holds the native splash until fonts are loaded, the session is
- * restored, and the saved appearance preference has been read back, so the app
- * never flashes a signed-out frame at a signed-in user — or a light frame at
- * someone who chose dark (spec §4: "perform required initialization in the
- * background").
+ * restored, and settings have been read back, so the app never flashes a
+ * signed-out frame at a signed-in user (spec §4: "perform required
+ * initialization in the background").
  */
 export default function RootLayout() {
   const [fontsLoaded] = useFonts({
@@ -55,9 +54,8 @@ export default function RootLayout() {
   }, [ready]);
 
   if (!ready) {
-    // Pre-theme frame: the preference is not known yet, so this must not
-    // commit to either palette's ground. It sits under the native splash.
-    return <View style={{ flex: 1, backgroundColor: lightPalette.background }} />;
+    // Sits under the native splash until fonts/session/settings are ready.
+    return <View style={{ flex: 1, backgroundColor: staticPalette.background }} />;
   }
 
   return (
@@ -69,9 +67,8 @@ export default function RootLayout() {
   );
 }
 
-/** Inside the provider, so it can react to Light / Dark / System. */
 function Shell() {
-  const { palette, isDark } = useTheme();
+  const { palette } = useTheme();
   const startMonitoring = useConnection((s) => s.start);
   const stopMonitoring = useConnection((s) => s.stop);
 
@@ -85,7 +82,7 @@ function Shell() {
 
   return (
     <>
-      <StatusBar style={isDark ? 'light' : 'dark'} />
+      <StatusBar style="dark" />
       <Stack
         screenOptions={{
           headerShown: false,

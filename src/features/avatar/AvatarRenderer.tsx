@@ -1,7 +1,6 @@
 import { View } from 'react-native';
 import Svg, { G } from 'react-native-svg';
 
-import { mutedForDark } from '@/theme/color';
 import { useTheme } from '@/theme/ThemeProvider';
 import { radius, stroke } from '@/theme/tokens';
 import { getAvatarItem, type AvatarItem } from './catalogue';
@@ -40,26 +39,13 @@ import { normalizeAvatar, SLOT_ORDER, type AvatarConfig, type AvatarSlot } from 
 
 export type AvatarMode = 'bust' | 'full';
 
-/**
- * In dark mode, an item's hand-picked `darkColor` wins where one is set
- * (currently only the background slot — see catalogue.ts's field doc); every
- * other slot falls through to a generic mute so skin, hair and clothing don't
- * sit on the figure at full light-mode saturation against a night ground.
- */
-const colorFor = (item: AvatarItem, isDark: boolean): string => {
-  if (!isDark) return item.color;
-  if (item.darkColor) return item.darkColor;
-  if (item.color === 'transparent') return item.color;
-  return mutedForDark(item.color, 0.2);
-};
-
-function renderSlot(slot: AvatarSlot, itemId: string | null, ink: string, build: BuildMetrics, isDark: boolean) {
+function renderSlot(slot: AvatarSlot, itemId: string | null, ink: string, build: BuildMetrics) {
   // `build` is a silhouette modifier every other piece reads, not a layer.
   if (slot === 'build') return null;
 
   const item = getAvatarItem(itemId);
   if (!item) return null;
-  const color = colorFor(item, isDark);
+  const color = item.color;
 
   switch (slot) {
     case 'background':
@@ -90,12 +76,12 @@ function renderSlot(slot: AvatarSlot, itemId: string | null, ink: string, build:
 }
 
 /** The layered figure, without any framing. Shared by every consumer below. */
-function Figure({ config, ink, isDark }: { config: AvatarConfig; ink: string; isDark: boolean }) {
+function Figure({ config, ink }: { config: AvatarConfig; ink: string }) {
   const build = buildMetrics(getAvatarItem(config.build)?.variant);
   return (
     <>
       {SLOT_ORDER.map((slot) => (
-        <G key={slot}>{renderSlot(slot, config[slot], ink, build, isDark)}</G>
+        <G key={slot}>{renderSlot(slot, config[slot], ink, build)}</G>
       ))}
     </>
   );
@@ -124,7 +110,7 @@ export function AvatarRenderer({
   /** False drops the ink outline frame — pairs with `background={false}` for a bare cutout. */
   border?: boolean;
 }) {
-  const { palette, isDark } = useTheme();
+  const { palette } = useTheme();
   const full = normalizeAvatar(config);
   const displayConfig = background ? full : { ...full, background: null };
   const isFull = mode === 'full';
@@ -153,7 +139,7 @@ export function AvatarRenderer({
         borderColor: ring ?? palette.ink,
       }}>
       <Svg width="100%" height="100%" viewBox={isFull ? VIEWBOX.full : VIEWBOX.bust}>
-        <Figure config={displayConfig} ink={palette.ink} isDark={isDark} />
+        <Figure config={displayConfig} ink={palette.ink} />
       </Svg>
     </View>
   );
@@ -190,7 +176,7 @@ const THUMB_VIEWBOX: Record<AvatarSlot, string> = {
  * are compared against an identical baseline.
  */
 export function ItemThumb({ item, size = 56 }: { item: AvatarItem; size?: number }) {
-  const { palette, isDark } = useTheme();
+  const { palette } = useTheme();
 
   // Everything default except the slot being sold, so nothing else competes.
   // The pinned background must come FIRST: spread the other way round and a
@@ -210,7 +196,7 @@ export function ItemThumb({ item, size = 56 }: { item: AvatarItem; size?: number
         borderColor: palette.ink,
       }}>
       <Svg width="100%" height="100%" viewBox={THUMB_VIEWBOX[item.slot]} preserveAspectRatio="xMidYMid slice">
-        <Figure config={config} ink={palette.ink} isDark={isDark} />
+        <Figure config={config} ink={palette.ink} />
       </Svg>
     </View>
   );

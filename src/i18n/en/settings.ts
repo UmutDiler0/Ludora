@@ -1,16 +1,6 @@
 export const settings = {
   title: 'Settings',
-  subtitle: 'Appearance and language',
-  appearance: 'Appearance',
-  themeLight: 'Light',
-  themeLightDetail: 'Always the bright paper theme',
-  themeDark: 'Dark',
-  themeDarkDetail: 'Always the night theme',
-  themeSystem: 'Use phone setting',
-  themeSystemDetail: 'Follows your device, switching automatically',
-  currentlyShowing: 'Currently showing',
-  currentlyShowingSystem: (scheme: string) => `System — your phone is set to ${scheme}, so Ludora is ${scheme}.`,
-  currentlyShowingFixed: (scheme: string) => `${scheme}, regardless of your phone setting.`,
+  subtitle: 'Language and account',
   language: 'Language',
   languageDetail: 'Pick which language Ludora shows.',
   languageSystem: 'Use phone setting',
@@ -23,11 +13,13 @@ export const settings = {
   changePasswordDetail: 'Update the password you sign in with.',
   deleteAccount: 'Delete account',
   deleteAccountDetail: 'Permanently remove this account and its data from this device.',
+  guestAccountNotice: 'Sign in to a real account to manage password and account settings.',
+
+  support: 'Support',
   privacyPolicy: 'Privacy policy',
   privacyPolicyDetail: 'How Ludora handles your data.',
   help: 'Help & support',
   helpDetail: 'Answers to common questions.',
-  guestAccountNotice: 'Sign in to a real account to manage password and account settings.',
 
   deleteAccountDialog: {
     title: 'Delete account?',
