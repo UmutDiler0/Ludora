@@ -4,6 +4,7 @@ import { Image, View, type ImageSourcePropType } from 'react-native';
 import type { GameId } from '@/features/games/core/types';
 import { useTheme } from '@/theme/ThemeProvider';
 import { radius, stroke } from '@/theme/tokens';
+import { AgentImposterArt } from './gameArtIllustrations';
 
 /**
  * Cartoon key art for the game cards.
@@ -13,11 +14,13 @@ import { radius, stroke } from '@/theme/tokens';
  * elements. They are not the original Stitch art, which decision D19 rejected
  * for baking fake UI into the artwork (§1.8).
  *
- * Every game in `GameId` currently has one, so the fallback below does not
- * render today. It exists so that adding a seventh game is a one-line registry
- * change that does not block on an artist: the card degrades to a tinted panel
- * instead of a hole. It is deliberately trivial for that reason — a fallback
- * nobody exercises should be too simple to rot.
+ * Two tiers below `ART`, in the order they're tried: a raster PNG (the real
+ * asset), then a hand-coded SVG from `gameArtIllustrations.tsx` for a game
+ * that has rules but no exported art yet — there is no image-generation tool
+ * available, so a new game gets art in the kit's own ink-outline language
+ * instead of sitting behind the generic icon below. The icon fallback exists
+ * for the gap before even that exists — adding a game is a one-line registry
+ * change that does not block on art at all, if it has to.
  */
 
 const ART: Partial<Record<GameId, ImageSourcePropType>> = {
@@ -29,9 +32,14 @@ const ART: Partial<Record<GameId, ImageSourcePropType>> = {
   detective: require('../../../assets/images/games/detective.png'),
 };
 
+const SVG_ART: Partial<Record<GameId, typeof AgentImposterArt>> = {
+  agentImposter: AgentImposterArt,
+};
+
 export function GameArt({ id, height = 132 }: { id: GameId; height?: number }) {
   const { palette } = useTheme();
   const illustration = ART[id];
+  const SvgIllustration = SVG_ART[id];
 
   return (
     <View
@@ -64,6 +72,8 @@ export function GameArt({ id, height = 132 }: { id: GameId; height?: number }) {
             borderTopRightRadius: radius.lg,
           }}
         />
+      ) : SvgIllustration ? (
+        <SvgIllustration />
       ) : (
         <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
           <Ionicons name="game-controller" size={40} color={palette.onSurfaceVariant} />

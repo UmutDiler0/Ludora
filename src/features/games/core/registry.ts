@@ -95,12 +95,15 @@ export const GAME_CATALOGUE: GameCatalogueEntry[] = [
     modes: ['online'],
   },
   {
+    // Not in GAME_REGISTRY — like Detective, this is a content-driven game
+    // (a fragment to read, not a stateful engine), so it routes straight to
+    // /complete-the-story instead of a setup screen.
     id: 'story',
     name: 'Complete the Story',
     category: 'Creative',
     isPremium: false,
-    enabled: false,
-    minPlayers: 3,
+    enabled: true,
+    minPlayers: 1,
     maxPlayers: 10,
     modes: ['local'],
   },
@@ -120,5 +123,19 @@ export const GAME_CATALOGUE: GameCatalogueEntry[] = [
     minPlayers: 1,
     maxPlayers: 6,
     modes: ['local'],
+  },
+  {
+    // Not in GAME_REGISTRY yet — only the catalogue entry and key art exist
+    // so far, no rules. Category/headcount/modes follow Vampire Village's
+    // lead (same genre: hidden-role social deduction) until real rules are
+    // decided; adjust freely once they are.
+    id: 'agentImposter',
+    name: 'Agent & Imposter',
+    category: 'Social Deduction',
+    isPremium: false,
+    enabled: false,
+    minPlayers: 5,
+    maxPlayers: 10,
+    modes: ['local', 'online'],
   },
 ];

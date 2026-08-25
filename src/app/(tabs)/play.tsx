@@ -39,6 +39,7 @@ export default function Play() {
     // Detective has no rules to configure — it goes straight to picking a
     // case instead of a setup screen (see registry.ts's own note on why).
     if (id === 'detective') return router.push('/detective-stories');
+    if (id === 'story') return router.push('/complete-the-story');
     return router.push('/game-setup');
   };
 

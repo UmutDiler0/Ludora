@@ -10,7 +10,14 @@
 
 export type Uid = string;
 export type Millis = number;
-export type GameId = 'vampireVillage' | 'taboo' | 'zarta' | 'story' | 'detective' | 'drawingGuess';
+export type GameId =
+  | 'vampireVillage'
+  | 'taboo'
+  | 'zarta'
+  | 'story'
+  | 'detective'
+  | 'drawingGuess'
+  | 'agentImposter';
 
 /** Deterministic random source. Injected — never Math.random(). */
 export interface Rng {

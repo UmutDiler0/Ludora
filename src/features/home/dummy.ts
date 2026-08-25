@@ -50,8 +50,11 @@ const TAGLINES: Record<GameId, string> = {
   taboo: 'Describe the word without ever saying the word.',
   drawingGuess: 'Draw badly, guess fast, argue about it afterwards.',
   zarta: 'Quick-fire rounds where hesitating costs you everything.',
-  story: 'One sentence each, until the plot is completely out of hand.',
+  // Rewritten to match the redefined mechanic (a purchased fragment, not a
+  // round-robin sentence game) — see features/games/story/stories.ts.
+  story: 'One or two sentences is all you get. Uncover the rest.',
   detective: 'Read the room, follow the evidence, name the culprit.',
+  agentImposter: 'Everyone claims to be an agent. Not everyone is telling the truth.',
 };
 
 /** Fake presence counts. Stable per game so the UI does not flicker. */
@@ -62,6 +65,7 @@ const PLAYERS_NOW: Record<GameId, number> = {
   zarta: 64,
   story: 41,
   detective: 96,
+  agentImposter: 19,
 };
 
 /**

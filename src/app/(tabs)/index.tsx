@@ -115,6 +115,10 @@ export default function Home() {
       router.push('/detective-stories');
       return;
     }
+    if (id === 'story') {
+      router.push('/complete-the-story');
+      return;
+    }
     router.push('/game-setup');
   };
 
