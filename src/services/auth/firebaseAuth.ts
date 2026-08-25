@@ -1,9 +1,13 @@
 import {
   createUserWithEmailAndPassword,
+  deleteUser,
+  EmailAuthProvider,
   getAuth,
+  reauthenticateWithCredential,
   sendPasswordResetEmail,
   signInWithEmailAndPassword,
   signOut,
+  updatePassword,
   updateProfile,
   type User,
 } from '@react-native-firebase/auth';
@@ -77,5 +81,29 @@ export const firebaseAuthGateway: AuthGateway = {
 
   async signOut() {
     await signOut(getAuth());
+  },
+
+  async changePassword(currentPassword, newPassword) {
+    const user = getAuth().currentUser;
+    if (!user?.email) throw new AuthError('user-not-found', 'No signed-in account.');
+    try {
+      // Firebase requires a recent sign-in before a sensitive op like this —
+      // re-proving the current password is what satisfies that.
+      await reauthenticateWithCredential(user, EmailAuthProvider.credential(user.email, currentPassword));
+      await updatePassword(user, newPassword);
+    } catch (err) {
+      throw toAuthError(err);
+    }
+  },
+
+  async deleteAccount(password) {
+    const user = getAuth().currentUser;
+    if (!user?.email) throw new AuthError('user-not-found', 'No signed-in account.');
+    try {
+      await reauthenticateWithCredential(user, EmailAuthProvider.credential(user.email, password));
+      await deleteUser(user);
+    } catch (err) {
+      throw toAuthError(err);
+    }
   },
 };

@@ -2,16 +2,19 @@ import { achievements } from './achievements';
 import { auth } from './auth';
 import { avatar } from './avatar';
 import { catalogue } from './catalogue';
+import { changePassword } from './changePassword';
 import { common } from './common';
 import { connection } from './connection';
 import { detective } from './detective';
 import { gameCore } from './gameCore';
+import { help } from './help';
 import { home } from './home';
 import { howToPlay } from './howToPlay';
 import { imposter } from './imposter';
 import { leaderboard } from './leaderboard';
 import { onboarding } from './onboarding';
 import { play } from './play';
+import { privacyPolicy } from './privacyPolicy';
 import { profile } from './profile';
 import { quests } from './quests';
 import { rooms } from './rooms';
@@ -35,16 +38,19 @@ export const en = {
   auth,
   avatar,
   catalogue,
+  changePassword,
   common,
   connection,
   detective,
   gameCore,
+  help,
   home,
   howToPlay,
   imposter,
   leaderboard,
   onboarding,
   play,
+  privacyPolicy,
   profile,
   quests,
   rooms,

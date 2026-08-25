@@ -40,6 +40,9 @@ interface SessionState {
   register: (email: string, password: string, displayName: string) => Promise<boolean>;
   playAsGuest: () => void;
   sendPasswordReset: (email: string) => Promise<boolean>;
+  changePassword: (currentPassword: string, newPassword: string) => Promise<boolean>;
+  /** Deletes the mock account and signs out on success. */
+  deleteAccount: (password: string) => Promise<boolean>;
   signOut: () => Promise<void>;
   setPendingRoomCode: (code: string | null) => void;
   clearError: () => void;
@@ -113,6 +116,25 @@ export const useSession = create<SessionState>()(
           await mockAuthGateway.sendPasswordReset(email);
           return null;
         }),
+
+      changePassword: (currentPassword, newPassword) =>
+        attempt(set, async () => {
+          await mockAuthGateway.changePassword(currentPassword, newPassword);
+          return null;
+        }),
+
+      async deleteAccount(password) {
+        set({ busy: true, error: null });
+        try {
+          await mockAuthGateway.deleteAccount(password);
+          set({ user: null, status: 'signed-out', error: null, isGuest: false, guestId: null, busy: false });
+          return true;
+        } catch (e) {
+          const code = e instanceof AuthError ? e.code : 'unknown';
+          set({ busy: false, error: AUTH_ERROR_COPY[code] });
+          return false;
+        }
+      },
 
       async signOut() {
         await mockAuthGateway.signOut();

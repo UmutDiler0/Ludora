@@ -58,6 +58,14 @@ const writeAccounts = (accounts: StoredAccount[]) =>
 /** Keeps the mock feeling like a network call so loading states are real. */
 const latency = () => new Promise<void>((resolve) => setTimeout(resolve, 350));
 
+/** The account behind the current session, or a `user-not-found` for a guest/signed-out call. */
+async function currentAccount(): Promise<StoredAccount> {
+  const uid = await AsyncStorage.getItem(SESSION_KEY);
+  const account = uid && (await readAccounts()).find((a) => a.uid === uid);
+  if (!account) throw new AuthError('user-not-found', 'No signed-in account.');
+  return account;
+}
+
 export const mockAuthGateway: AuthGateway = {
   async restore() {
     const uid = await AsyncStorage.getItem(SESSION_KEY);
@@ -107,6 +115,28 @@ export const mockAuthGateway: AuthGateway = {
   },
 
   async signOut() {
+    await AsyncStorage.removeItem(SESSION_KEY);
+  },
+
+  async changePassword(currentPassword, newPassword) {
+    await latency();
+    const account = await currentAccount();
+    if (account.password !== currentPassword) throw new AuthError('wrong-password', 'Incorrect password.');
+    if (newPassword.length < 1) throw new AuthError('weak-password', 'Password required.');
+
+    const accounts = await readAccounts();
+    await writeAccounts(
+      accounts.map((a) => (a.uid === account.uid ? { ...a, password: newPassword } : a)),
+    );
+  },
+
+  async deleteAccount(password) {
+    await latency();
+    const account = await currentAccount();
+    if (account.password !== password) throw new AuthError('wrong-password', 'Incorrect password.');
+
+    const accounts = await readAccounts();
+    await writeAccounts(accounts.filter((a) => a.uid !== account.uid));
     await AsyncStorage.removeItem(SESSION_KEY);
   },
 };

@@ -35,13 +35,15 @@ export interface AvatarItem {
   variant: string;
   color: string;
   /**
-   * Dark-mode override for `color`. Only set where it matters: a pale pastel
-   * background disc tuned to sit on the light palette's cream surfaces reads
-   * as a glaring, mismatched patch against the dark palette's deep purple
-   * ones — the same "avatars look bad in dark mode" problem every other
-   * theme-aware token here (roles, avatar-initial hues) was already fixed
-   * for. Skin, hair and clothing colors are a person's own coloring, not a UI
-   * surface, so they deliberately stay constant across both modes.
+   * Dark-mode override for `color`. Explicit here only where a hand-picked
+   * value beats the automatic fallback — the background slot's discs are
+   * deepened by name (Sunset, Lagoon, ...) rather than generically muted, so
+   * each keeps reading as the color it's named after instead of just going
+   * darker. Every other slot (skin, hair, clothing, ...) has no entry here
+   * and instead falls through to `AvatarRenderer`'s `colorFor`, which mutes
+   * `color` toward the dark background automatically — full light-mode
+   * saturation on a dark ground read as glaring, not as "a person's own
+   * coloring."
    */
   darkColor?: string;
 }

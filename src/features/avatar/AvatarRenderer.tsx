@@ -1,6 +1,7 @@
 import { View } from 'react-native';
 import Svg, { G } from 'react-native-svg';
 
+import { mutedForDark } from '@/theme/color';
 import { useTheme } from '@/theme/ThemeProvider';
 import { radius, stroke } from '@/theme/tokens';
 import { getAvatarItem, type AvatarItem } from './catalogue';
@@ -39,9 +40,18 @@ import { normalizeAvatar, SLOT_ORDER, type AvatarConfig, type AvatarSlot } from 
 
 export type AvatarMode = 'bust' | 'full';
 
-/** `darkColor` only overrides in dark mode, and only where an item sets one
- *  (see catalogue.ts's field doc for which items that is and why). */
-const colorFor = (item: AvatarItem, isDark: boolean): string => (isDark && item.darkColor ? item.darkColor : item.color);
+/**
+ * In dark mode, an item's hand-picked `darkColor` wins where one is set
+ * (currently only the background slot — see catalogue.ts's field doc); every
+ * other slot falls through to a generic mute so skin, hair and clothing don't
+ * sit on the figure at full light-mode saturation against a night ground.
+ */
+const colorFor = (item: AvatarItem, isDark: boolean): string => {
+  if (!isDark) return item.color;
+  if (item.darkColor) return item.darkColor;
+  if (item.color === 'transparent') return item.color;
+  return mutedForDark(item.color, 0.2);
+};
 
 function renderSlot(slot: AvatarSlot, itemId: string | null, ink: string, build: BuildMetrics, isDark: boolean) {
   // `build` is a silhouette modifier every other piece reads, not a layer.

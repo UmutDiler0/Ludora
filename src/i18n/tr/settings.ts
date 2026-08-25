@@ -19,4 +19,23 @@ export const settings: typeof en = {
   languageSystemDetail: (resolved) => `Cihazını takip eder — şu anda ${resolved}`,
   languageEnglish: 'English',
   languageTurkish: 'Türkçe',
+
+  account: 'Hesap',
+  changePassword: 'Şifreyi değiştir',
+  changePasswordDetail: 'Giriş yaparken kullandığın şifreyi güncelle.',
+  deleteAccount: 'Hesabı sil',
+  deleteAccountDetail: 'Bu cihazdaki hesabını ve verilerini kalıcı olarak kaldır.',
+  privacyPolicy: 'Gizlilik politikası',
+  privacyPolicyDetail: "Ludora verilerini nasıl kullanıyor.",
+  help: 'Yardım ve destek',
+  helpDetail: 'Sık sorulan soruların cevapları.',
+  guestAccountNotice: 'Şifre ve hesap ayarlarını yönetmek için gerçek bir hesapla giriş yap.',
+
+  deleteAccountDialog: {
+    title: 'Hesap silinsin mi?',
+    body: 'Bu işlem hesabını ve bu cihazdaki her şeyi — altın, avatar eşyaları, başarımlar — kalıcı olarak siler. Bu işlem geri alınamaz.',
+    passwordLabel: 'Şifreni onayla',
+    confirm: 'Hesabımı sil',
+    cancel: 'Vazgeç',
+  },
 };

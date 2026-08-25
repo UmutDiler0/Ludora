@@ -11,6 +11,8 @@
  * grape = identity, lagoon = realtime, sunshine = economy, tomato = danger.
  */
 
+import { mutedForDark } from './color';
+
 const LIGHT_INK = '#2E2545';
 const DARK_INK = '#FFF1DA';
 
@@ -128,9 +130,16 @@ export const darkRoleColors: RoleColors = {
   villager: '#FFB454',
 };
 
-/** Avatar placeholder hues (decision D19), tuned per mode. */
+/**
+ * Avatar placeholder hues (decision D19), tuned per mode.
+ *
+ * These are large flat fills (the round avatar bubble), not small text/icon
+ * accents, so dark mode mutes them toward the dark background instead of
+ * brightening them the way `darkRoleColors` does above — the same light-mode
+ * hue at full saturation on a dark surface read as glaring, not legible.
+ */
 export const lightAvatarHues = ['#7C4DFF', '#16C4E8', '#FFC93C', '#FF5B4A', '#2FCB74', '#FF9F1C'];
-export const darkAvatarHues = ['#9B7BFF', '#22C6E8', '#F0A81E', '#FF6B5B', '#3ED484', '#FFA83C'];
+export const darkAvatarHues = lightAvatarHues.map((hue) => mutedForDark(hue));
 
 export type ResolvedScheme = 'light' | 'dark';
 

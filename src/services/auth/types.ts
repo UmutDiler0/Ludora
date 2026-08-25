@@ -45,4 +45,7 @@ export interface AuthGateway {
   register(email: string, password: string, displayName: string): Promise<AuthUser>;
   sendPasswordReset(email: string): Promise<void>;
   signOut(): Promise<void>;
+  /** Both operate on whoever is currently signed in — there is no other account to target. */
+  changePassword(currentPassword: string, newPassword: string): Promise<void>;
+  deleteAccount(password: string): Promise<void>;
 }
