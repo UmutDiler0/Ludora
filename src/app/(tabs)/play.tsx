@@ -1,7 +1,9 @@
 import { useRouter } from 'expo-router';
+import { useState } from 'react';
 import { Pressable, useWindowDimensions, View } from 'react-native';
 
-import { Button, Card, Chip, Label, ListRow, Row, Screen, ScreenHeader, Text } from '@/components/ui';
+import { Button, Card, Chip, IconButton, Label, ListRow, Row, Screen, ScreenHeader, Text } from '@/components/ui';
+import { HowToPlayDialog } from '@/features/games/core/HowToPlayDialog';
 import { GAME_CATALOGUE, GAME_MODE_LABEL, type GameCatalogueEntry } from '@/features/games/core/registry';
 import type { GameId } from '@/features/games/core/types';
 import { GameArt } from '@/features/home/GameArt';
@@ -36,6 +38,7 @@ export default function Play() {
     if (id === 'taboo') return router.push('/taboo-setup');
     if (id === 'drawingGuess') return router.push('/sketch-setup');
     if (id === 'zarta') return router.push('/zarta-setup');
+    if (id === 'imposter') return router.push('/imposter-setup');
     // Detective has no rules to configure — it goes straight to picking a
     // case instead of a setup screen (see registry.ts's own note on why).
     if (id === 'detective') return router.push('/detective-stories');
@@ -132,10 +135,20 @@ function GameCard({
   onPress?: () => void;
 }) {
   const { palette } = useTheme();
+  const [howToPlay, setHowToPlay] = useState(false);
 
   const body = (
     <>
-      <GameArt id={game.id} height={96} />
+      <View>
+        <GameArt id={game.id} height={96} />
+        <View style={{ position: 'absolute', top: spacing.xs, right: spacing.xs }}>
+          <IconButton
+            name="information-circle-outline"
+            label={`How to play ${game.name}`}
+            onPress={() => setHowToPlay(true)}
+          />
+        </View>
+      </View>
       <View style={{ padding: spacing.md, gap: spacing.xs }}>
         <Text variant="bodyStrong" numberOfLines={1}>
           {game.name}
@@ -171,21 +184,26 @@ function GameCard({
     opacity: game.enabled ? 1 : 0.72,
   };
 
-  if (!onPress) return <View style={shell}>{body}</View>;
-
   return (
-    <Pressable
-      accessibilityRole="button"
-      accessibilityLabel={`Play ${game.name}`}
-      onPress={onPress}
-      style={({ pressed }) => [
-        shell,
-        pressed && {
-          borderBottomWidth: stroke.depthPressed,
-          transform: [{ translateY: stroke.depth - stroke.depthPressed }],
-        },
-      ]}>
-      {body}
-    </Pressable>
+    <>
+      {onPress ? (
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={`Play ${game.name}`}
+          onPress={onPress}
+          style={({ pressed }) => [
+            shell,
+            pressed && {
+              borderBottomWidth: stroke.depthPressed,
+              transform: [{ translateY: stroke.depth - stroke.depthPressed }],
+            },
+          ]}>
+          {body}
+        </Pressable>
+      ) : (
+        <View style={shell}>{body}</View>
+      )}
+      <HowToPlayDialog gameId={game.id} visible={howToPlay} onDismiss={() => setHowToPlay(false)} />
+    </>
   );
 }

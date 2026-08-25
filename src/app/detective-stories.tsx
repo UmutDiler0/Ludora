@@ -2,6 +2,7 @@ import { useRouter } from 'expo-router';
 import { View } from 'react-native';
 
 import { Chip, EmptyState, ListRow, Screen, ScreenHeader } from '@/components/ui';
+import { ContentTile } from '@/features/games/core/ContentTile';
 import { DETECTIVE_STORIES } from '@/features/games/detective/stories';
 import { spacing } from '@/theme/tokens';
 import { useTheme } from '@/theme/ThemeProvider';
@@ -42,6 +43,7 @@ export default function DetectiveStories() {
           {DETECTIVE_STORIES.map((story) => (
             <ListRow
               key={story.id}
+              leading={<ContentTile id={story.id} icon={story.icon} />}
               title={story.title}
               subtitle={story.teaser}
               trailing={

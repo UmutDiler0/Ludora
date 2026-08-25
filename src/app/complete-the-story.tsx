@@ -2,6 +2,7 @@ import { useRouter } from 'expo-router';
 import { View } from 'react-native';
 
 import { Chip, EmptyState, ListRow, Screen, ScreenHeader } from '@/components/ui';
+import { ContentTile } from '@/features/games/core/ContentTile';
 import { COMPLETE_STORY_ENTRIES } from '@/features/games/story/stories';
 import { spacing } from '@/theme/tokens';
 import { useTheme } from '@/theme/ThemeProvider';
@@ -40,6 +41,7 @@ export default function CompleteTheStory() {
           {COMPLETE_STORY_ENTRIES.map((story) => (
             <ListRow
               key={story.id}
+              leading={<ContentTile id={story.id} icon={story.icon} />}
               title={story.title}
               subtitle={story.opening}
               trailing={

@@ -5,16 +5,16 @@ import { spacing } from '@/theme/tokens';
 import { useTheme } from '@/theme/ThemeProvider';
 
 /**
- * The "pass the phone" beat, shared by the writing and voting screens —
- * Zarta's equivalent of Taboo's Turn Intro and Sketch It's Round Intro,
- * except it fires once per player per phase instead of once per round (see
- * engine.ts's file header for why).
+ * The "pass the phone" beat — Zarta's writing/voting screens and Imposter's
+ * role reveal all use it, the shared equivalent of Taboo's Turn Intro and
+ * Sketch It's Round Intro for a hand-off that happens more than once per
+ * round.
  *
  * Deliberately a client-only curtain, not a distinct engine phase: dismissing
- * it dispatches `onReveal` (the `READY` action), which is what actually
- * starts the player's clock. Keyed on `uid` so a new player at the front of
- * the queue always sees the curtain again, even though the component itself
- * never unmounts between turns.
+ * it calls `onReveal` (Zarta's `READY` action, Imposter's `ACK_ROLE`), which
+ * is what actually starts the player's clock or advances the reveal. Keyed on
+ * `uid` so a new player at the front of the queue always sees the curtain
+ * again, even though the component itself never unmounts between turns.
  */
 export function PassCurtain({
   uid,

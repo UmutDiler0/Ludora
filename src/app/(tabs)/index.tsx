@@ -1,6 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Pressable, useWindowDimensions, View } from 'react-native';
 
 import {
@@ -10,6 +10,7 @@ import {
   Card,
   Chip,
   GoldPill,
+  IconButton,
   ProgressBar,
   Row,
   Screen,
@@ -17,6 +18,7 @@ import {
 } from '@/components/ui';
 import { AvatarRenderer } from '@/features/avatar/AvatarRenderer';
 import { AWARDS } from '@/features/economy/levels';
+import { HowToPlayDialog } from '@/features/games/core/HowToPlayDialog';
 import { GAME_MODE_LABEL } from '@/features/games/core/registry';
 import { GameArt } from '@/features/home/GameArt';
 import { DUMMY_CHAMPIONS, trendingGames, type Champion, type TrendingGame } from '@/features/home/dummy';
@@ -109,6 +111,10 @@ export default function Home() {
     }
     if (id === 'zarta') {
       router.push('/zarta-setup');
+      return;
+    }
+    if (id === 'imposter') {
+      router.push('/imposter-setup');
       return;
     }
     if (id === 'detective') {
@@ -397,10 +403,20 @@ function TrendingCard({
   onPress?: () => void;
 }) {
   const { palette } = useTheme();
+  const [howToPlay, setHowToPlay] = useState(false);
 
   const body = (
     <>
-      <GameArt id={game.id} height={100} />
+      <View>
+        <GameArt id={game.id} height={100} />
+        <View style={{ position: 'absolute', top: spacing.xs, right: spacing.xs }}>
+          <IconButton
+            name="information-circle-outline"
+            label={`How to play ${game.name}`}
+            onPress={() => setHowToPlay(true)}
+          />
+        </View>
+      </View>
       <View style={{ padding: spacing.md, gap: spacing.xs }}>
         <Row style={{ justifyContent: 'space-between' }}>
           <Text variant="bodyStrong" numberOfLines={1} style={{ flex: 1 }}>
@@ -439,21 +455,26 @@ function TrendingCard({
     opacity: game.enabled ? 1 : 0.72,
   };
 
-  if (!onPress) return <View style={shell}>{body}</View>;
-
   return (
-    <Pressable
-      accessibilityRole="button"
-      accessibilityLabel={`Play ${game.name}`}
-      onPress={onPress}
-      style={({ pressed }) => [
-        shell,
-        pressed && {
-          borderBottomWidth: stroke.depthPressed,
-          transform: [{ translateY: stroke.depth - stroke.depthPressed }],
-        },
-      ]}>
-      {body}
-    </Pressable>
+    <>
+      {onPress ? (
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={`Play ${game.name}`}
+          onPress={onPress}
+          style={({ pressed }) => [
+            shell,
+            pressed && {
+              borderBottomWidth: stroke.depthPressed,
+              transform: [{ translateY: stroke.depth - stroke.depthPressed }],
+            },
+          ]}>
+          {body}
+        </Pressable>
+      ) : (
+        <View style={shell}>{body}</View>
+      )}
+      <HowToPlayDialog gameId={game.id} visible={howToPlay} onDismiss={() => setHowToPlay(false)} />
+    </>
   );
 }

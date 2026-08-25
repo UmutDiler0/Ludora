@@ -14,6 +14,7 @@ export const GAME_REGISTRY = {
   taboo: () => import('../taboo/engine'),
   drawingGuess: () => import('../sketchIt/engine'),
   zarta: () => import('../zarta/engine'),
+  imposter: () => import('../imposter/engine'),
 } as const satisfies Partial<Record<GameId, () => Promise<unknown>>>;
 
 export type RegisteredGameId = keyof typeof GAME_REGISTRY;
@@ -127,9 +128,9 @@ export const GAME_CATALOGUE: GameCatalogueEntry[] = [
   {
     // Two separate catalogue entries, not one game with two roles — Agent
     // and Imposter are different games (corrected from an earlier combined
-    // "Agent & Imposter" entry). Neither is in GAME_REGISTRY yet — only the
-    // catalogue entries and key art exist so far, no rules for either.
-    // Category/headcount/modes are placeholders until real rules land.
+    // "Agent & Imposter" entry). Agent still has no rules and no
+    // GAME_REGISTRY entry — only the catalogue entry and key art exist so
+    // far. Category/headcount/modes are placeholders until real rules land.
     id: 'agent',
     name: 'Agent',
     category: 'Social Deduction',
@@ -140,13 +141,17 @@ export const GAME_CATALOGUE: GameCatalogueEntry[] = [
     modes: ['local', 'online'],
   },
   {
+    // Real rules, real engine (features/games/imposter). One category, one
+    // secret value; everyone but the imposter is told it. Pass-and-play on
+    // one device the same way Taboo and Zarta are, hence `local` only —
+    // there's no networked lobby for it yet.
     id: 'imposter',
     name: 'Imposter',
     category: 'Social Deduction',
     isPremium: false,
-    enabled: false,
-    minPlayers: 5,
+    enabled: true,
+    minPlayers: 4,
     maxPlayers: 10,
-    modes: ['local', 'online'],
+    modes: ['local'],
   },
 ];

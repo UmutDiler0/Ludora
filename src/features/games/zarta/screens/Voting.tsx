@@ -5,8 +5,8 @@ import { Card, Chip, Label, ProgressBar, Row, Screen, Text } from '@/components/
 import { radius, spacing, stroke } from '@/theme/tokens';
 import { useTheme } from '@/theme/ThemeProvider';
 import type { Palette } from '@/theme/palettes';
+import { PassCurtain } from '../../core/PassCurtain';
 import type { ZartaPlayerView } from '../state';
-import { PassCurtain } from './PassCurtain';
 
 /**
  * One player's turn to vote. Rendered fresh for every voter in

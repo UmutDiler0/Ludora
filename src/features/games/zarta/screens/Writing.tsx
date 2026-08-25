@@ -4,8 +4,8 @@ import { TextInput } from 'react-native';
 import { Button, Card, Chip, Label, ProgressBar, Row, Screen, Text } from '@/components/ui';
 import { radius, spacing, stroke } from '@/theme/tokens';
 import { useTheme } from '@/theme/ThemeProvider';
+import { PassCurtain } from '../../core/PassCurtain';
 import type { ZartaPlayerView } from '../state';
-import { PassCurtain } from './PassCurtain';
 
 /**
  * One player's turn to write a bluff. Rendered fresh for every writer in
