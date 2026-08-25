@@ -38,8 +38,8 @@ export default function TabooLobby() {
     t((s) => s.taboo.lobby.roundSeconds)(config.roundSeconds),
   ];
 
-  const start = () => {
-    roomGateway.closeRoom(params.code);
+  const start = async () => {
+    await roomGateway.closeRoom(params.code);
     newGameWithRoster(roster, config);
     router.replace('/taboo');
   };

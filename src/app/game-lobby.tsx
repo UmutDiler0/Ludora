@@ -46,8 +46,8 @@ export default function GameLobby() {
     t((s) => s.vampireVillage.lobby.bodyguard)(config.enableBodyguard),
   ];
 
-  const start = () => {
-    roomGateway.closeRoom(params.code);
+  const start = async () => {
+    await roomGateway.closeRoom(params.code);
     newGame(playerCount, config);
     router.replace('/game');
   };

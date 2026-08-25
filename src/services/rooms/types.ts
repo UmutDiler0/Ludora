@@ -31,10 +31,11 @@ export interface Room {
 export type NewRoom = Omit<Room, 'code' | 'status' | 'createdAt'>;
 
 export interface RoomGateway {
-  createRoom(input: NewRoom): Room;
-  listPublicRooms(): Room[];
+  createRoom(input: NewRoom): Promise<Room>;
+  listPublicRooms(): Promise<Room[]>;
   /** A `waiting` room by code, public or private — codes always work while a room is open. */
-  getRoomByCode(code: string): Room | null;
-  closeRoom(code: string): void;
+  getRoomByCode(code: string): Promise<Room | null>;
+  closeRoom(code: string): Promise<void>;
+  /** Registration is synchronous even though the data it reacts to is not — it never itself reads or writes a room. */
   subscribe(onChange: () => void): () => void;
 }

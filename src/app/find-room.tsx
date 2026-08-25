@@ -32,8 +32,8 @@ export default function FindRoom() {
     router.push({ pathname: room.route, params: room.params });
   };
 
-  const joinByCode = () => {
-    const room = roomGateway.getRoomByCode(code.trim().toUpperCase());
+  const joinByCode = async () => {
+    const room = await roomGateway.getRoomByCode(code.trim().toUpperCase());
     if (!room) {
       setError(t((s) => s.rooms.codeNotFound));
       return;

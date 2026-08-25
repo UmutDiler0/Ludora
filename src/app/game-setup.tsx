@@ -92,9 +92,9 @@ export default function GameSetup() {
       ? Math.min(config.vampireCount, Math.floor((playerCount - 1) / 2))
       : autoVampireCount(playerCount);
 
-  const start = () => {
+  const start = async () => {
     if (!result.ok) return;
-    const room = roomGateway.createRoom({
+    const room = await roomGateway.createRoom({
       gameId: 'vampireVillage',
       hostName: you || t((s) => s.common.you),
       visibility,

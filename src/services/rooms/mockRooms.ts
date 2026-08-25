@@ -32,7 +32,10 @@ export function createMockRooms(): RoomGateway {
   };
 
   return {
-    createRoom(input) {
+    // Every method below is `async` only so this keeps satisfying the same
+    // `RoomGateway` the real RTDB-backed gateway must (network calls are
+    // never actually synchronous) — the bodies are unchanged.
+    async createRoom(input) {
       const code = generateRoomCode((candidate) => rooms.has(candidate));
       const room: Room = {
         ...input,
@@ -46,18 +49,18 @@ export function createMockRooms(): RoomGateway {
       return room;
     },
 
-    listPublicRooms() {
+    async listPublicRooms() {
       return [...rooms.values()]
         .filter((r) => r.status === 'waiting' && r.visibility === 'public')
         .sort((a, b) => b.createdAt - a.createdAt);
     },
 
-    getRoomByCode(code) {
+    async getRoomByCode(code) {
       const room = rooms.get(code);
       return room && room.status === 'waiting' ? room : null;
     },
 
-    closeRoom(code) {
+    async closeRoom(code) {
       const room = rooms.get(code);
       if (!room) return;
       rooms.set(code, { ...room, status: 'closed' });

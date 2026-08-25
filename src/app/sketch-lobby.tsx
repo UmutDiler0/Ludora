@@ -31,8 +31,8 @@ export default function SketchLobby() {
 
   const summary = [t((s) => s.common.players)(playerCount), t((s) => s.sketchIt.lobby.secondsToDraw)(config.roundSeconds)];
 
-  const start = () => {
-    roomGateway.closeRoom(params.code);
+  const start = async () => {
+    await roomGateway.closeRoom(params.code);
     newGame(playerCount, config);
     router.replace('/sketch');
   };

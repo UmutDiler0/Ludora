@@ -123,10 +123,10 @@ export default function TabooSetup() {
   const rosterOk = counts.A > 0 && counts.B > 0;
   const canStart = configResult.ok && rosterOk;
 
-  const start = () => {
+  const start = async () => {
     if (!configResult.ok || !rosterOk) return;
     const seats: PlayerSeat[] = roster.map((p) => ({ uid: p.uid, displayName: p.name.trim() || p.name, team: p.team }));
-    const room = roomGateway.createRoom({
+    const room = await roomGateway.createRoom({
       gameId: 'taboo',
       hostName: you || t((s) => s.common.you),
       visibility,

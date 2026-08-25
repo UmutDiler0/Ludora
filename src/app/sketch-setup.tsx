@@ -58,9 +58,9 @@ export default function SketchSetup() {
 
   const result = useMemo(() => validateSketchConfig(config), [config]);
 
-  const start = () => {
+  const start = async () => {
     if (!result.ok) return;
-    const room = roomGateway.createRoom({
+    const room = await roomGateway.createRoom({
       gameId: 'drawingGuess',
       hostName: you || t((s) => s.common.you),
       visibility,

@@ -31,8 +31,8 @@ export default function ImposterLobby() {
 
   const summary = [t((s) => s.common.players)(playerCount), t((s) => s.imposter.lobby.minutes)(Math.round(config.discussionSeconds / 60))];
 
-  const start = () => {
-    roomGateway.closeRoom(params.code);
+  const start = async () => {
+    await roomGateway.closeRoom(params.code);
     newGame(playerCount, config);
     router.replace('/imposter');
   };

@@ -53,9 +53,9 @@ export default function ImposterSetup() {
 
   const result = useMemo(() => validateImposterConfig(config), [config]);
 
-  const start = () => {
+  const start = async () => {
     if (!result.ok) return;
-    const room = roomGateway.createRoom({
+    const room = await roomGateway.createRoom({
       gameId: 'imposter',
       hostName: you || t((s) => s.common.you),
       visibility,

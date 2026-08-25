@@ -30,8 +30,8 @@ export default function ZartaLobby() {
 
   const summary = [t((s) => s.common.players)(playerCount), t((s) => s.zarta.lobby.questions)(config.totalRounds)];
 
-  const start = () => {
-    roomGateway.closeRoom(params.code);
+  const start = async () => {
+    await roomGateway.closeRoom(params.code);
     newGame(playerCount, config);
     router.replace('/zarta');
   };

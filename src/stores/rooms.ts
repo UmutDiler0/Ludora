@@ -14,6 +14,10 @@ interface RoomsState {
 }
 
 export const useRooms = create<RoomsState>((set) => {
-  roomGateway.subscribe(() => set({ publicRooms: roomGateway.listPublicRooms() }));
-  return { publicRooms: roomGateway.listPublicRooms() };
+  const refresh = () => {
+    void roomGateway.listPublicRooms().then((publicRooms) => set({ publicRooms }));
+  };
+  roomGateway.subscribe(refresh);
+  refresh();
+  return { publicRooms: [] };
 });

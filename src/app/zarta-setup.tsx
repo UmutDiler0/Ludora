@@ -54,9 +54,9 @@ export default function ZartaSetup() {
 
   const result = useMemo(() => validateZartaConfig(config), [config]);
 
-  const start = () => {
+  const start = async () => {
     if (!result.ok) return;
-    const room = roomGateway.createRoom({
+    const room = await roomGateway.createRoom({
       gameId: 'zarta',
       hostName: you || t((s) => s.common.you),
       visibility,
