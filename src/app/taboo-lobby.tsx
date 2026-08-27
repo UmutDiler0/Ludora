@@ -5,7 +5,7 @@ import { LobbyScreen, type LobbySeat } from '@/features/games/core/LobbyScreen';
 import type { PlayerSeat } from '@/features/games/core/types';
 import type { TabooConfig } from '@/features/games/taboo/config';
 import { useI18n } from '@/i18n/I18nProvider';
-import { roomGateway } from '@/services/rooms/mockRooms';
+import { roomGateway } from '@/services/rooms/firebaseRooms';
 import type { RoomVisibility } from '@/services/rooms/types';
 import { useLocalTaboo } from '@/stores/localTaboo';
 

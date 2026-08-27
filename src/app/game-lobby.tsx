@@ -4,7 +4,7 @@ import { useMemo } from 'react';
 import { LobbyScreen, type LobbySeat } from '@/features/games/core/LobbyScreen';
 import { autoVampireCount, type VVConfig } from '@/features/games/vampireVillage/config';
 import { useI18n } from '@/i18n/I18nProvider';
-import { roomGateway } from '@/services/rooms/mockRooms';
+import { roomGateway } from '@/services/rooms/firebaseRooms';
 import type { RoomVisibility } from '@/services/rooms/types';
 import { BOT_NAMES, HUMAN_UID, useLocalGame } from '@/stores/localGame';
 import { useProfile } from '@/stores/profile';

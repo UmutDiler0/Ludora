@@ -76,5 +76,10 @@ export function createMockRooms(): RoomGateway {
   };
 }
 
-/** The app-wide instance. Swapped for the RTDB-backed gateway in one place, later. */
+/**
+ * No longer the app-wide instance — every screen now imports `roomGateway`
+ * from `firebaseRooms.ts` instead (docs/firebase.md §3.11). Kept, not
+ * deleted, unlike `mockAuth.ts`: useful for local dev without a network
+ * round-trip to RTDB, and there's no header instruction here saying otherwise.
+ */
 export const roomGateway = createMockRooms();

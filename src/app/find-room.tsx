@@ -6,7 +6,7 @@ import { View } from 'react-native';
 import { Button, Card, EmptyState, Input, Label, ListRow, Row, Screen, ScreenHeader, Text } from '@/components/ui';
 import { useI18n } from '@/i18n/I18nProvider';
 import { ROOM_CODE_LENGTH } from '@/constants/app';
-import { roomGateway } from '@/services/rooms/mockRooms';
+import { roomGateway } from '@/services/rooms/firebaseRooms';
 import type { Room } from '@/services/rooms/types';
 import { useRooms } from '@/stores/rooms';
 import { useTheme } from '@/theme/ThemeProvider';

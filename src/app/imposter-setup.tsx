@@ -15,7 +15,7 @@ import {
 } from '@/features/games/imposter/config';
 import { RoomVisibilityCard } from '@/features/games/core/RoomVisibilityCard';
 import { useI18n } from '@/i18n/I18nProvider';
-import { roomGateway } from '@/services/rooms/mockRooms';
+import { roomGateway } from '@/services/rooms/firebaseRooms';
 import type { RoomVisibility } from '@/services/rooms/types';
 import { useProfile } from '@/stores/profile';
 import { useTheme } from '@/theme/ThemeProvider';

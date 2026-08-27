@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 
-import { roomGateway } from '@/services/rooms/mockRooms';
+import { roomGateway } from '@/services/rooms/firebaseRooms';
 import type { Room } from '@/services/rooms/types';
 
 /**

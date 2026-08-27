@@ -34,8 +34,18 @@ import type { NewRoom, Room, RoomGateway } from './types';
  * retried against a live existence check, not the mock's synchronous `Map`.
  */
 
+/**
+ * Enabling Realtime Database in the console does not bake its URL into
+ * `google-services.json`/`GoogleService-Info.plist` the way `storage_bucket`
+ * is — `app.options.databaseURL` resolves to `null` without it, confirmed in
+ * `getDatabase`'s own source (`lib/index.ts`). The URL is per-instance (this
+ * project's, from the Realtime Database console) and can't be derived from
+ * the project id alone, so it's hardcoded here rather than guessed.
+ */
+const RTDB_URL = 'https://ludora-13e00-default-rtdb.firebaseio.com/';
+
 let db: Database | null = null;
-const database = (): Database => (db ??= getDatabase());
+const database = (): Database => (db ??= getDatabase(undefined, RTDB_URL));
 
 async function codeExists(candidate: string): Promise<boolean> {
   const snap = await get(ref(database(), `room_codes/${candidate}`));
@@ -120,3 +130,6 @@ export function createFirebaseRooms(): RoomGateway {
     },
   };
 }
+
+/** The app-wide instance. Every screen imports `roomGateway` from this file now — see docs/firebase.md §2/§3.11. */
+export const roomGateway = createFirebaseRooms();
