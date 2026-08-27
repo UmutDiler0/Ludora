@@ -2,7 +2,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 
-import { mockAuthGateway } from '@/services/auth/mockAuth';
+import { firebaseAuthGateway } from '@/services/auth/firebaseAuth';
 import { AUTH_ERROR_COPY, AuthError, type AuthUser } from '@/services/auth/types';
 
 /**
@@ -88,17 +88,17 @@ export const useSession = create<SessionState>()(
           set({ user: { uid: guestId, email: '', displayName: guestId }, status: 'signed-in' });
           return;
         }
-        const user = await mockAuthGateway.restore();
+        const user = await firebaseAuthGateway.restore();
         set({ user, status: user ? 'signed-in' : 'signed-out' });
       },
 
       completeOnboarding: () => set({ hasOnboarded: true }),
 
       signIn: (email, password) =>
-        attempt(set, () => mockAuthGateway.signIn(email, password)),
+        attempt(set, () => firebaseAuthGateway.signIn(email, password)),
 
       register: (email, password, displayName) =>
-        attempt(set, () => mockAuthGateway.register(email, password, displayName)),
+        attempt(set, () => firebaseAuthGateway.register(email, password, displayName)),
 
       playAsGuest: () => {
         const guestId = makeGuestId();
@@ -113,20 +113,20 @@ export const useSession = create<SessionState>()(
 
       sendPasswordReset: (email) =>
         attempt(set, async () => {
-          await mockAuthGateway.sendPasswordReset(email);
+          await firebaseAuthGateway.sendPasswordReset(email);
           return null;
         }),
 
       changePassword: (currentPassword, newPassword) =>
         attempt(set, async () => {
-          await mockAuthGateway.changePassword(currentPassword, newPassword);
+          await firebaseAuthGateway.changePassword(currentPassword, newPassword);
           return null;
         }),
 
       async deleteAccount(password) {
         set({ busy: true, error: null });
         try {
-          await mockAuthGateway.deleteAccount(password);
+          await firebaseAuthGateway.deleteAccount(password);
           set({ user: null, status: 'signed-out', error: null, isGuest: false, guestId: null, busy: false });
           return true;
         } catch (e) {
@@ -137,7 +137,7 @@ export const useSession = create<SessionState>()(
       },
 
       async signOut() {
-        await mockAuthGateway.signOut();
+        await firebaseAuthGateway.signOut();
         set({ user: null, status: 'signed-out', error: null, isGuest: false, guestId: null });
       },
 

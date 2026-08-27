@@ -20,7 +20,7 @@ It also surfaces places where the code's stated intent has quietly moved past wh
 
 | Product | Package | Status | Where |
 | --- | --- | --- | --- |
-| Authentication | `@react-native-firebase/auth` ^26.2.0 | **Installed. Gateway fully written. Not wired** — `stores/session.ts` still imports `mockAuthGateway` | [firebaseAuth.ts](../src/services/auth/firebaseAuth.ts) |
+| Authentication | `@react-native-firebase/auth` 26.3.0 | **Installed. Wired and live** — `stores/session.ts` calls `firebaseAuthGateway` directly; `mockAuthGateway` deleted per its own header once this happened | [firebaseAuth.ts](../src/services/auth/firebaseAuth.ts) |
 | App (core) | `@react-native-firebase/app` ^26.2.0 | Installed, config plugin registered | [app.json](../app.json) |
 | Cloud Firestore | `@react-native-firebase/firestore` | Not installed | targets in §3 |
 | Realtime Database | `@react-native-firebase/database` 26.3.0 | **Installed. Room directory gateway written. Not wired** — `services/rooms/mockRooms.ts`'s `roomGateway` is still the active export | [firebaseRooms.ts](../src/services/rooms/firebaseRooms.ts) |
@@ -35,7 +35,9 @@ It also surfaces places where the code's stated intent has quietly moved past wh
 
 Every `@react-native-firebase/*` package must be pinned to the exact same version (`26.3.0`, no `^`) in package.json — installing `/database` at a caret range resolved a patch ahead of the already-installed `/app`/`/auth` and `npm install` refused with an ERESOLVE peer conflict until all three were pinned exactly. This is a standing constraint, not a one-time fix: bump one, bump all three together.
 
-Neither `google-services.json` nor `GoogleService-Info.plist` exist in the repo yet — `app.json`'s references to them are placeholders. A native build (`expo prebuild` or EAS) will fail without them. Getting them requires a real Firebase project (console.firebase.google.com → create project → enable the products in use → register an Android app with package `com.ludora.app` / iOS app with bundle id `com.ludora.app` → download each platform's config file → place at the repo root). This also requires `expo-dev-client` (installed, not yet built) — Firebase's native modules do not run in Expo Go, so once real credentials land, the only way to run the app is a development build (`eas build --profile development` or a local `expo run:android`/`expo run:ios`).
+`google-services.json` and `GoogleService-Info.plist` now exist at the repo root (gitignored — per-developer/per-environment, not committed) and both resolve to project `ludora-13e00`, package/bundle id `com.ludora.app`, matching `app.json` on both platforms. This also requires `expo-dev-client` (installed, not yet built) — Firebase's native modules do not run in Expo Go, so the only way to actually run signed-in auth (or anything else in this file once wired) is a development build (`eas build --profile development` or a local `expo run:android`/`expo run:ios`), not `expo start` in Expo Go.
+
+**Still needed in the Firebase Console before real sign-in works on a device:** Email/Password enabled under Authentication → Sign-in method for `ludora-13e00`. The gateway is wired; an unconfigured provider surfaces as `auth/operation-not-allowed`, not a code bug.
 
 ---
 
@@ -45,11 +47,11 @@ Every domain that will eventually talk to Firebase is split into three pieces, c
 
 1. **`types.ts`** — the gateway interface. Stores and screens depend on this, never on a concrete implementation.
 2. **`mock*.ts`** — a local implementation, active today.
-3. **A real implementation** — swapped in by changing one import in the consuming store. Written already for auth; not yet for the other two.
+3. **A real implementation** — swapped in by changing one import in the consuming store. Live for auth; written but not yet wired for rooms; not yet written for presence/connectivity or chat.
 
 | Boundary | Interface | Mock (active) | Real target |
 | --- | --- | --- | --- |
-| Identity | `AuthGateway` — [services/auth/types.ts](../src/services/auth/types.ts) | `mockAuthGateway` — AsyncStorage, plaintext, dev-only | `firebaseAuthGateway` — **written**, [services/auth/firebaseAuth.ts](../src/services/auth/firebaseAuth.ts), not wired |
+| Identity | `AuthGateway` — [services/auth/types.ts](../src/services/auth/types.ts) | *(retired — `mockAuthGateway` deleted once wired)* | `firebaseAuthGateway` — **wired and live**, [services/auth/firebaseAuth.ts](../src/services/auth/firebaseAuth.ts) |
 | Connectivity + room presence | `ConnectivityProbe`, `PresenceGateway` — [services/network/types.ts](../src/services/network/types.ts) | `httpProbe` (a 204 fetch, proxying "is the internet up" for "can we reach Ludora"), `mockPresence` (in-memory pub/sub, silent on a real device) | RTDB `.info/connected` for the probe, RTDB `onDisconnect()` for presence |
 | Chat | `ChatGateway` — [services/chat/types.ts](../src/services/chat/types.ts) | `mockChat` — in-memory loopback, `send` calls straight back out through `subscribe` | RTDB push under `rooms/{roomId}/chat/{channel}`, read via `child_added` |
 | Room directory | `RoomGateway` — [services/rooms/types.ts](../src/services/rooms/types.ts) | `roomGateway` (mockRooms.ts) — in-memory `Map<code, Room>`, module-level like `mockPresence`; single device only, see §3.11 | `createFirebaseRooms()` — **written**, [services/rooms/firebaseRooms.ts](../src/services/rooms/firebaseRooms.ts), not wired. RTDB `/rooms`, `/room_codes/{CODE}`, `/public_rooms/{roomId}` (§6.4) |
