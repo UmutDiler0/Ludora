@@ -22,16 +22,16 @@ It also surfaces places where the code's stated intent has quietly moved past wh
 | --- | --- | --- | --- |
 | Authentication | `@react-native-firebase/auth` 26.3.0 | **Installed. Wired and live** — `stores/session.ts` calls `firebaseAuthGateway` directly; `mockAuthGateway` deleted per its own header once this happened | [firebaseAuth.ts](../src/services/auth/firebaseAuth.ts) |
 | App (core) | `@react-native-firebase/app` ^26.2.0 | Installed, config plugin registered | [app.json](../app.json) |
-| Cloud Firestore | `@react-native-firebase/firestore` | Not installed | targets in §3 |
+| Cloud Firestore | `@react-native-firebase/firestore` 26.3.0 | **Installed. No gateway written yet** — `stores/profile.ts`, `stores/progression.ts` and the leaderboard/catalogue local mirrors have no `types.ts`/`mock*.ts` split today, unlike auth/rooms/presence/chat | targets in §3.2–§3.7 |
 | Realtime Database | `@react-native-firebase/database` 26.3.0 | **Installed. Room directory gateway written. Not wired** — `services/rooms/mockRooms.ts`'s `roomGateway` is still the active export | [firebaseRooms.ts](../src/services/rooms/firebaseRooms.ts) |
-| Cloud Storage | `@react-native-firebase/storage` | Not installed | avatar/catalogue art, ARCHITECTURE §12 |
+| Cloud Storage | `@react-native-firebase/storage` 26.3.0 | **Installed. No gateway written yet** | avatar/catalogue art, ARCHITECTURE §12 |
 | Cloud Functions | `@react-native-firebase/functions` (client) + a separate `functions/` package (server) | Not installed, `functions/` package not created | economy payouts, result validation, room lifecycle — every "local mirror" comment in §3 names this as the eventual writer |
 | Cloud Messaging (FCM) | `@react-native-firebase/messaging` | Not installed | ARCHITECTURE §13 |
 | Analytics | `@react-native-firebase/analytics` | Not installed | ARCHITECTURE §2 |
 | Crashlytics | `@react-native-firebase/crashlytics` | Not installed | ARCHITECTURE §2 |
 | *(adjacent, not Firebase)* AdMob, IAP | `react-native-google-mobile-ads`, `react-native-iap` | Not installed | ARCHITECTURE §13 |
 
-`app.json` already declares `googleServicesFile` for both platforms and registers the `app`/`auth` config plugins — the project-level wiring for Auth is done; only `session.ts`'s import needs to change to make it live. `@react-native-firebase/database` needs no plugin entry of its own — it has no `app.plugin.js` (confirmed by `expo export` refusing to start with it listed), so it autolinks off the `app` plugin's native setup alone.
+`app.json` already declares `googleServicesFile` for both platforms and registers the `app`/`auth` config plugins — the project-level wiring for Auth is done; only `session.ts`'s import needs to change to make it live. `@react-native-firebase/database`, `/firestore` and `/storage` need no plugin entry of their own — none ships an `app.plugin.js` (confirmed by checking each package directly), so all three autolink off the `app` plugin's native setup alone.
 
 Every `@react-native-firebase/*` package must be pinned to the exact same version (`26.3.0`, no `^`) in package.json — installing `/database` at a caret range resolved a patch ahead of the already-installed `/app`/`/auth` and `npm install` refused with an ERESOLVE peer conflict until all three were pinned exactly. This is a standing constraint, not a one-time fix: bump one, bump all three together.
 

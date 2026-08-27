@@ -44,6 +44,12 @@
       "typedRoutes": false,
       "reactCompiler": true
     },
-    "splash": {}
+    "splash": {},
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "74aa8490-bf2c-497b-8c19-8c4ed969cbf8"
+      }
+    }
   }
 }
