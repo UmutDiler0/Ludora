@@ -125,7 +125,16 @@ export function createFirebaseRooms(): RoomGateway {
 
     subscribe(onChange: () => void): () => void {
       const roomsRef = ref(database(), 'public_rooms');
-      const unsubscribe = onValue(roomsRef, () => onChange());
+      // Without a cancel callback, a denied listener (no RTDB rules yet, or
+      // a locally-faked guest session with no real Firebase Auth token —
+      // see docs/firebase.md) fails silently inside the SDK rather than
+      // surfacing anywhere this app could react to it. Logging it at least
+      // makes that failure visible instead of a mysterious empty room list.
+      const unsubscribe = onValue(
+        roomsRef,
+        () => onChange(),
+        (err) => console.warn('[rooms] public_rooms listener denied:', err),
+      );
       return unsubscribe;
     },
   };

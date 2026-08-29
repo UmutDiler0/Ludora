@@ -1,5 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
-import { View } from 'react-native';
+import { Platform, View } from 'react-native';
 
 import { Divider, Label, Row, Text } from '@/components/ui';
 import { useI18n } from '@/i18n/I18nProvider';
@@ -33,7 +33,9 @@ export function SocialAuthRow() {
 
       <Row gap={spacing.md}>
         <ProviderButton icon="logo-google" name={t((s) => s.auth.social.google)} />
-        <ProviderButton icon="logo-apple" name={t((s) => s.auth.social.apple)} />
+        {/* Sign in with Apple has no Android counterpart — Apple's own
+            guidelines expect the button only where it can actually run. */}
+        {Platform.OS === 'ios' && <ProviderButton icon="logo-apple" name={t((s) => s.auth.social.apple)} />}
       </Row>
 
       <Text variant="caption" color={palette.outline} center>

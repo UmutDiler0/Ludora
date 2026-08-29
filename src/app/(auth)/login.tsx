@@ -1,12 +1,11 @@
 import { Link, useRouter } from 'expo-router';
 import { useMemo, useState } from 'react';
-import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, View } from 'react-native';
+import { KeyboardAvoidingView, Platform, StyleSheet, View } from 'react-native';
 import Animated, { FadeInDown } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Button, Card, Input, Row, Text } from '@/components/ui';
 import { APP_NAME } from '@/constants/app';
-import { SocialAuthRow } from '@/features/auth/components/SocialAuthRow';
 import { useI18n } from '@/i18n/I18nProvider';
 import { useProfile } from '@/stores/profile';
 import { useSession } from '@/stores/session';
@@ -38,8 +37,9 @@ export default function Login() {
     router.replace('/(tabs)');
   };
 
-  const continueAsGuest = () => {
-    playAsGuest();
+  const continueAsGuest = async () => {
+    const ok = await playAsGuest();
+    if (!ok) return;
     const user = useSession.getState().user;
     if (user) setDisplayName(user.displayName);
     router.replace('/(tabs)');
@@ -50,10 +50,7 @@ export default function Login() {
       <KeyboardAvoidingView
         style={{ flex: 1 }}
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-        <ScrollView
-          contentContainerStyle={s.content}
-          keyboardShouldPersistTaps="handled"
-          showsVerticalScrollIndicator={false}>
+        <View style={s.content}>
           <Animated.View entering={FadeInDown.duration(420)} style={s.brand}>
             <Text variant="hero" center color={palette.primary}>
               {APP_NAME}
@@ -110,14 +107,17 @@ export default function Login() {
           </Animated.View>
 
           <Animated.View entering={FadeInDown.delay(220).duration(420)}>
-            <SocialAuthRow />
+            <Button
+              label={t((s) => s.auth.login.playAsGuest)}
+              tone="ghost"
+              icon="person-outline"
+              onPress={continueAsGuest}
+              disabled={busy}
+              loading={busy}
+            />
           </Animated.View>
 
-          <Animated.View entering={FadeInDown.delay(260).duration(420)}>
-            <Button label={t((s) => s.auth.login.playAsGuest)} tone="ghost" icon="person-outline" onPress={continueAsGuest} />
-          </Animated.View>
-
-          <View style={{ marginTop: 'auto', paddingTop: spacing.xl }}>
+          <View style={{ marginTop: spacing.lg }}>
             <Row gap={spacing.xs} style={{ justifyContent: 'center' }}>
               <Text variant="caption" color={palette.onSurfaceVariant}>
                 {t((s) => s.auth.login.noAccount)}
@@ -127,7 +127,7 @@ export default function Login() {
               </Link>
             </Row>
           </View>
-        </ScrollView>
+        </View>
       </KeyboardAvoidingView>
     </SafeAreaView>
   );
@@ -136,8 +136,8 @@ export default function Login() {
 const makeStyles = (p: Palette) =>
   StyleSheet.create({
   root: { flex: 1, backgroundColor: p.background },
-  content: { padding: spacing.xl, gap: spacing.xl, flexGrow: 1 },
-  brand: { gap: spacing.sm, paddingTop: spacing.xxxl, paddingBottom: spacing.md },
+  content: { padding: spacing.xl, gap: spacing.md, flex: 1 },
+  brand: { gap: spacing.sm, paddingTop: spacing.lg, paddingBottom: spacing.xs },
   link: { color: p.secondary },
   linkPrimary: { color: p.primary },
 });;

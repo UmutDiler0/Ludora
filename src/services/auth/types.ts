@@ -11,6 +11,8 @@ export interface AuthUser {
   uid: string;
   email: string;
   displayName: string;
+  /** True for a Firebase Anonymous Auth session — the single signal `isGuest` derives from. */
+  isAnonymous: boolean;
 }
 
 export type AuthErrorCode =
@@ -19,6 +21,7 @@ export type AuthErrorCode =
   | 'email-in-use'
   | 'user-not-found'
   | 'wrong-password'
+  | 'provider-disabled'
   | 'unknown';
 
 export class AuthError extends Error {
@@ -35,6 +38,7 @@ export const AUTH_ERROR_COPY: Record<AuthErrorCode, string> = {
   'email-in-use': 'An account already exists for that email.',
   'user-not-found': 'No account found for that email.',
   'wrong-password': 'Incorrect password. Try again.',
+  'provider-disabled': "This sign-in method isn't turned on yet — check the Firebase console.",
   unknown: 'Something went wrong. Please try again.',
 };
 
@@ -43,6 +47,8 @@ export interface AuthGateway {
   restore(): Promise<AuthUser | null>;
   signIn(email: string, password: string): Promise<AuthUser>;
   register(email: string, password: string, displayName: string): Promise<AuthUser>;
+  /** A real (if throwaway) session — Firebase Anonymous Auth, not a locally-faked user object. */
+  playAsGuest(): Promise<AuthUser>;
   sendPasswordReset(email: string): Promise<void>;
   signOut(): Promise<void>;
   /** Both operate on whoever is currently signed in — there is no other account to target. */

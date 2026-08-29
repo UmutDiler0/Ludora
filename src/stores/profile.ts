@@ -41,18 +41,6 @@ export interface ProfileState {
   reset: () => void;
 }
 
-/**
- * Seed values match the Player Profile design (level 42, 12,450 / 15,000 XP)
- * so the screens can be judged against the mockups rather than against zeroes.
- * Real accounts start from the `hydrateFrom` path instead.
- */
-const SEED = {
-  /** totalXpForLevel(42) === 313,650, plus the designed 12,450 into the level. */
-  xp: 326_100,
-  gold: 2_450,
-  stats: { gamesPlayed: 184, gamesWon: 97 },
-};
-
 const todayUtc = () => new Date().toISOString().slice(0, 10);
 
 const yesterdayUtc = () => new Date(Date.now() - 86_400_000).toISOString().slice(0, 10);
@@ -61,15 +49,24 @@ const yesterdayUtc = () => new Date(Date.now() - 86_400_000).toISOString().slice
 // owned from account creation, never something the shop has to sell back.
 const STARTER_ITEM_IDS = Object.values(DEFAULT_AVATAR).filter((id): id is string => id !== null);
 
+/**
+ * A genuinely fresh account: no XP, no gold, no games played. Used as the
+ * cold-boot default, and reset to explicitly by `hydrateFrom` (new sign-up)
+ * and `reset` (post-delete-account) — both used to fall back to a hand-picked
+ * "Level 42, 2,450 gold" demo seed instead, left over from when this store
+ * had to look populated with no real accounts yet to hydrate it. Now that
+ * registration is real, showing a brand-new player invented stats reads as
+ * broken, not as a demo.
+ */
 const initial = {
   displayName: 'Player_One',
   handle: '@player_one',
   avatar: DEFAULT_AVATAR,
-  xp: SEED.xp,
-  gold: SEED.gold,
+  xp: 0,
+  gold: 0,
   isPremium: false,
   ownedItemIds: STARTER_ITEM_IDS,
-  stats: SEED.stats,
+  stats: { gamesPlayed: 0, gamesWon: 0 },
   lastDailyClaim: null as string | null,
   dailyStreak: 0,
 };

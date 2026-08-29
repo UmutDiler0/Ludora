@@ -1,6 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { Tabs } from 'expo-router';
 import type { ComponentProps } from 'react';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { useI18n } from '@/i18n/I18nProvider';
 import { fonts, stroke } from '@/theme/tokens';
@@ -29,6 +30,7 @@ export default function TabsLayout() {
   const { palette } = useTheme();
   const { t } = useI18n();
   const labels = t((s) => s.tabs);
+  const insets = useSafeAreaInsets();
 
   return (
     <Tabs
@@ -42,8 +44,13 @@ export default function TabsLayout() {
           // Thick ink rule, matching every other surface in the cartoon kit.
           borderTopColor: palette.ink,
           borderTopWidth: stroke.base,
-          height: 72,
+          // A fixed height with no allowance for the device's own bottom
+          // inset sits the bar's content under Android's gesture/button nav
+          // bar — 56 is the tab bar's actual content height, `insets.bottom`
+          // is however much room that system nav needs on top of it.
+          height: 56 + insets.bottom,
           paddingTop: 6,
+          paddingBottom: insets.bottom,
         },
         tabBarLabelStyle: { fontFamily: fonts.label, fontSize: 10, letterSpacing: 0.6 },
       }}>

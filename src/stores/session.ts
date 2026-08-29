@@ -16,9 +16,6 @@ import { AUTH_ERROR_COPY, AuthError, type AuthUser } from '@/services/auth/types
 
 type Status = 'booting' | 'signed-out' | 'signed-in';
 
-/** `Guest12345678` — random 8-digit suffix, unique enough for a throwaway local id. */
-const makeGuestId = () => `Guest${Math.floor(10_000_000 + Math.random() * 90_000_000)}`;
-
 interface SessionState {
   status: Status;
   user: AuthUser | null;
@@ -38,7 +35,7 @@ interface SessionState {
   completeOnboarding: () => void;
   signIn: (email: string, password: string) => Promise<boolean>;
   register: (email: string, password: string, displayName: string) => Promise<boolean>;
-  playAsGuest: () => void;
+  playAsGuest: () => Promise<boolean>;
   sendPasswordReset: (email: string) => Promise<boolean>;
   changePassword: (currentPassword: string, newPassword: string) => Promise<boolean>;
   /** Deletes the mock account and signs out on success. */
@@ -56,10 +53,13 @@ async function attempt(
   set({ busy: true, error: null });
   try {
     const user = await run();
-    // A real sign-in/register always wins over a leftover guest session.
+    // `isGuest`/`guestId` are derived from the real Firebase session's own
+    // `isAnonymous` flag, not tracked independently — a real sign-in/register
+    // naturally reads as `isGuest: false` here, `playAsGuest` as `true`,
+    // with no special-casing needed for either.
     set(
       user
-        ? { user, status: 'signed-in', busy: false, isGuest: false, guestId: null }
+        ? { user, status: 'signed-in', busy: false, isGuest: user.isAnonymous, guestId: user.isAnonymous ? user.uid : null }
         : { busy: false },
     );
     return true;
@@ -83,13 +83,13 @@ export const useSession = create<SessionState>()(
       error: null,
 
       async restore() {
-        const { isGuest, guestId } = get();
-        if (isGuest && guestId) {
-          set({ user: { uid: guestId, email: '', displayName: guestId }, status: 'signed-in' });
-          return;
-        }
         const user = await firebaseAuthGateway.restore();
-        set({ user, status: user ? 'signed-in' : 'signed-out' });
+        set({
+          user,
+          status: user ? 'signed-in' : 'signed-out',
+          isGuest: user?.isAnonymous ?? false,
+          guestId: user?.isAnonymous ? user.uid : null,
+        });
       },
 
       completeOnboarding: () => set({ hasOnboarded: true }),
@@ -100,16 +100,7 @@ export const useSession = create<SessionState>()(
       register: (email, password, displayName) =>
         attempt(set, () => firebaseAuthGateway.register(email, password, displayName)),
 
-      playAsGuest: () => {
-        const guestId = makeGuestId();
-        set({
-          user: { uid: guestId, email: '', displayName: guestId },
-          status: 'signed-in',
-          isGuest: true,
-          guestId,
-          error: null,
-        });
-      },
+      playAsGuest: () => attempt(set, () => firebaseAuthGateway.playAsGuest()),
 
       sendPasswordReset: (email) =>
         attempt(set, async () => {
@@ -149,16 +140,16 @@ export const useSession = create<SessionState>()(
     {
       name: 'ludora.session',
       storage: createJSONStorage(() => AsyncStorage),
-      // `user`/`status` are deliberately not persisted here — `restore()`
-      // re-derives the signed-in account from the auth gateway's own session
-      // record on boot, so there is exactly one source of truth for who is
+      // `user`/`status`/`isGuest`/`guestId` are deliberately not persisted
+      // here — `restore()` re-derives all four from the auth gateway's own
+      // session record (including its real `isAnonymous` flag now that guest
+      // sessions are real Firebase Anonymous Auth, not a locally-faked user)
+      // on every boot, so there is exactly one source of truth for who is
       // signed in. `hasOnboarded` persists so onboarding, once completed,
       // never forces a returning user back through login.
       partialize: (s) => ({
         hasOnboarded: s.hasOnboarded,
         pendingRoomCode: s.pendingRoomCode,
-        isGuest: s.isGuest,
-        guestId: s.guestId,
       }),
     },
   ),

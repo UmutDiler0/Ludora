@@ -5,6 +5,7 @@ import {
   getAuth,
   reauthenticateWithCredential,
   sendPasswordResetEmail,
+  signInAnonymously,
   signInWithEmailAndPassword,
   signOut,
   updatePassword,
@@ -32,7 +33,16 @@ const CODE_MAP: Record<string, AuthErrorCode> = {
   'auth/user-not-found': 'user-not-found',
   'auth/wrong-password': 'wrong-password',
   'auth/invalid-credential': 'wrong-password',
+  // Surfaced whenever a sign-in method's provider isn't turned on in the
+  // Firebase console yet — Email/Password and Anonymous both fail this way,
+  // and it's a config gap, not a bug, so it gets its own clear message
+  // instead of falling through to "unknown".
+  'auth/operation-not-allowed': 'provider-disabled',
+  'auth/admin-restricted-operation': 'provider-disabled',
 };
+
+/** `Guest12345678` — random 8-digit suffix, unique enough for a throwaway display name. */
+const makeGuestName = () => `Guest${Math.floor(10_000_000 + Math.random() * 90_000_000)}`;
 
 function toAuthError(err: unknown): AuthError {
   const code = (err as { code?: string })?.code ?? '';
@@ -43,6 +53,7 @@ const publicUser = (user: User): AuthUser => ({
   uid: user.uid,
   email: user.email ?? '',
   displayName: user.displayName ?? user.email?.split('@')[0] ?? '',
+  isAnonymous: user.isAnonymous,
 });
 
 export const firebaseAuthGateway: AuthGateway = {
@@ -65,7 +76,21 @@ export const firebaseAuthGateway: AuthGateway = {
       const { user } = await createUserWithEmailAndPassword(getAuth(), email.trim(), password);
       const name = displayName.trim() || email.split('@')[0];
       await updateProfile(user, { displayName: name });
-      return { uid: user.uid, email: user.email ?? email.trim(), displayName: name };
+      return { uid: user.uid, email: user.email ?? email.trim(), displayName: name, isAnonymous: false };
+    } catch (err) {
+      throw toAuthError(err);
+    }
+  },
+
+  async playAsGuest() {
+    try {
+      const { user } = await signInAnonymously(getAuth());
+      // Anonymous users start with no displayName — set one so the rest of
+      // the app (which reads `AuthUser.displayName` everywhere) never has to
+      // know guest and real accounts are shaped any differently.
+      const name = makeGuestName();
+      await updateProfile(user, { displayName: name });
+      return { uid: user.uid, email: '', displayName: name, isAnonymous: true };
     } catch (err) {
       throw toAuthError(err);
     }

@@ -1,6 +1,6 @@
 # Firebase — implementation tracker
 
-**Status:** No Firebase product is fully wired yet except Auth (written, not connected). Everything else in this file describes what the *current* code already commits to, not a wishlist.
+**Status:** Auth and the room directory (Realtime Database) are wired and live. Everything else in this file describes what the *current* code already commits to, not a wishlist.
 
 ---
 
@@ -21,7 +21,7 @@ It also surfaces places where the code's stated intent has quietly moved past wh
 | Product | Package | Status | Where |
 | --- | --- | --- | --- |
 | Authentication | `@react-native-firebase/auth` 26.3.0 | **Installed. Wired and live** — `stores/session.ts` calls `firebaseAuthGateway` directly; `mockAuthGateway` deleted per its own header once this happened | [firebaseAuth.ts](../src/services/auth/firebaseAuth.ts) |
-| App (core) | `@react-native-firebase/app` ^26.2.0 | Installed, config plugin registered | [app.json](../app.json) |
+| App (core) | `@react-native-firebase/app` ^26.2.0 | Installed, config plugin registered | [app.config.js](../app.config.js) |
 | Cloud Firestore | `@react-native-firebase/firestore` 26.3.0 | **Installed. No gateway written yet** — `stores/profile.ts`, `stores/progression.ts` and the leaderboard/catalogue local mirrors have no `types.ts`/`mock*.ts` split today, unlike auth/rooms/presence/chat | targets in §3.2–§3.7 |
 | Realtime Database | `@react-native-firebase/database` 26.3.0 | **Installed. Wired and live** — every `*-setup.tsx`/`*-lobby.tsx` and `find-room.tsx` import `roomGateway` from `firebaseRooms.ts` now; `mockRooms.ts` kept for local dev, see §3.11 | [firebaseRooms.ts](../src/services/rooms/firebaseRooms.ts) |
 | Cloud Storage | `@react-native-firebase/storage` 26.3.0 | **Installed. No gateway written yet** | avatar/catalogue art, ARCHITECTURE §12 |
@@ -31,11 +31,25 @@ It also surfaces places where the code's stated intent has quietly moved past wh
 | Crashlytics | `@react-native-firebase/crashlytics` | Not installed | ARCHITECTURE §2 |
 | *(adjacent, not Firebase)* AdMob, IAP | `react-native-google-mobile-ads`, `react-native-iap` | Not installed | ARCHITECTURE §13 |
 
-`app.json` already declares `googleServicesFile` for both platforms and registers the `app`/`auth` config plugins — the project-level wiring for Auth is done; only `session.ts`'s import needs to change to make it live. `@react-native-firebase/database`, `/firestore` and `/storage` need no plugin entry of their own — none ships an `app.plugin.js` (confirmed by checking each package directly), so all three autolink off the `app` plugin's native setup alone.
+`app.config.js` (dynamic config — replaced the old static `app.json` for exactly this reason) declares `googleServicesFile` for both platforms and registers the `app`/`auth` config plugins — the project-level wiring for Auth is done; only `session.ts`'s import needs to change to make it live. `@react-native-firebase/database`, `/firestore` and `/storage` need no plugin entry of their own — none ships an `app.plugin.js` (confirmed by checking each package directly), so all three autolink off the `app` plugin's native setup alone.
 
 Every `@react-native-firebase/*` package must be pinned to the exact same version (`26.3.0`, no `^`) in package.json — installing `/database` at a caret range resolved a patch ahead of the already-installed `/app`/`/auth` and `npm install` refused with an ERESOLVE peer conflict until all three were pinned exactly. This is a standing constraint, not a one-time fix: bump one, bump all three together.
 
-`google-services.json` and `GoogleService-Info.plist` now exist at the repo root (gitignored — per-developer/per-environment, not committed) and both resolve to project `ludora-13e00`, package/bundle id `com.ludora.app`, matching `app.json` on both platforms. This also requires `expo-dev-client` (installed, not yet built) — Firebase's native modules do not run in Expo Go, so the only way to actually run signed-in auth (or anything else in this file once wired) is a development build (`eas build --profile development` or a local `expo run:android`/`expo run:ios`), not `expo start` in Expo Go.
+`google-services.json` and `GoogleService-Info.plist` both resolve to project `ludora-13e00`, package/bundle id `com.ludora.app` — but being gitignored means genuinely **per-machine**, not "committed once, present everywhere." An earlier note here claimed both files already existed at the repo root; that was wrong on the machine actually building this — get them from Firebase console → Project settings → Your apps → download the config file for each platform's registered app, and place them at the repo root on whichever machine needs to run a *local* build (`expo prebuild` / `expo run:android` / `expo run:ios`). This also requires `expo-dev-client` (installed) — Firebase's native modules do not run in Expo Go, so the only way to actually run signed-in auth (or anything else in this file once wired) is a development build, not `expo start` in Expo Go.
+
+**EAS Build can't see either config file regardless of whether it's on your machine** — it only uploads what git tracks, and both are gitignored on purpose (they're per-project credentials, not app source). The first cloud build (`.eas/workflows/build-android-dev.yml`) failed on exactly this: `"google-services.json" is missing`. Fixed by switching `app.json` → `app.config.js` so `googleServicesFile` can read a path from an environment variable, and uploading each file as an EAS **file-type environment variable** — a one-time step per EAS project, independent of any one machine having the files locally:
+
+```
+eas env:set --scope project --name GOOGLE_SERVICES_JSON --type file \
+  --value ./google-services.json --environment development --environment preview \
+  --environment production --visibility sensitive --non-interactive
+
+eas env:set --scope project --name GOOGLE_SERVICES_PLIST --type file \
+  --value ./GoogleService-Info.plist --environment development --environment preview \
+  --environment production --visibility sensitive --non-interactive
+```
+
+(`eas env:create` still works but is deprecated in favor of `env:set` — same flags, same effect.) Both variables are created on the `@umutd/Ludora` EAS project as of this writing. At build time, EAS writes the uploaded file to a temp path on the worker and points the env var at that path; `app.config.js` falls back to the local relative path when the var is unset, so a local build still works unchanged on a machine that has the real files. Locally-run builds were never the problem — only EAS's remote workers, which never had the file to begin with.
 
 **Still needed in the Firebase Console before real sign-in works on a device:** Email/Password enabled under Authentication → Sign-in method for `ludora-13e00`. The gateway is wired; an unconfigured provider surfaces as `auth/operation-not-allowed`, not a code bug.
 
@@ -67,6 +81,8 @@ The point of the pattern: nothing above the gateway line changes when a mock is 
 ### 3.1 Firebase Auth — identity
 
 No Firestore document yet holds anything beyond what Auth itself carries (`uid`, `email`, `displayName`). Every `uid` used elsewhere in this file (`'you'` in the local game/taboo drivers) is a stand-in for the Auth uid once sessions are real.
+
+**"Play as Guest" is a real Firebase Anonymous Auth session, not a locally-faked user.** It wasn't originally — `session.ts`'s `playAsGuest()` used to synthesize a `Guest12345678` user object client-side with no Firebase session behind it at all, which worked fine while every backend call was mocked, but broke the instant RTDB rules required `auth != null`: a guest had no `auth` to satisfy that with, so every read/write a guest made was denied. Fixed by adding `AuthGateway.playAsGuest()`, backed by `signInAnonymously()` + `updateProfile()` to give the anonymous user the same `Guest12345678`-style display name guests always had. `AuthUser` gained an `isAnonymous` field so `session.ts` can derive `isGuest`/`guestId` from the real session on every `restore()` instead of persisting them independently — `isGuest`/`guestId` were dropped from the store's persisted keys entirely as a result, since they're now fully re-derivable, not source-of-truth state. **Requires the Anonymous provider enabled in Firebase console → Authentication → Sign-in method**, same as Email/Password — an unconfigured provider surfaces as `auth/operation-not-allowed` → mapped to the new `provider-disabled` `AuthErrorCode` rather than falling through to a generic "unknown" message.
 
 ### 3.2 Firestore `users/{uid}` — profile, XP, gold
 
